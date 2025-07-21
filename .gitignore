@@ -44,3 +44,4 @@ bin/
 
 database.sql
 application.properties
+application.yml

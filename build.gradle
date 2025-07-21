@@ -68,6 +68,18 @@ dependencies {
     // RabbitMQ (Spring AMQP)
     implementation "org.springframework.amqp:spring-amqp:3.1.2"
     implementation "org.springframework.amqp:spring-rabbit:3.1.2"
+
+    // test
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
+
+    // codef
+    implementation 'io.codef.api:easycodef-java:1.0.6'
+
+    // Firebase 메시징 라이브러리
+    implementation 'com.google.firebase:firebase-messaging:23.4.0'
+
+
 }
 
 test {
