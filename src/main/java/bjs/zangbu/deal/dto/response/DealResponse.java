@@ -23,7 +23,7 @@ public class DealResponse {
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-  public static class Intent {
+  public static class IntentResponse {
 
     private Long dealId; // 거래 식별 id (신규)
     private String chatRoomId; // 채팅 식별 id (신규)
