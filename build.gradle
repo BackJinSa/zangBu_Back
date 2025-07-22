@@ -74,6 +74,17 @@ dependencies {
 
     // Firebase 메시징 라이브러리
     implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    // 보안
+    implementation("org.springframework.security:spring-security-web:5.8.13")
+    implementation("org.springframework.security:spring-security-config:5.8.13")
+    implementation("org.springframework.security:spring-security-core:5.8.13")
+    implementation("org.springframework.security:spring-security-taglibs:5.8.13")
+
+    // 웹 소켓
+    implementation "org.springframework:spring-websocket:6.2.8"
+    implementation "org.springframework:spring-messaging:6.2.8"
+    implementation "org.springframework.integration:spring-integration-stomp:5.5.20"
 }
 
 test {
