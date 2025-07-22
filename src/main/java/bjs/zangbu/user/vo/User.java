@@ -32,7 +32,7 @@ public class User {
     private UserEnum role;
 
     //생년월일 6자리
-    private char birth;
+    private String birth;
 
     //사용자 이름
     private String userName;
