@@ -1,17 +1,15 @@
-package bjs.zangbu.user.vo;
+package bjs.zangbu.security.account.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 public class User {
     //유저 식별 id
-    private UUID userId;
+    private String userId;
 
     //아이디(이메일)
     private String email;
