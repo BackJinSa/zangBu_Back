@@ -34,4 +34,5 @@ public class User {
 
     //사용자 이름
     private String userName;
-}
+
+}//UserVO
