@@ -8,7 +8,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter
 public class Deal {
     // 거래 식별 id
     private Long dealId;
