@@ -15,7 +15,7 @@ public class BuildingRequest {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class viewDetailRequest {
+    public static class ViewDetailRequest {
         // 조회할 건물 ID
         private Long buildingId;
         // 검색 구분자(옵션, ex: 단지/매물 등)
@@ -31,7 +31,7 @@ public class BuildingRequest {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class bookmarkRequest {
+    public static class BookmarkRequest {
         // 북마크할 건물 ID
         private Long buildingId;
     }
@@ -39,7 +39,7 @@ public class BuildingRequest {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class saleRegistrationRequest {
+    public static class SaleRegistrationRequest {
         // 판매자 유형(일반인, 중개사 등)
         private SellerType sellerType;
         // 거래 유형(매매, 전세, 월세 등)
