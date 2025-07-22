@@ -10,14 +10,6 @@ repositories {
     mavenCentral()
 }
 
-ext {
-    junitVersion = '5.10.2'
-    springVersion = '6.2.8'
-    lombokVersion = '1.18.30'
-    mybatisSpringBootVersion = '3.0.3'
-    springAmqpVersion = '3.1.2'
-}
-
 sourceCompatibility = '17'
 targetCompatibility = '17'
 
@@ -70,6 +62,9 @@ dependencies {
     implementation "org.springframework.amqp:spring-amqp:3.1.2"
     implementation "org.springframework.amqp:spring-rabbit:3.1.2"
 
+    // SnakeYAML (YAML 파싱용)
+    implementation 'org.yaml:snakeyaml:2.0'
+
     // test
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
@@ -79,8 +74,6 @@ dependencies {
 
     // Firebase 메시징 라이브러리
     implementation 'com.google.firebase:firebase-admin:9.2.0'
-
-
 }
 
 test {
