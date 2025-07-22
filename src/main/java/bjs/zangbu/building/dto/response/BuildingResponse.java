@@ -11,7 +11,7 @@ public class BuildingResponse {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class viewDetailResponse {
+    public static class ViewDetailResponse {
         // 사용자 정보 (멤버십 등)
         private User user;
         // 등록일 (YYYY-MM-DD 등 문자열)
