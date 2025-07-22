@@ -15,10 +15,8 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import javax.sql.DataSource;
 
 @Configuration
-@PropertySource({"classpath:/application.yml"})
-//@MapperScan(basePackages = {})
-public class
-RootConfig {
+@PropertySource(value = "classpath:/application.yml", factory = YamlPropertyConfig.class)
+public class RootConfig {
     @Value("${jdbc.driver}")
     String driver;
     @Value("${jdbc.url}")
@@ -48,14 +46,12 @@ RootConfig {
         SqlSessionFactoryBean sqlSessionFactory = new SqlSessionFactoryBean();
         sqlSessionFactory.setConfigLocation(applicationContext.getResource("classpath:/mybatis-config.xml"));
         sqlSessionFactory.setDataSource(dataSource());
-
         return sqlSessionFactory.getObject();
     }
 
     @Bean
     public DataSourceTransactionManager transactionManager() {
         DataSourceTransactionManager manager = new DataSourceTransactionManager(dataSource());
-
         return manager;
     }
 
