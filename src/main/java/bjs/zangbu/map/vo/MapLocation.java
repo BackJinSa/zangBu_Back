@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MapLocation {
-    private String address;
     private String latitude;
     private String longitude;
     private String buildingName;
