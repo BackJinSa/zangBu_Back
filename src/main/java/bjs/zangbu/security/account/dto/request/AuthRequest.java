@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 public class AuthRequest {
 
-    // /auth/login
+    // /auth/login Request
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -15,8 +15,41 @@ public class AuthRequest {
         private String password;
     }
 
+    // /auth/email Request
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class EmailAuthRequest{
         private String name;
         private String phone;
     }
+
+    // /auth/password Request
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ChangePassword{
+        private String newPassword;
+    }
+
+    // /auth/signup Request
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SignUp{
+        private String email;
+        private String nickname;
+        private String password;
+        private String identity;
+        private String birth;
+    }
+
+    // /auth/check/email
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EmailCheck{
+        private String email;
+    }
+
 }
