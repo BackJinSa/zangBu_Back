@@ -1,6 +1,6 @@
 package bjs.zangbu.security.account.vo;
 
-public enum UserEnum {
+public enum MemberEnum {
     ROLE_ADMIN,
     ROLE_USER
 }
