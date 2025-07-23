@@ -15,7 +15,7 @@ public class ChatRequest {
         //roomId에 해당하는 채팅방의 메시지들 마지막부터 limit개 불러오기
         private Long lastMessageId;  // 마지막으로 받은 메시지 ID
         private int limit = 20;      // 기본값 20
-        //컨트롤러에서 @RequestParam으로
+        //컨트롤러 작성해보고 dto작성 없이 @RequestParam으로 할지 생각해보기
     }
 
     //  /pub/chat.message

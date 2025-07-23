@@ -44,22 +44,25 @@ public class ChatResponse {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public class EnterChatRoomResponse {
+    public static class EnterChatRoomResponse {
         //이미 존재하는 채팅방의 상세정보를 응답할 때 사용
         private String chatRoomId;         //채팅방 id
         private Long buildingId;           //매물 id
         private String buyerId;            //구매자 id
         private String sellerNickname;     //판매자 닉네임
         private LocalDateTime createdAt;   //메시지 생성 시각
+        private String info;             //결과 메시지
+                                        //nickname + "님이 입장하셨습니다." // 201 Created
+                                        //"작성자는 입장할 수 없습니다." // 409 Conflict
+                                        //"잘못된 접근입니다." // 400 Bad Request
     }
-
 
     //    /chat/list?page={page}&size={size}&type={type}
     @Getter
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public class ChatRoomListDto {
+    public static class ChatRoomListResponse {
         private String chatRoomId;      //채팅방 id
         private String buildingName;    //매물 이름
         private String lastMessage;     //해당 채팅방의 마지막 메시지
@@ -71,4 +74,5 @@ public class ChatResponse {
         private boolean hasNext;            //페이지네이션 다음 여부
 
     }
+
 }
