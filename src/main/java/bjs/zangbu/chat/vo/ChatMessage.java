@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatMessage {
-    private BigInteger chatMessageId;   //채팅 메시지 식별 id
+    private Long chatMessageId;   //채팅 메시지 식별 id
     private String chatRoomId;    //채팅방 id
     private String senderId;     //보낸 사용자 id
     private String message;     //메시지 내용
