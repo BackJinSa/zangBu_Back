@@ -13,7 +13,6 @@ public class MapListRequest {
     // DTO 를 VO 로 변환하는 메서드
     public MapLocation toVo() {
         return new MapLocation(
-            this.address,
             null,
             null,
             this.buildingName
