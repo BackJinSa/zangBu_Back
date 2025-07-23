@@ -14,7 +14,7 @@ public class ChatRequest {
     public static class ChatMessageListRequest {
         //roomId에 해당하는 채팅방의 메시지들 마지막부터 limit개 불러오기
         private Long lastMessageId;  // 마지막으로 받은 메시지 ID
-        private int limit = 20;      // 기본값 20
+        private int limit;      // 한 번에 불러올 개수
         //컨트롤러 작성해보고 dto작성 없이 @RequestParam으로 할지 생각해보기
     }
 
