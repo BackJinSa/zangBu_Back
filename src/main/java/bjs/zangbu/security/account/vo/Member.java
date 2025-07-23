@@ -3,11 +3,16 @@ package bjs.zangbu.security.account.vo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.Collection;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class User {
+public class Member {
     //유저 식별 id
     private String userId;
 
@@ -27,7 +32,7 @@ public class User {
     private String identity;
 
     //역할(관리자, 사용자)
-    private UserEnum role;
+    private MemberEnum role;
 
     //생년월일 6자리
     private String birth;
@@ -35,4 +40,8 @@ public class User {
     //사용자 이름
     private String userName;
 
-}//UserVO
+    public Collection<? extends GrantedAuthority> getAuthorities(){
+        return List.of(new SimpleGrantedAuthority(role.name()));
+    }
+
+}//MemberVO

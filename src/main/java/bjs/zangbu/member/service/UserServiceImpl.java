@@ -1,4 +1,4 @@
-package bjs.zangbu.user.service;
+package bjs.zangbu.member.service;
 
 public interface UserServiceImpl {
 }
