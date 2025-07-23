@@ -1,7 +1,9 @@
 package bjs.zangbu.map.service;
 
 import bjs.zangbu.map.dto.request.MapListRequest;
+import bjs.zangbu.map.dto.request.MapSearchRequest;
 import bjs.zangbu.map.dto.response.MapListResponse;
+import bjs.zangbu.map.dto.response.MapSearchResponse;
 
 import java.util.List;
 
@@ -20,4 +22,5 @@ public interface MapService {
      */
 
     List<MapListResponse> locate(List<MapListRequest> requests);
+    List<MapSearchResponse> search(MapSearchRequest req);
 }
