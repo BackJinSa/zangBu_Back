@@ -1,6 +1,6 @@
 package bjs.zangbu.deal.dto.response;
 
-import bjs.zangbu.deal.dto.response.DealJoin.DealWithChatRoom;
+import bjs.zangbu.deal.vo.Deal;
 import bjs.zangbu.deal.vo.DealEnum;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,7 +58,7 @@ public class DealWaitingListResponse {
 
     private List<WaitingListElement> allDeals; // WaitingListElement 를 갖는 리스트
 
-    public static WaitingList from(List<DealWithChatRoom> dtoList, String myNickname) {
+    public static WaitingList toDto(List<DealWithChatRoom> dtoList, String myNickname) {
       List<WaitingListElement> elements = dtoList.stream()
           .filter(dto -> dto.getStatus() == DealEnum.BEFORE_TRANSACTION)
           .map(dto -> WaitingListElement.toDto(dto, myNickname))
@@ -75,6 +75,10 @@ public class DealWaitingListResponse {
   public static class WaitingListPurchase {
 
     private List<WaitingListElement> activeDeals; // WaitingListElement 를 갖는 리스트
+
+    public static WaitingListPurchase toDto(List<Deal> dealVOList) {
+      return new WaitingListPurchase();
+    }
   }
 
   // /deal/waitinglist/onsale Response
