@@ -1,14 +1,13 @@
 package bjs.zangbu.map.service;
 
-import bjs.zangbu.map.dto.request.MapRequest;
-import bjs.zangbu.map.dto.response.MapResponse;
+import bjs.zangbu.map.dto.request.MapListRequest;
+import bjs.zangbu.map.dto.response.MapListResponse;
 import bjs.zangbu.map.util.CodefClient;
 import bjs.zangbu.map.vo.MapLocation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * MapService 구현체
@@ -23,7 +22,7 @@ public class MapServiceImpl implements MapService {
     private final CodefClient client;
 
     @Override
-    public List<MapResponse> locate(List<MapRequest> reqs) {
+    public List<MapListResponse> locate(List<MapListRequest> reqs) {
         return reqs.stream()
                 .map(r -> {
 
@@ -39,7 +38,7 @@ public class MapServiceImpl implements MapService {
                     MapLocation res = client.lookup(vo);
 
                     // 3) 결과 VO → 응답 DTO로 변환
-                    return new MapResponse(
+                    return new MapListResponse(
                             res.getAddress(),
                             res.getLatitude(),
                             res.getLongitude(),
