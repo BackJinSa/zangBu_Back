@@ -27,23 +27,13 @@ public class MapServiceImpl implements MapService {
                 .map(r -> {
 
                     // 1) 요청 DTO → VO 변환
-                    MapLocation vo = new MapLocation(
-                            r.getAddress(),
-                            null,
-                            null,
-                            r.getBuildingName()
-                    );
+                    MapLocation vo = r.toVo();
 
                     // 2) 외부 API 호출하여 실제 위도/경도 값 조회
-                    MapLocation res = client.lookup(vo);
+                    MapLocation resultVo = client.lookup(vo);
 
                     // 3) 결과 VO → 응답 DTO로 변환
-                    return new MapListResponse(
-                            res.getAddress(),
-                            res.getLatitude(),
-                            res.getLongitude(),
-                            res.getBuildingName()
-                    );
+                    return MapListResponse.fromVo(resultVo);
                 })
                 .toList();
     }
