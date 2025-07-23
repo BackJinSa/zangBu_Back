@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class MapResponse {
+public class MapListResponse {
     private String address;
     private String latitude;
     private String longitude;

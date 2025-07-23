@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class MapRequest {
+public class MapListRequest {
     private String address;
     private String buildingName;
 }

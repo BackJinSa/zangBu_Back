@@ -1,7 +1,7 @@
 package bjs.zangbu.map.controller;
 
-import bjs.zangbu.map.dto.request.MapRequest;
-import bjs.zangbu.map.dto.response.MapResponse;
+import bjs.zangbu.map.dto.request.MapListRequest;
+import bjs.zangbu.map.dto.response.MapListResponse;
 import bjs.zangbu.map.service.MapService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +19,9 @@ public class MapController {
     private final MapService mapService;
 
     @PostMapping("/list")
-    public ResponseEntity<?> list(@RequestBody List<MapRequest> body) {
+    public ResponseEntity<?> list(@RequestBody List<MapListRequest> body) {
         try {
-            List<MapResponse> result = mapService.locate(body);
+            List<MapListResponse> result = mapService.locate(body);
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
