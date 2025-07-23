@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="bjs.zangbu.building.mapper.BuildingMapper">
+    <!-- bookmark 생성 -->
+    <insert id="insertBookMark">
+        INSERT INTO bookmark (user_id, building_id)
+        VALUES (#{userId}, #{buildingId})
+    </insert>
+    <!-- bookCount 증가 -->
+    <update id="incrementBookmarkCount">
+        UPDATE building
+        SET bookmark_count = IFNULL(bookmark_count, 0) + 1
+        WHERE building_id = #{buildingId}
+    </update>
+    <!-- bookCount 감소 -->
+    <update id="decrementBookmarkCount">
+        UPDATE building
+        SET bookmark_count = IFNULL(bookmark_count, 0) - 1
+        WHERE building_id = #{buildingId}
+    </update>
+    <!-- bookmark 삭제 -->
+    <delete id="deleteBookMark">
+        DELETE FROM bookmark
+        WHERE user_id = #{userId}
+          AND building_id = #{buildingId}
+    </delete>
+
+    <!-- 건물 존재 여부 체크 쿼리 -->
+    <select id="isBuildingExists" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0
+        FROM building
+        WHERE building_id = #{buildingId}
+    </select>
+
+    <!-- 건물 아이디로 정보 조회 -->
+    <select id="getBuildingById" resultType="bjs.zangbu.building.vo.Building">
+        SELECT *
+        FROM building
+        WHERE building_id = #{buildingId}
+    </select>
+</mapper>
