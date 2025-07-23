@@ -1,4 +1,4 @@
 package bjs.zangbu.chat.dto;
 
-public class ChatRoomDTO {
+public class ChatRoomResponse {
 }
