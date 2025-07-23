@@ -1,5 +1,6 @@
 package bjs.zangbu.deal.dto.response;
 
+import bjs.zangbu.deal.dto.join.DealWithChatRoom;
 import bjs.zangbu.deal.vo.Deal;
 import bjs.zangbu.deal.vo.DealEnum;
 import java.util.List;
