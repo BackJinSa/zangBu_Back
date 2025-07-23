@@ -1,12 +1,19 @@
 package bjs.zangbu.building.vo;
 
 import bjs.zangbu.notification.vo.SaleType;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Building {
     // 건물 ID (고유 식별자)
-    private BigInteger buildingId;
+    private Long buildingId;
     // 판매자 닉네임
     private String sellerNickname;
     // 매물의 판매 유형 (예: 매매, 전세, 월세 등)
@@ -14,7 +21,7 @@ public class Building {
     // 매물 가격 (단위: 원)
     private Integer price;
     // 보증금 (월세 등 일부 매물에 해당)
-    private BigInteger deposit;
+    private Long deposit;
     // 이 건물을 북마크한 사용자 수
     private Integer bookmarkCount;
     // 매물 등록 일시
@@ -39,12 +46,11 @@ public class Building {
     private String contactPhone;
     // 제공되는 시설 정보 (예: 엘리베이터, 주차장, 보안 등)
     private String facility;
-
     // 외래키
     // 유저 식별자(UUID)
     private String userId;
     // 주소 식별자(BIGINT)
-    private BigInteger addressId;
+    private Long addressId;
     // 단지 식별자(BIGINT)
-    private BigInteger complexId;
+    private Long complexId;
 }
