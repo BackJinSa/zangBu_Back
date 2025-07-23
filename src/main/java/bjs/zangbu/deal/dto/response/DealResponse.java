@@ -1,5 +1,6 @@
 package bjs.zangbu.deal.dto.response;
 
+import bjs.zangbu.building.vo.Building;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,14 @@ public class DealResponse {
     private Long buildingId;// 매물 식별 id
     private String buildingName;// 매물명
     private String infoBuilding;// 매물 한 줄 설명
+
+    public static Notice toDto(Long buildingId, Building buildVO) {
+      return new Notice(
+          buildingId,
+          buildVO.getBuildingName(),
+          buildVO.getInfoBuilding()
+      );
+    }
   }
 
   // /deal/consumer/intent Response
