@@ -7,6 +7,7 @@ import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
 import bjs.zangbu.deal.service.DealService;
 import bjs.zangbu.member.service.UserService;
+import com.github.pagehelper.PageHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.w3c.dom.DocumentType;
 
@@ -55,13 +57,18 @@ public class DealController {
    */
   @GetMapping("/waitinglist")
   public ResponseEntity<?> getAllWaitingList(
-      @AuthenticationPrincipal UserDetails userDetails
+      @AuthenticationPrincipal UserDetails userDetails,
+      @RequestParam(defaultValue = "1") int page,         // 요청 페이지 (1부터 시작)
+      @RequestParam(defaultValue = "10") int size         // 페이지당 항목 수
   ) {
     try {
       String userId = userDetails.getUsername();
       String nickname = userService.getNickname(userId); // 닉네임 추출
 
+      // PageHelper 페이지네이션 시작
+      PageHelper.startPage(page, size);
       // Response 생성
+      // 내부적으로 LIMIT OFFSET 쿼리로 변환되어서 페이지네이션 됨
       WaitingList response = dealService.getAllWaitingList(userId, nickname);
 
       return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -77,7 +84,9 @@ public class DealController {
    */
   @GetMapping("/waitinglist/purchase")
   public ResponseEntity<?> getPurchaseWaitingList(
-      @AuthenticationPrincipal UserDetails userDetails
+      @AuthenticationPrincipal UserDetails userDetails,
+      @RequestParam(defaultValue = "1") int page,         // 요청 페이지 (1부터 시작)
+      @RequestParam(defaultValue = "10") int size         // 페이지당 항목 수
   ) {
     try {
       String userId = userDetails.getUsername();
