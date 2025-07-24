@@ -7,8 +7,8 @@
 
     <!-- 회원이 특정 매물을 찜했을 때 bookmark 테이블에 기록 -->
     <insert id="insertBookMark">
-        INSERT INTO bookmark (user_id, building_id)
-        VALUES (#{userId}, #{buildingId})
+        INSERT INTO bookmark (member_id, building_id)
+        VALUES (#{memberId}, #{buildingId})
     </insert>
 
     <!-- 건물의 찜 개수(bookmark_count) 1 증가 -->
@@ -35,25 +35,25 @@
     <!-- 회원이 찜한 특정 매물을 삭제 -->
     <delete id="deleteBookMark">
         DELETE FROM bookmark
-        WHERE user_id = #{userId}
+        WHERE member_id = #{memberId}
           AND building_id = #{buildingId}
     </delete>
 
     <!-- 전체 bookmark 목록 조회 -->
     <select id="selectAllBookmarks" resultType="bjs.zangbu.bookmark.vo.Bookmark">
-        SELECT bookmark_id, user_id, building_id, price
+        SELECT bookmark_id, member_id, building_id, price
         FROM bookmark
     </select>
 
-    <!-- 특정 매물을 찜한 회원(user_id) 목록 조회 -->
-    <select id="selectUserId" resultType="java.lang.String">
-        SELECT user_id
+    <!-- 특정 매물을 찜한 회원(member_id) 목록 조회 -->
+    <select id="selectUserIdsByBuildingId" resultType="java.lang.String">
+        SELECT member_id
         FROM bookmark
         WHERE building_id = #{buildingId}
     </select>
 
     <!-- 회원이 찜한 모든 건물(building_id) 목록 조회 -->
-    <select id="selectBookmarkedBuildingIdsByMember" resultType="long" parameterType="java.lang.String">
+    <select id="selectBookmarkedBuildingIdsByMember" resultType="java.lang.Long" parameterType="java.lang.String">
         SELECT building_id
         FROM bookmark
         WHERE member_id = #{memberId}

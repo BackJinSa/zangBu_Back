@@ -21,6 +21,9 @@ public class ServletConfig implements WebMvcConfigurer {
         registry
                 .addResourceHandler("/resources/**")     // url이 /resources/로 시작하는 모든 경로
                 .addResourceLocations("/resources/");    // webapp/resources/경로로 매핑
+        /* ▼ 새로 추가: 계약서 PDF 두 개를 서빙 */
+        registry.addResourceHandler("/contracts/**")
+                .addResourceLocations("classpath:/contracts/");   // src/main/resources/contracts/
     }
 
 

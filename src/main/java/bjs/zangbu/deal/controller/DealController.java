@@ -3,8 +3,11 @@ package bjs.zangbu.deal.controller;
 
 import bjs.zangbu.deal.dto.request.DealRequest.IntentRequest;
 import bjs.zangbu.deal.dto.request.DealRequest.Status;
+import bjs.zangbu.deal.dto.response.DealResponse;
 import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
+import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingListElement;
+import bjs.zangbu.deal.service.ContractService;
 import bjs.zangbu.deal.service.DealService;
 import bjs.zangbu.member.service.UserService;
 import com.github.pagehelper.PageHelper;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.w3c.dom.DocumentType;
 
 @Log4j2
@@ -33,6 +37,7 @@ public class DealController {
 
   private final DealService dealService;
   private final UserService userService;
+  private final ContractService contractService;
 
   /* -------------------------------------------------
    * 1. 거래 안내/대기 목록
@@ -171,9 +176,18 @@ public class DealController {
   /**
    * 9) 표준 계약서 다운로드
    */
-  @GetMapping("/consumer/contract/download")
-  public ResponseEntity<?> donwloadContractReport() {
-    return ResponseEntity.ok().build();
+  @GetMapping("/consumer/contract/{dealId}/download")
+  public ResponseEntity<?> downloadContractReport(@PathVariable Long dealId) {
+    // 1. 상대 경로
+    String relativePath = contractService.getContractPdf(dealId);
+
+    //2. 절대 URL(Host·Port 포함) 생성
+    String absoultePath = ServletUriComponentsBuilder
+            .fromCurrentContextPath()
+            .path(relativePath)
+            .toUriString();
+
+    return ResponseEntity.ok(new DealResponse.Download(absoultePath));
   }
 
   /**
