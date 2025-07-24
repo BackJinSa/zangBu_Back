@@ -1,4 +1,4 @@
 package bjs.zangbu.member.controller;
 
-public class UserController {
+public class MemberController {
 }
