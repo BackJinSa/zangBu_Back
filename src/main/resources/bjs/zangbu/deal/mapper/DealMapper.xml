@@ -5,6 +5,25 @@
 
 <mapper namespace="bjs.zangbu.deal.mapper.DealMapper">
 
+  <!-- 거래 신규 생성 -->
+  <insert id="createDeal" useGeneratedKeys="true" keyProperty="result.dealId">
+    INSERT INTO deal(chat_room_id,
+                     building_id,
+                     member_id,
+                     complex_id,
+                     status,
+                     created_at)
+    SELECT cr.chat_room_id,
+           cr.building_id,
+           cr.member_id,
+           cr.complex_id,
+           'BEFORE_TRANSACTION',
+           NOW()
+    FROM chat_room cr
+    WHERE cr.chat_room_id = #{chatRoomId}
+
+  </insert>
+
   <!-- Deal.status 업데이트 -->
   <update id="patchStatus" parameterType="bjs.zangbu.deal.dto.request.DealRequest$Status">
     UPDATE deal
@@ -138,34 +157,41 @@
     <result property="sellerNickname" column="seller_nickname"/>
   </resultMap>
 
-<!--    표준계약서 xml 코드 -->
-    <select id="findWithType"
-            parameterType="long"
-            resultMap="DealWithSaleTypeMap">
+  <!--    표준계약서 xml 코드 -->
+  <select id="findWithType"
+    parameterType="long"
+    resultMap="DealWithSaleTypeMap">
 
-        SELECT d.deal_id,
-               d.status,
-               d.user_id,
-               d.building_id,
-               b.sale_type
-        FROM deal d
-                 JOIN building b ON b.building_id = d.building_id
-        WHERE d.deal_id = #{dealId}
+    SELECT d.deal_id,
+           d.status,
+           d.user_id,
+           d.building_id,
+           b.sale_type
+    FROM deal d
+           JOIN building b ON b.building_id = d.building_id
+    WHERE d.deal_id = #{dealId}
 
-    </select>
+  </select>
 
-    <!-- 결과 매핑 -->
-    <resultMap id="DealWithSaleTypeMap"
-               type="bjs.zangbu.deal.dto.join.DealWithSaleType">
+  <!-- 오늘 거래된 매물들의 building_id 조회 -->
+  <select id="selectTodayTradedBuildingIds" resultType="java.lang.Long">
+    SELECT DISTINCT building_id
+    FROM deal
+    WHERE DATE (created_at) = CURDATE()
+  </select>
 
-        <id     property="dealId"     column="deal_id"/>
-        <result property="status"
-                column="status"
-                javaType="bjs.zangbu.deal.vo.DealEnum"/>
-        <result property="userId"     column="user_id"/>
-        <result property="buildingId" column="building_id"/>
-        <result property="saleType"
-                column="sale_type"
-                javaType="bjs.zangbu.notification.vo.SaleType"/>
-    </resultMap>
+  <!-- 결과 매핑 -->
+  <resultMap id="DealWithSaleTypeMap"
+    type="bjs.zangbu.deal.dto.join.DealWithSaleType">
+
+    <id property="dealId" column="deal_id"/>
+    <result property="status"
+      column="status"
+      javaType="bjs.zangbu.deal.vo.DealEnum"/>
+    <result property="userId" column="user_id"/>
+    <result property="buildingId" column="building_id"/>
+    <result property="saleType"
+      column="sale_type"
+      javaType="bjs.zangbu.notification.vo.SaleType"/>
+  </resultMap>
 </mapper>

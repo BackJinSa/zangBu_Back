@@ -4,6 +4,7 @@ import bjs.zangbu.building.mapper.BuildingMapper;
 import bjs.zangbu.building.vo.Building;
 import bjs.zangbu.deal.dto.join.DealWithChatRoom;
 import bjs.zangbu.deal.dto.request.DealRequest.Status;
+import bjs.zangbu.deal.dto.response.DealResponse.CreateResult;
 import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
 import bjs.zangbu.deal.mapper.DealMapper;
@@ -76,6 +77,14 @@ public class DealServiceImpl implements DealService {
     } else {
       return false;
     }
+  }
+
+  // 거래 생성 (생성된 dealId 반환)
+  @Override
+  public Long createDeal(String chatRoomId) {
+    CreateResult result = new CreateResult();
+    dealMapper.createDeal(chatRoomId, result);
+    return result.getDealId();
   }
 
   // 이전 상태에서 다음 상태 이어지는 게 맞는지 체크
