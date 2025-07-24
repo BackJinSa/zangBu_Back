@@ -45,7 +45,7 @@
     <!-- 채팅방 유무 확인(중복 생성 방지) -->
     <select id="existsChatRoom" resultType="boolean">
         SELECT EXISTS (
-            SELECT 1 FROM chat_room WHERE building_id = #{buildingId} AND member_id = #{userId}
+            SELECT 1 FROM chat_room WHERE chat_room_id = #{chatRoomId}
         )
     </select>
 
