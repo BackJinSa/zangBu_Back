@@ -11,9 +11,8 @@ import java.math.BigInteger;
 @NoArgsConstructor
 public class ChatRoom {
     private String chatRoomId;       //채팅방 id
-    private BigInteger buildingId;   //매물 식별 id
-    private String sellerId;         //판매자 id
-    private String buyerId;          //구매자 id
+    private Long buildingId;   //매물 식별 id
+    private String userId;          //사용자 id
     private String sellerNickname;   //판매자 닉네임
-    private String buyerNickname;    //구매자 닉네임
+    private String consumerNickname;    //구매자 닉네임
 }
