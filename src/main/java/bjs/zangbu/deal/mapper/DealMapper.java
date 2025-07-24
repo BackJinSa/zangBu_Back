@@ -18,7 +18,6 @@ public interface DealMapper {
   int patchStatus(Status status);
 
   String getStatusByDealId(Long dealId);
-  List<Deal> getAllDealByUserId(String userId);
 
   DealWithSaleType findWithType(Long dealId);
 }
