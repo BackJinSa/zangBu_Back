@@ -1,7 +1,9 @@
 package bjs.zangbu.map.service;
 
+import bjs.zangbu.map.dto.request.MapCategoryRequest;
 import bjs.zangbu.map.dto.request.MapListRequest;
 import bjs.zangbu.map.dto.request.MapSearchRequest;
+import bjs.zangbu.map.dto.response.MapCategoryResponse;
 import bjs.zangbu.map.dto.response.MapListResponse;
 import bjs.zangbu.map.dto.response.MapSearchResponse;
 import bjs.zangbu.map.util.CodefClient;
@@ -49,5 +51,15 @@ public class MapServiceImpl implements MapService {
             throw new IllegalArgumentException("검색어를 입력해주세요.");
         }
         return kakaoClient.searchByKeyword((req.getQuery()));
+    }
+
+    // MapCategory DTO 활용
+    @Override
+    public List<MapCategoryResponse> category(MapCategoryRequest req) {
+        // 유효성 검사
+        if(req.getCategory_group_code() == null || req.getRadius() <= 0) {
+            throw new IllegalArgumentException("파라미터가 잘못되었습니다.");
+        }
+        return kakaoClient.searchByCategory(req);
     }
 }
