@@ -43,6 +43,6 @@ public class Notification {
     // ==== foreign key
 
     // 유저 식별 id
-    private String userId;
+    private String memberId;
 
 }

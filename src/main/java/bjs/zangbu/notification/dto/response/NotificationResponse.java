@@ -112,7 +112,7 @@ public class NotificationResponse {
         } // formatPriceLabel
 
         // 숫자 → 단위 변환 (ex: 35000 → 3.5억) db에 가격이 1이면 1만원임
-        private static String formatMoney(int price) {
+        public static String formatMoney(int price) {
             // 만약 금액이 10000 이상이면 "억" 단위로 바꿔줘야됨
             // price = 35000 이라고 가정하면
             if (price >= 10000) {
