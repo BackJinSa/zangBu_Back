@@ -1,4 +1,4 @@
 package bjs.zangbu.member.service;
 
-public class UserService {
+public class MemberService {
 }

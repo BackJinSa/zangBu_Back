@@ -24,11 +24,11 @@ public class AuthRequest {
         private String phone;
     }
 
-    // /auth/password Request
+    // /auth/password Request 비밀번호 재설정
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ChangePassword{
+    public static class ResetPassword{
         private String newPassword;
     }
 

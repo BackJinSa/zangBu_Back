@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="bjs.zangbu.security.account.mapper.AuthMapper">
+
+    <!--회원 가입-->
+    <insert id="insertMember">
+        INSERT INTO member (member_id,
+                            email,
+                            password,
+                            phone,
+                            nickname,
+                            identity,
+                            role,
+                            birth,
+                            name)
+        VALUES (#{memberId},
+                #{email},
+                #{password},
+                #{phone},
+                #{nickname},
+                #{identity},
+                #{role},
+                #{birth},
+                #{name})
+    </insert>
+
+    <!--비밀번호 변경-->
+    <update id="updatePassword">
+        update member
+        set password = #{newPassword}
+        where member_id = #{memberId}
+    </update>
+
+    <!--로그인 - 회원 정보 조회하기-->
+    <select id="findByEmail" resultType="bjs.zangbu.security.account.vo.Member">
+        select
+            member_id,
+            email,
+            password,
+            phone,
+            nickname,
+            identity,
+            role,
+            birth,
+            name
+        from member
+        where email = #{email}
+    </select>
+
+    <!--아이디(이메일) 찾기 - 이름, 전화번호로 아이디 찾기-->
+    <select id="findEmailByNameAndPhone" resultType="java.lang.String">
+        select email
+        from member
+        where name = #{name}
+        and phone = #{phone}
+    </select>
+
+    <!--이메일 중복 체크-->
+    <select id="countByEmail" resultType="java.lang.Integer">
+        select count(*)
+        from member
+        where email = #{email}
+    </select>
+
+    <!--닉네임 중복 체크-->
+    <select id="countByNickname" resultType="java.lang.Integer">
+        select count(*)
+        from member
+        where nickname = #{nickname}
+    </select>
+
+</mapper>
