@@ -51,8 +51,6 @@
            b.building_name,
            b.house_type,
            b.sale_type,
-           b.image_url,
-
            cl.address,
 
            c.consumer_nickname,
@@ -89,7 +87,6 @@
            b.building_name,
            b.house_type,
            b.sale_type,
-           b.image_url,
 
            cl.address,
 
@@ -120,7 +117,6 @@
            b.building_name,
            b.house_type,
            b.sale_type,
-           b.image_url,
 
            cl.address,
 
@@ -151,7 +147,6 @@
     <result property="buildingName" column="building_name"/>
     <result property="houseType" column="house_type"/>
     <result property="saleType" column="sale_type"/>
-    <result property="imageUrl" column="image_url"/>
     <result property="address" column="address"/>
 
     <result property="consumerNickname" column="consumer_nickname"/>

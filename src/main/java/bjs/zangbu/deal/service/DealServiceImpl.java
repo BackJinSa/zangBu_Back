@@ -9,9 +9,12 @@ import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
 import bjs.zangbu.deal.mapper.DealMapper;
 import bjs.zangbu.deal.vo.DealEnum;
+import bjs.zangbu.imageList.service.ImageListService;
 import com.github.pagehelper.PageInfo;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,7 @@ public class DealServiceImpl implements DealService {
 
   private final DealMapper dealMapper;
   private final BuildingMapper buildingMapper;
+  private final ImageListService imageListService;
 
   // 거래 전 안내
   @Override
@@ -37,24 +41,39 @@ public class DealServiceImpl implements DealService {
   @Override
   public WaitingList getAllWaitingList(String userId, String nickname) {
     List<DealWithChatRoom> deals = dealMapper.getAllWaitingList(userId);
-    PageInfo<DealWithChatRoom> pageInfo = new PageInfo<>(deals); // 페이징 정보 포함
-    return WaitingList.toDto(pageInfo, nickname);
+    return buildWaitingList(deals, nickname);
+
   }
 
   // 구매 중인 매물 조회
   @Override
   public WaitingList getPurchaseWaitingList(String userId, String nickname) {
     List<DealWithChatRoom> deals = dealMapper.getPurchaseWaitingList(userId);
-    PageInfo<DealWithChatRoom> pageInfo = new PageInfo<>(deals); // 페이징 정보 포함
-    return WaitingList.toDto(pageInfo, nickname);
+    return buildWaitingList(deals, nickname);
+
   }
 
   // 판매중인 매물 조회
   @Override
   public WaitingList getOnSaleWaitingList(String userId, String nickname) {
     List<DealWithChatRoom> deals = dealMapper.getOnSaleWaitingList(userId);
-    PageInfo<DealWithChatRoom> pageInfo = new PageInfo<>(deals); // 페이징 정보 포함
-    return WaitingList.toDto(pageInfo, nickname);
+    return buildWaitingList(deals, nickname);
+  }
+
+  // 상위 이미지 포함해서 dto 생성
+  private WaitingList buildWaitingList(List<DealWithChatRoom> deals, String nickname) {
+    PageInfo<DealWithChatRoom> pageInfo = new PageInfo<>(deals);
+
+    // image map 생성
+    Map<Long, String> imageMap = deals.stream()
+        .map(DealWithChatRoom::getBuildingId)
+        .distinct()
+        .collect(Collectors.toMap(
+            Function.identity(),
+            imageListService::representativeImage
+        ));
+
+    return WaitingList.toDto(pageInfo, nickname, imageMap);
   }
 
   // Deal 삭제 메서드
