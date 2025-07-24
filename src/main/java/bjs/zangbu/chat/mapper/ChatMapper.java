@@ -20,7 +20,7 @@ public interface ChatMapper {
     List<ChatRoom> selectChatRoomList(String userId, String type, int offset, int size);
 
     //채팅방 유무 확인(하나의 매물 + 구매자 당 하나의 채팅방이므로 중복 생성 방지용)
-    boolean existsChatRoom(Long buildingId, String buyerId);
+    boolean existsChatRoom(Long buildingId, String consumerId);
 
     //채팅방 생성
     void insertChatRoom(ChatRoom chatRoom);
