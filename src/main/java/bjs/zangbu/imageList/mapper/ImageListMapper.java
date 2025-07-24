@@ -8,5 +8,5 @@ public interface ImageListMapper {
     // 이미지 정보를 DB에 삽입하는 메서드
     void createImageList(ImageList imageList);
     // 대표 이미지 가져오는 메서드
-    void random(Long buildingId);
+    String representativeImage(Long buildingId);
 }

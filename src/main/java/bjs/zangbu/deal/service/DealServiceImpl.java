@@ -6,12 +6,11 @@ import bjs.zangbu.deal.dto.join.DealWithChatRoom;
 import bjs.zangbu.deal.dto.request.DealRequest.Status;
 import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
-import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingListElement;
 import bjs.zangbu.deal.mapper.DealMapper;
 import bjs.zangbu.deal.vo.DealEnum;
+import com.github.pagehelper.PageInfo;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -36,28 +35,25 @@ public class DealServiceImpl implements DealService {
   // 거래중인 list 모두 조회
   @Override
   public WaitingList getAllWaitingList(String userId, String nickname) {
-    List<DealWithChatRoom> deals = dealMapper.getWaitingDealsWithChatRoom(userId);
-    return WaitingList.toDto(deals, nickname);
+    List<DealWithChatRoom> deals = dealMapper.getAllWaitingList(userId);
+    PageInfo<DealWithChatRoom> pageInfo = new PageInfo<>(deals); // 페이징 정보 포함
+    return WaitingList.toDto(pageInfo, nickname);
   }
 
   // 구매 중인 매물 조회
   @Override
   public WaitingList getPurchaseWaitingList(String userId, String nickname) {
-    List<DealWithChatRoom> deals = dealMapper.getWaitingDealsWithChatRoom(userId);
-    return new WaitingList(deals.stream()
-        .filter(d -> nickname.equals(d.getConsumerNickname())) // 구매중이라면
-        .map(d -> WaitingListElement.toDto(d, nickname))
-        .collect(Collectors.toList()));
+    List<DealWithChatRoom> deals = dealMapper.getPurchaseWaitingList(userId);
+    PageInfo<DealWithChatRoom> pageInfo = new PageInfo<>(deals); // 페이징 정보 포함
+    return WaitingList.toDto(pageInfo, nickname);
   }
 
   // 판매중인 매물 조회
   @Override
   public WaitingList getOnSaleWaitingList(String userId, String nickname) {
-    List<DealWithChatRoom> deals = dealMapper.getWaitingDealsWithChatRoom(userId);
-    return new WaitingList(deals.stream()
-        .filter(d -> nickname.equals(d.getSellerNickname())) // 판매중이라면
-        .map(d -> WaitingListElement.toDto(d, nickname))
-        .collect(Collectors.toList()));
+    List<DealWithChatRoom> deals = dealMapper.getOnSaleWaitingList(userId);
+    PageInfo<DealWithChatRoom> pageInfo = new PageInfo<>(deals); // 페이징 정보 포함
+    return WaitingList.toDto(pageInfo, nickname);
   }
 
   // Deal 삭제 메서드

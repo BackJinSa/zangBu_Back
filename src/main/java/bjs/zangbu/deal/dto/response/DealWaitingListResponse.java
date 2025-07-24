@@ -1,6 +1,7 @@
 package bjs.zangbu.deal.dto.response;
 
 import bjs.zangbu.deal.dto.join.DealWithChatRoom;
+import com.github.pagehelper.PageInfo;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -57,14 +58,25 @@ public class DealWaitingListResponse {
   @AllArgsConstructor
   public static class WaitingList {
 
+    private int pageNum;     // 현재 페이지
+    private int pageSize;    // 페이지당 항목 수
+    private long total;      // 전체 항목 수
+    private int pages;       // 전체 페이지 수
+
     private List<WaitingListElement> deals; // WaitingListElement 를 갖는 리스트
 
-    public static WaitingList toDto(List<DealWithChatRoom> dtoList, String myNickname) {
-      List<WaitingListElement> elements = dtoList.stream()
-          .map(dto -> WaitingListElement.toDto(dto, myNickname))
+    public static WaitingList toDto(PageInfo<DealWithChatRoom> dtoList, String nickname) {
+      List<WaitingListElement> convertedList = dtoList.getList().stream()
+          .map(deal -> WaitingListElement.toDto(deal, nickname))
           .collect(Collectors.toList());
 
-      return new WaitingList(elements);
+      return new WaitingList(
+          dtoList.getPageNum(),
+          dtoList.getPageSize(),
+          dtoList.getTotal(),
+          dtoList.getPages(),
+          convertedList
+      );
     }
   }
 }

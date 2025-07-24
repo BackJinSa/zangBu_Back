@@ -15,4 +15,10 @@ public class ImageListServiceImpl implements ImageListService {
     public void createImageList(ImageList imageList) {
         imageListMapper.createImageList(imageList);
     }
+
+    // 대표 이미지 가져오기
+    @Override
+    public String representativeImage(Long buildingId) {
+        return imageListMapper.representativeImage(buildingId);
+    }
 }
