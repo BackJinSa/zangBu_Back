@@ -75,4 +75,34 @@
     <result property="sellerNickname" column="seller_nickname"/>
   </resultMap>
 
+<!--    표준계약서 xml 코드 -->
+    <select id="findWithType"
+            parameterType="long"
+            resultMap="DealWithSaleTypeMap">
+
+        SELECT d.deal_id,
+               d.status,
+               d.user_id,
+               d.building_id,
+               b.sale_type
+        FROM deal d
+                 JOIN building b ON b.building_id = d.building_id
+        WHERE d.deal_id = #{dealId}
+
+    </select>
+
+    <!-- 결과 매핑 -->
+    <resultMap id="DealWithSaleTypeMap"
+               type="bjs.zangbu.deal.dto.join.DealWithSaleType">
+
+        <id     property="dealId"     column="deal_id"/>
+        <result property="status"
+                column="status"
+                javaType="bjs.zangbu.deal.vo.DealEnum"/>
+        <result property="userId"     column="user_id"/>
+        <result property="buildingId" column="building_id"/>
+        <result property="saleType"
+                column="sale_type"
+                javaType="bjs.zangbu.notification.vo.SaleType"/>
+    </resultMap>
 </mapper>
