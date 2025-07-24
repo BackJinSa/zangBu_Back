@@ -1,10 +1,10 @@
 package bjs.zangbu.building.dto.response;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public class BuildingResponse {
 
@@ -122,21 +122,39 @@ public class BuildingResponse {
         private List<Filtered> filtered;
         // 다음 페이지 존재 여부 (true: 다음 페이지 있음)
         private boolean hasNext;
-    }
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Filtered {
-        // 매물 고유 ID
-        private String buildingId;
-        // 건물명/단지명
-        private String buildingName;
-        // 가격 (원 단위)
-        private Integer price;
-        // 사용자 평균 평점
-        private Integer rankAverage;
-        // 사용자가 북마크 했는지 여부
-        private boolean isBookMarked;
+
+        public static FilteredResponse toDto(List<Filtered> buildingMaps,
+                                             List<Long> bookmarkedBuildingIds,
+                                             boolean hasNext) {
+            List<Filtered> updatedList = buildingMaps.stream()
+                    .map(filtered -> new Filtered(
+                            filtered.getBuildingId(),
+                            filtered.getBuildingName(),
+                            filtered.getPrice(),
+                            filtered.getRankAverage(),
+                            bookmarkedBuildingIds.contains(filtered.getBuildingId())
+                    ))
+                    .toList();
+
+            return new FilteredResponse(updatedList, hasNext);
+        }
+
+
+        @Getter
+        @NoArgsConstructor
+        @AllArgsConstructor
+        public static class Filtered {
+            // 매물 고유 ID
+            private Long buildingId;
+            // 건물명/단지명
+            private String buildingName;
+            // 가격 (원 단위)
+            private Integer price;
+            // 사용자 평균 평점
+            private Float rankAverage;
+            // 사용자가 북마크 했는지 여부
+            private boolean isBookMarked;
+        }
     }
 }
