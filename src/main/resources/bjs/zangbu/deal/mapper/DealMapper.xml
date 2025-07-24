@@ -63,9 +63,9 @@
            JOIN building b ON d.building_id = b.building_id
            JOIN complex_list cl ON d.complex_id = cl.complex_id
     WHERE d.member_id = #{userId}
-      AND d.status != 'BEFORE_TRANSACTION' AND d.status = 'CLOSE_DEAL'
-
-
+      AND d.status != 'BEFORE_TRANSACTION'
+      AND d.status != 'CLOSE_DEAL'
+    ORDER BY d.created_at DESC
   </select>
 
   <!-- Deal.status 가져오기 -->
@@ -101,10 +101,9 @@
            JOIN building b ON d.building_id = b.building_id
            JOIN complex_list cl ON d.complex_id = cl.complex_id
     WHERE c.consumer_nickname = #{nickname}
-      AND d.member_id = #{userId}
-      AND d.status != 'BEFORE_TRANSACTION' AND d.status = 'CLOSE_DEAL'
-
-
+      AND d.status != 'BEFORE_TRANSACTION'
+      AND d.status != 'CLOSE_DEAL'
+    ORDER BY d.created_at DESC
   </select>
 
   <!-- 판매중인 list 모두 조회-->
@@ -132,9 +131,11 @@
            JOIN chat_room c ON d.chat_room_id = c.chat_room_id
            JOIN building b ON d.building_id = b.building_id
            JOIN complex_list cl ON d.complex_id = cl.complex_id
-    WHERE c.consumer_nickname = #{nickname}
+    WHERE c.seller_nickname = #{nickname}
       AND d.member_id = #{userId}
-      AND d.status != 'BEFORE_TRANSACTION' AND d.status = 'CLOSE_DEAL'
+      AND d.status != 'BEFORE_TRANSACTION'
+      AND d.status != 'CLOSE_DEAL'
+    ORDER BY d.created_at DESC
 
   </select>
 
