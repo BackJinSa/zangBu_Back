@@ -30,7 +30,7 @@ public class AuthResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AuthVerify{
-        private String resAuthenticity; // 진위확인
-        private String resAuthenticityDesc; // 진위확인 내용
+        private String resAuthenticity; // 진위확인 결과 (ex: "Y", "N")
+        private String resAuthenticityDesc; // 진위확인 내용 (ex: "성공", "주민번호 불일치")
     }
 }

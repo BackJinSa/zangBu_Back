@@ -1,4 +1,4 @@
 package bjs.zangbu.member.service;
 
-public interface UserServiceImpl {
+public interface MemberServiceImpl {
 }
