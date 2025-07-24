@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 
 public class MemberResponse {
 
-    //---
-
     // /user/mypage/edit Response
     @Getter
     @NoArgsConstructor

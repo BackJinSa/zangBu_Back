@@ -6,7 +6,7 @@ import bjs.zangbu.security.account.vo.Member;
 import java.util.List;
 
 public interface MemberMapper {
-    //마이페이지-------------------------------------------
+    //마이페이지--------------------------------------------------------------------
     //1. 회원검색 - 마이페이지, 프로필 정보 보여줄 때
     Member get(String memberId);
 
@@ -20,7 +20,7 @@ public interface MemberMapper {
     //4. member id 받고 닉네임 가져오기
     String getNicknameByMemberId(String memberId);
 
-    //회원 정보 수정------------------------------------------
+    //회원 정보 수정----------------------------------------------------------------------
     //1. 비밀번호 변경
     //1-1. 기존 비밀번호 가져오기
     String findPasswordByMemberId(String memberId);

@@ -14,20 +14,22 @@
     <!--새로운 닉네임으로 변경-->
     <update id="updateNickname">
         update member
-        set nicename = #{newNickname}
+        set nickname = #{newNickname}
         where member_id = #{memberId}
     </update>
 
     <!--bookmark 삭제-->
     <delete id="deleteBookMark">
-        delete from bookmark
+        delete
+        from bookmark
         where member_id = #{memberId}
           and building_id = #{buildingId}
     </delete>
 
     <!--회원 정보 삭제-->
     <delete id="deleteMemberId">
-        delete from member
+        delete
+        from member
         where member_id = #{memberId}
     </delete>
 
@@ -52,9 +54,51 @@
         where nickname = #{nickname}
     </select>
 
-    <!--id에 따른 북마크 매물 가져오기-->
-    <select id="getBookmarksByMemberId" resultType="bjs.zangbu.member.dto.join.BookmarkBuilding">
+    <!--id로 북마크한 매물 가져오기-->
+    <!--/*북마크된 매물 리스트를 조회하면서, 각 매물의 가장 최신 이미지 한 장만 가져오기*/-->
+    <select id="getBookmarksByMemberId" resultMap="BookmarksByMemberIdMap">
+        select b.bookmark_id,
+               b.building_id,
+               b.complex_id,
+               bd.seller_nickname,
+               bd.sale_type,
+               bd.price,
+               bd.deposit,
+               bd.bookmark_count,
+               bd.created_at,
+               bd.building_name,
+               bd.seller_type,
+               bd.property_type,
+               bd.move_date,
+               bd.info_one_line,
+               bd.info_building,
+               img.image_url,
+               bd.contact_name,
+               bd.contact_phone,
+               bd.facility
+        FROM bookmark b
+                 /*북마크된 매물 id와 전체 매물 id 기준으로 조인 -> 북마크된 매물의 상세 정보를 가져오기*/
+                 INNER JOIN building bd ON b.building_id = bd.building_id
 
+                /*building과 가장 최신 이미지 정보를 LEFT JOIN*/
+                /*이미지 없더라도 누락되지 않게 left join*/
+                 LEFT JOIN (
+                    /*building_id별 최신 created_at 시간과 일치하는 이미지 행만 필터링 -> 1개만 가져옴*/
+                    SELECT il1.building_id, il1.image_url
+                    FROM image_list il1
+                        INNER JOIN (
+                        /*각 building_id(매물)마다 가장 최근에 등록된 이미지 시간(MAX(created_at)) 가져오기*/
+                        SELECT building_id, MAX(created_at) AS max_created_at
+                        FROM image_list
+                        GROUP BY building_id
+                        ) il2
+                        ON il1.building_id = il2.building_id
+                        AND il1.created_at = il2.max_created_at
+                    ) img ON bd.building_id = img.building_id
+        /*로그인한 사용자가 북마크한 매물만 가져옴*/
+        WHERE b.member_id = #{memberId}
+        /*매물 생성일 최신순으로*/
+        ORDER BY bd.created_at DESC
     </select>
 
     <!--현재 닉네임 가져오기-->
@@ -64,5 +108,27 @@
         where member_id = #{memberId}
     </select>
 
+    <!--  getBookmarksByMemberId join 한 결과값 -->
+    <resultMap id="BookmarksByMemberIdMap" type="bjs.zangbu.member.dto.join.BookmarkBuilding">
+        <id property="bookmarkId" column="bookmark_id"/>
+        <result property="buildingId" column="building_id"/>
+        <result property="complexId" column="complex_id"/>
+        <result property="sellerNickname" column="seller_nickname"/>
+        <result property="saleType" column="sale_type"/>
+        <result property="price" column="price"/>
+        <result property="deposit" column="deposit"/>
+        <result property="bookmarkCount" column="bookmark_count"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="buildingName" column="building_name"/>
+        <result property="sellerType" column="seller_type"/>
+        <result property="propertyType" column="property_type"/>
+        <result property="moveDate" column="move_date"/>
+        <result property="infoOneLine" column="info_one_line"/>
+        <result property="infoBuilding" column="info_building"/>
+        <result property="imageUrl" column="image_url"/>
+        <result property="contactName" column="contact_name"/>
+        <result property="contactPhone" column="contact_phone"/>
+        <result property="facility" column="facility"/>
+    </resultMap>
 
 </mapper>
