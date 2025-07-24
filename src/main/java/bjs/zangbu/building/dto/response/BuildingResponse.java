@@ -1,10 +1,10 @@
 package bjs.zangbu.building.dto.response;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public class BuildingResponse {
 
@@ -122,21 +122,43 @@ public class BuildingResponse {
         private List<Filtered> filtered;
         // 다음 페이지 존재 여부 (true: 다음 페이지 있음)
         private boolean hasNext;
-    }
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class Filtered {
-        // 매물 고유 ID
-        private String buildingId;
-        // 건물명/단지명
-        private String buildingName;
-        // 가격 (원 단위)
-        private Integer price;
-        // 사용자 평균 평점
-        private Integer rankAverage;
-        // 사용자가 북마크 했는지 여부
-        private boolean isBookMarked;
+        public static FilteredResponse toDto(List<Map<String, Object>> buildingMaps,
+                                             List<Long> bookmarkedBuildingIds,
+                                             boolean hasNext) {
+            // Map 리스트를 Filtered DTO 리스트로 변환
+            List<Filtered> dtoList = buildingMaps.stream()
+                    .map(map -> {
+                        // Map에서 각각의 필드 값을 꺼내고 타입 변환
+                        Long buildingId = ((Long) map.get("building_id")).longValue();
+                        String name = (String) map.get("building_name");
+                        Integer price = ((Integer) map.get("price")).intValue();
+                        Float rank = ((Float) map.get("rank_average")).floatValue();
+                        // 해당 매물이 찜 목록에 포함되어 있는지 확인
+                        boolean isBookmarked = bookmarkedBuildingIds.contains(buildingId);
+                        // Filtered DTO 객체 생성 및 반환
+                        return new Filtered(buildingId, name, price, rank, isBookmarked);
+                    })
+                    .toList(); // 스트림 결과를 리스트로 변환
+
+            // Filtered DTO 리스트와 다음 페이지 존재 여부를 담아 FilteredResponse 반환
+            return new FilteredResponse(dtoList, hasNext);
+        }
+
+        @Getter
+        @NoArgsConstructor
+        @AllArgsConstructor
+        public static class Filtered {
+            // 매물 고유 ID
+            private Long buildingId;
+            // 건물명/단지명
+            private String buildingName;
+            // 가격 (원 단위)
+            private Integer price;
+            // 사용자 평균 평점
+            private Float rankAverage;
+            // 사용자가 북마크 했는지 여부
+            private boolean isBookMarked;
+        }
     }
 }

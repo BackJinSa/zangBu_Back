@@ -38,8 +38,6 @@ public class Building {
     private String infoOneline;
     // 건물 상세 설명
     private String infoBuilding;
-    // 대표 이미지 URL
-    private String imageUrl;
     // 연락처 담당자 이름
     private String contactName;
     // 연락처 전화번호
@@ -48,9 +46,8 @@ public class Building {
     private String facility;
     // 외래키
     // 유저 식별자(UUID)
-    private String userId;
-    // 주소 식별자(BIGINT)
-    private Long addressId;
+    private String memberId;
     // 단지 식별자(BIGINT)
     private Long complexId;
+
 }
