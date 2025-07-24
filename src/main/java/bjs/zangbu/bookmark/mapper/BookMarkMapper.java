@@ -22,6 +22,10 @@ public interface BookMarkMapper {
 
     // 특정 회원이 특정 매물 찜을 취소함 (찜 삭제)
     void deleteBookMark(String memberId, Long buildingId);
+
     // 특정 회원이 찜한 모든 매물 ID 목록 조회
     List<Long> selectBookmarkedBuildingIdsByMember(String memberId);
+
+    // building_id 매물을 찜한 유저 ID 조회
+    List<String> selectUserIdsByBuildingId(Long buildingId);
 }
