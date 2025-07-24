@@ -19,7 +19,8 @@
         SELECT chat_message_id, chat_room_id, user_id, message, created_at
         FROM chat_message
         WHERE chat_room_id = #{chatRoomId}
-        <!-- lastMessageId가 있으면 그 Id보다 작은 메시지들만 limit개씩 가져오기 : 페이징 -->
+        <!-- lastMessageId가 있으면 그 Id보다 작은 메시지들만 limit개씩 가져오기
+        더보기 누르기 or 스크롤 시 limit개씩 더보기 -->
         <if test="lastMessageId != null">
             AND chat_message_id &lt; #{lastMessageId}
         </if>
@@ -29,23 +30,17 @@
 
     <!-- roomId를 기준으로 채팅방 상세 정보 가져오기 -->
     <select id="selectChatRoomById" resultType="bjs.zangbu.chat.vo.ChatRoom">
-        SELECT chat_room_id, building_id, member_id,
-               seller_nickname, consumer_nickname
+        SELECT chat_room_id, building_id, member_id, seller_nickname, consumer_nickname
         FROM chat_room
         WHERE chat_room_id = #{chatRoomId}
     </select>
 
-
     <!-- 사용자의 채팅방 목록 조회 -->
     <select id="selectChatRoomList" resultType="bjs.zangbu.chat.vo.ChatRoom">
-        SELECT chat_room_id, building_id, member_id,
-               seller_nickname, consumer_nickname
+        SELECT chat_room_id, building_id, member_id, seller_nickname, consumer_nickname
         FROM chat_room
         WHERE member_id = #{userId}
     </select>
-
-
-
 
     <!-- 채팅방 유무 확인(중복 생성 방지) -->
     <select id="existsChatRoom" resultType="boolean">
