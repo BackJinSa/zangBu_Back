@@ -59,4 +59,10 @@
         WHERE member_id = #{memberId}
     </select>
 
+    <!-- building_id 매물을 찜한 유저 ID 조회 -->
+    <select id="selectUserIdsByBuildingId" resultType="string">
+        SELECT member_id
+        FROM bookmark
+        WHERE building_id = #{buildingId}
+    </select>
 </mapper>
