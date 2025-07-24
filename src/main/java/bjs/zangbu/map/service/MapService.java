@@ -1,7 +1,9 @@
 package bjs.zangbu.map.service;
 
+import bjs.zangbu.map.dto.request.MapCategoryRequest;
 import bjs.zangbu.map.dto.request.MapListRequest;
 import bjs.zangbu.map.dto.request.MapSearchRequest;
+import bjs.zangbu.map.dto.response.MapCategoryResponse;
 import bjs.zangbu.map.dto.response.MapListResponse;
 import bjs.zangbu.map.dto.response.MapSearchResponse;
 
@@ -23,4 +25,5 @@ public interface MapService {
 
     List<MapListResponse> locate(List<MapListRequest> requests);
     List<MapSearchResponse> search(MapSearchRequest req);
+    List<MapCategoryResponse> category(MapCategoryRequest req);
 }
