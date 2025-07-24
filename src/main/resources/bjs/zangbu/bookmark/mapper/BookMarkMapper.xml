@@ -4,47 +4,59 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="bjs.zangbu.bookmark.mapper.BookMarkMapper">
-    <!-- bookmark 생성 -->
+
+    <!-- 회원이 특정 매물을 찜했을 때 bookmark 테이블에 기록 -->
     <insert id="insertBookMark">
         INSERT INTO bookmark (user_id, building_id)
         VALUES (#{userId}, #{buildingId})
     </insert>
-    <!-- bookCount 증가 -->
+
+    <!-- 건물의 찜 개수(bookmark_count) 1 증가 -->
     <update id="incrementBookmarkCount">
         UPDATE building
         SET bookmark_count = IFNULL(bookmark_count, 0) + 1
         WHERE building_id = #{buildingId}
     </update>
-    <!-- bookCount 감소 -->
+
+    <!-- 건물의 찜 개수(bookmark_count) 1 감소 -->
     <update id="decrementBookmarkCount">
         UPDATE building
         SET bookmark_count = IFNULL(bookmark_count, 0) - 1
         WHERE building_id = #{buildingId}
     </update>
+
+    <!-- bookmark_id 기준으로 가격을 업데이트 -->
     <update id="updateBookmarkPrice">
         UPDATE bookmark
         SET price = #{price}
         WHERE bookmark_id = #{bookmarkId}
     </update>
-    <!-- bookmark 삭제 -->
+
+    <!-- 회원이 찜한 특정 매물을 삭제 -->
     <delete id="deleteBookMark">
         DELETE FROM bookmark
         WHERE user_id = #{userId}
           AND building_id = #{buildingId}
     </delete>
+
+    <!-- 전체 bookmark 목록 조회 -->
     <select id="selectAllBookmarks" resultType="bjs.zangbu.bookmark.vo.Bookmark">
         SELECT bookmark_id, user_id, building_id, price
         FROM bookmark
     </select>
+
+    <!-- 특정 매물을 찜한 회원(user_id) 목록 조회 -->
     <select id="selectUserId" resultType="java.lang.String">
         SELECT user_id
         FROM bookmark
         WHERE building_id = #{buildingId}
     </select>
-    <!-- 회원이 북마크한 모든 건물 ID 목록을 조회하는 쿼리 -->
-    <select id="selectBookmarkedBuildingIdsByMember" resultType="long" parameterType="string">
+
+    <!-- 회원이 찜한 모든 건물(building_id) 목록 조회 -->
+    <select id="selectBookmarkedBuildingIdsByMember" resultType="long" parameterType="java.lang.String">
         SELECT building_id
         FROM bookmark
         WHERE member_id = #{memberId}
     </select>
+
 </mapper>

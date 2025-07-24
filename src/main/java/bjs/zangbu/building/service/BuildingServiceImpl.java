@@ -2,6 +2,7 @@ package bjs.zangbu.building.service;
 import bjs.zangbu.bookmark.mapper.BookMarkMapper;
 import bjs.zangbu.building.dto.request.BuildingRequest.SaleRegistrationRequest.ComplexDetails;
 import bjs.zangbu.building.dto.request.BuildingRequest.SaleRegistrationRequest.ImageDetails;
+import bjs.zangbu.building.dto.response.BuildingResponse.FilteredResponse.Filtered;
 import bjs.zangbu.building.filter.BuildingFilter;
 import bjs.zangbu.building.vo.Building;
 import bjs.zangbu.codef.converter.CodefConverter;
@@ -21,6 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -87,38 +89,39 @@ public class BuildingServiceImpl implements BuildingService {
     }
 
     //  매물 목록 조회 (필터링 및 페이징)
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public FilteredResponse getBuildingList(String buildingName, String saleType, Long startPrice, Long endPrice, String propertyType, int page, int size, String memberId) {
-        int offset = page * size; // 페이징 offset 계산
+        int offset = page * size;
 
-        // 필터 조건에 맞는 매물 목록 조회 (맵 리스트 형태)
-        List<Map<String, Object>> buildingMaps = buildingMapper.selectFilteredBuildings(
+        // 1) 매퍼에서 바로 DTO 리스트 받기
+        List<Filtered> filteredList = buildingMapper.selectFilteredBuildings(
                 buildingName, saleType, startPrice, endPrice, propertyType, offset, size);
 
-        // 다음 페이지 존재 여부 판단 (조회 결과가 요청 사이즈와 같으면 다음 페이지 있음)
-        boolean hasNext = buildingMaps.size() == size;
+        // 2) 다음 페이지 여부
+        boolean hasNext = filteredList.size() == size;
 
-        // 회원이 로그인 되어 있으면 찜한 매물 ID 리스트 조회
-        List<Long> bookmarkedBuildingIds = List.of();
+        // 3) 로그인 회원 찜한 매물 ID 목록 조회
+        List<Long> bookmarkedBuildingIds;
         if (memberId != null && !memberId.isBlank()) {
             bookmarkedBuildingIds = bookMarkMapper.selectBookmarkedBuildingIdsByMember(memberId);
+        } else {
+            bookmarkedBuildingIds = List.of();
         }
 
-        // Map 데이터를 Filtered DTO 리스트로 변환
-        List<FilteredResponse.Filtered> filteredList = new ArrayList<>();
-        for (Map<String, Object> map : buildingMaps) {
-            Long buildingId = ((Long) map.get("building_id")).longValue();
-            String name = (String) map.get("building_name");
-            Integer price = ((Integer) map.get("price")).intValue();
-            Float rank = ((Float) map.get("rank_average")).floatValue();
-            boolean isBookmarked = bookmarkedBuildingIds.contains(buildingId);
+        // 4) 찜 여부 업데이트: 새 객체 생성
+        List<Filtered> updatedList = filteredList.stream()
+                .map(f -> new Filtered(
+                        f.getBuildingId(),
+                        f.getBuildingName(),
+                        f.getPrice(),
+                        f.getRankAverage(),
+                        bookmarkedBuildingIds.contains(f.getBuildingId())
+                ))
+                .collect(Collectors.toList());
 
-            filteredList.add(new FilteredResponse.Filtered(buildingId, name, price, rank, isBookmarked));
-        }
-
-        // DTO 변환하여 반환
-        return FilteredResponse.toDto(buildingMaps, bookmarkedBuildingIds, hasNext);
+        // 5) 응답 DTO로 반환
+        return new FilteredResponse(updatedList, hasNext);
     }
 
     // 매물 삭제 서비스

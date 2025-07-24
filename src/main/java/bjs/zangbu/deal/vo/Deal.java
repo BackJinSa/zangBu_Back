@@ -16,6 +16,7 @@ public class Deal {
   // 거래 상태
   private DealEnum status;
 
+  // 생성 날짜
   private LocalDateTime createdAt;
 
   // ==== foreign key
@@ -32,6 +33,4 @@ public class Deal {
   // 단지 식별 id
   private Long complexId;
 
-  // 주소 식별 id
-  private Long addressId;
 }

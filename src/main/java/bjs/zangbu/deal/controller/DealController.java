@@ -5,10 +5,8 @@ import bjs.zangbu.deal.dto.request.DealRequest.IntentRequest;
 import bjs.zangbu.deal.dto.request.DealRequest.Status;
 import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
-import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingListElement;
 import bjs.zangbu.deal.service.DealService;
-import bjs.zangbu.user.service.UserService;
-import java.util.List;
+import bjs.zangbu.member.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -83,8 +81,9 @@ public class DealController {
   ) {
     try {
       String userId = userDetails.getUsername();
+      String nickname = userService.getNickname(userId); // 닉네임 추출
 
-      List<WaitingListElement> response = dealService.getPurchaseWaitingList(userId);
+      WaitingList response = dealService.getPurchaseWaitingList(userId, nickname);
       return ResponseEntity.status(HttpStatus.OK).body(response);
 
     } catch (Exception e) {
@@ -102,7 +101,9 @@ public class DealController {
   ) {
     try {
       String userId = userDetails.getUsername();
-      List<WaitingListElement> response = dealService.getOnSaleWaitingList(userId);
+      String nickname = userService.getNickname(userId); // 닉네임 추출
+
+      WaitingList response = dealService.getOnSaleWaitingList(userId, nickname);
       return ResponseEntity.status(HttpStatus.OK).body(response);
 
     } catch (Exception e) {
@@ -191,7 +192,17 @@ public class DealController {
    */
   @PatchMapping("/status")
   public ResponseEntity<?> changeDealStatus(@RequestBody Status dto) {
-    return ResponseEntity.noContent().build();
+    try {
+      // 상태 patch
+      if (dealService.patchStatus(dto)) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("상태변경에 성공했습니다.");
+      } else {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("상태변경에 실패했습니다.");
+      }
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("예기치 못한 문제가 발생했습니다.");
+    }
+
   }
 
 

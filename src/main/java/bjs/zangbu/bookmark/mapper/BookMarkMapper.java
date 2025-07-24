@@ -17,9 +17,11 @@ public interface BookMarkMapper {
     // bookmark_id 기준 가격 업데이트
     int updateBookmarkPrice(Long bookmarkId, int newPrice);
 
+    // 특정 회원이 특정 매물을 찜함 (찜 추가)
     void insertBookMark(String memberId, Long buildingId);
 
+    // 특정 회원이 특정 매물 찜을 취소함 (찜 삭제)
     void deleteBookMark(String memberId, Long buildingId);
-
+    // 특정 회원이 찜한 모든 매물 ID 목록 조회
     List<Long> selectBookmarkedBuildingIdsByMember(String memberId);
 }
