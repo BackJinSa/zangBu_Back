@@ -21,7 +21,7 @@ public class DealRequest {
   @AllArgsConstructor
   public static class Status {
 
-    private String dealId;
+    private Long dealId;
     private String status;
   }
 }

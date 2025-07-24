@@ -2,13 +2,16 @@ package bjs.zangbu.deal.service;
 
 import bjs.zangbu.building.mapper.BuildingMapper;
 import bjs.zangbu.building.vo.Building;
+import bjs.zangbu.deal.dto.join.DealWithChatRoom;
+import bjs.zangbu.deal.dto.request.DealRequest.Status;
 import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingListElement;
-import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingListPurchase;
 import bjs.zangbu.deal.mapper.DealMapper;
-import bjs.zangbu.deal.vo.Deal;
+import bjs.zangbu.deal.vo.DealEnum;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -21,39 +24,89 @@ public class DealServiceImpl implements DealService {
   private final DealMapper dealMapper;
   private final BuildingMapper buildingMapper;
 
+  // 거래 전 안내
   @Override
   public Notice getNotice(Long buildingId) {
-    // buildMapper에서 Building 조회
+    // buildMapper 에서 Building 조회
     Building buildVO = buildingMapper.getBuildingById(buildingId);
 
     return Notice.toDto(buildingId, buildVO);
   }
 
+  // 거래중인 list 모두 조회
   @Override
   public WaitingList getAllWaitingList(String userId, String nickname) {
     List<DealWithChatRoom> deals = dealMapper.getWaitingDealsWithChatRoom(userId);
     return WaitingList.toDto(deals, nickname);
   }
 
+  // 구매 중인 매물 조회
   @Override
-  public WaitingListPurchase getPurchaseWaitingList(String userId) {
-    List<Deal> dealVOList = dealMapper.getAllDealByUserId(userId);
-    WaitingListPurchase response = WaitingListPurchase.toDto(dealVOList);
-    return response;
+  public WaitingList getPurchaseWaitingList(String userId, String nickname) {
+    List<DealWithChatRoom> deals = dealMapper.getWaitingDealsWithChatRoom(userId);
+    return new WaitingList(deals.stream()
+        .filter(d -> nickname.equals(d.getConsumerNickname())) // 구매중이라면
+        .map(d -> WaitingListElement.toDto(d, nickname))
+        .collect(Collectors.toList()));
   }
 
+  // 판매중인 매물 조회
   @Override
-  public List<WaitingListElement> getOnSaleWaitingList(String userId) {
-    return List.of();
+  public WaitingList getOnSaleWaitingList(String userId, String nickname) {
+    List<DealWithChatRoom> deals = dealMapper.getWaitingDealsWithChatRoom(userId);
+    return new WaitingList(deals.stream()
+        .filter(d -> nickname.equals(d.getSellerNickname())) // 판매중이라면
+        .map(d -> WaitingListElement.toDto(d, nickname))
+        .collect(Collectors.toList()));
   }
 
+  // Deal 삭제 메서드
   @Override
   public boolean deleteDealById(Long dealId) {
-    return false;
+    return dealMapper.deleteDealById(dealId) == 1;
   }
 
-  public boolean isDealer(String userNickname, String nickname) {
-    return userNickname.equals(nickname);
+  // 상태 변환 메서드
+  @Override
+  public boolean patchStatus(Status status) {
+    // 이전 상태
+    String from = status.getStatus();
+    // 바꿀 상태
+    String to = dealMapper.getStatusByDealId(status.getDealId());
+    // 상태 FLOW 가 맞는 지 체크
+    if (checkStatus(from, to)) {
+      // status PATCH
+      return dealMapper.patchStatus(status) == 1;
+    } else {
+      return false;
+    }
   }
+
+  // 이전 상태에서 다음 상태 이어지는 게 맞는지 체크
+  /*
+     [거래 전] -> 채팅 시작 ->
+     [판매자 수락 전] -> 판매자 수락 ->
+     [구매자 수락 전] -> 구매자 수락 ->
+     [거래 중] -> 거래 완료 ->
+     [거래 성사]
+   */
+  private static final Map<DealEnum, DealEnum> validTransitions = Map.of(
+      DealEnum.BEFORE_TRANSACTION, DealEnum.BEFORE_OWNER,
+      DealEnum.BEFORE_OWNER, DealEnum.BEFORE_CONSUMER,
+      DealEnum.BEFORE_CONSUMER, DealEnum.MIDDLE_DEAL,
+      DealEnum.MIDDLE_DEAL, DealEnum.CLOSE_DEAL
+  );
+
+  private boolean checkStatus(String from, String to) {
+    try {
+      DealEnum fromEnum = DealEnum.valueOf(from);
+      DealEnum toEnum = DealEnum.valueOf(to);
+      // FLOW 가 맞는 지 체크
+      return validTransitions.getOrDefault(fromEnum, null) == toEnum;
+    } catch (IllegalArgumentException | NullPointerException e) {
+      return false;
+    }
+  }
+
 
 }

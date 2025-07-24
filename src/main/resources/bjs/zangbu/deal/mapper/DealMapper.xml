@@ -5,6 +5,21 @@
 
 <mapper namespace="bjs.zangbu.deal.mapper.DealMapper">
 
+  <!-- Deal.status 업데이트 -->
+  <update id="patchStatus" parameterType="bjs.zangbu.deal.dto.request.DealRequest$Status">
+    UPDATE deal
+    SET status = #{status}
+    WHERE deal_id = #{dealId}
+  </update>
+
+  <!-- Deal 삭제 -->
+  <delete id="deleteDealById" parameterType="java.lang.Long">
+    DELETE
+    FROM deal
+    WHERE deal_id = #{dealId}
+  </delete>
+
+  <!-- 거래중인 list 모두 조회 -->
   <select id="getWaitingDealsWithChatRoom" resultMap="DealWithChatRoomMap">
     SELECT d.deal_id,
            d.chat_room_id,
@@ -23,17 +38,25 @@
 
            c.consumer_nickname,
            c.seller_nickname
-
+--     ChatRoom, Building, Complex join
     FROM deal d
            JOIN chat_room c ON d.chat_room_id = c.chat_room_id
            JOIN building b ON d.building_id = b.building_id
            JOIN complex_list cl ON d.complex_id = cl.complex_id
     WHERE d.member_id = #{userId}
+      AND d.status != 'BEFORE_TRANSACTION'
 
 
   </select>
-  <select id="getAllDealByUserId" resultType="bjs.zangbu.deal.vo.Deal"></select>
 
+  <!-- Deal.status 가져오기 -->
+  <select id="getStatusByDealId" resultType="java.lang.String">
+    SELECT status
+    FROM deal
+    WHERE deal_id = #{dealId}
+  </select>
+
+  <!-- getWaitingDealsWithChatRoom join 한 결과값 -->
   <resultMap id="DealWithChatRoomMap" type="bjs.zangbu.deal.dto.join.DealWithChatRoom">
     <id property="dealId" column="deal_id"/>
     <result property="chatRoomId" column="chat_room_id"/>
