@@ -1,5 +1,9 @@
 package bjs.zangbu.building.mapper;
 
+import bjs.zangbu.building.dto.response.BuildingResponse;
+import bjs.zangbu.building.dto.response.BuildingResponse.FilteredResponse.Filtered;
+import bjs.zangbu.building.dto.response.MainResponse;
+import bjs.zangbu.building.dto.response.MainResponse.BuildingInfo;
 import bjs.zangbu.building.vo.Building;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -24,7 +28,7 @@ public interface BuildingMapper {
     // 매물 삭제
     void deleteBuilding(Long buildingId);
     // 필터링된 매물 목록 조회 (평점 포함)
-    List<Map<String, Object>> selectFilteredBuildings(
+    List<Filtered> selectFilteredBuildings(
             @Param("buildingName") String buildingName,
             @Param("saleType") String saleType,
             @Param("startPrice") Long startPrice,
@@ -41,4 +45,14 @@ public interface BuildingMapper {
             @Param("endPrice") Long endPrice,
             @Param("propertyType") String propertyType
     );
+
+    // 리뷰 많은 매물 Top 3
+    List<BuildingInfo> selectTopReviewedBuildings(@Param("memberId") String memberId);
+
+    // 찜 많은 매물 Top 3
+    List<BuildingInfo> selectTopLikedBuildings(@Param("memberId") String memberId);
+
+    // 신규 등록 매물 Top 3
+    List<BuildingInfo> selectNewRooms(@Param("memberId") String memberId);
+
 }

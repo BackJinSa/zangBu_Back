@@ -123,27 +123,23 @@ public class BuildingResponse {
         // 다음 페이지 존재 여부 (true: 다음 페이지 있음)
         private boolean hasNext;
 
-        public static FilteredResponse toDto(List<Map<String, Object>> buildingMaps,
+
+        public static FilteredResponse toDto(List<Filtered> buildingMaps,
                                              List<Long> bookmarkedBuildingIds,
                                              boolean hasNext) {
-            // Map 리스트를 Filtered DTO 리스트로 변환
-            List<Filtered> dtoList = buildingMaps.stream()
-                    .map(map -> {
-                        // Map에서 각각의 필드 값을 꺼내고 타입 변환
-                        Long buildingId = ((Long) map.get("building_id")).longValue();
-                        String name = (String) map.get("building_name");
-                        Integer price = ((Integer) map.get("price")).intValue();
-                        Float rank = ((Float) map.get("rank_average")).floatValue();
-                        // 해당 매물이 찜 목록에 포함되어 있는지 확인
-                        boolean isBookmarked = bookmarkedBuildingIds.contains(buildingId);
-                        // Filtered DTO 객체 생성 및 반환
-                        return new Filtered(buildingId, name, price, rank, isBookmarked);
-                    })
-                    .toList(); // 스트림 결과를 리스트로 변환
+            List<Filtered> updatedList = buildingMaps.stream()
+                    .map(filtered -> new Filtered(
+                            filtered.getBuildingId(),
+                            filtered.getBuildingName(),
+                            filtered.getPrice(),
+                            filtered.getRankAverage(),
+                            bookmarkedBuildingIds.contains(filtered.getBuildingId())
+                    ))
+                    .toList();
 
-            // Filtered DTO 리스트와 다음 페이지 존재 여부를 담아 FilteredResponse 반환
-            return new FilteredResponse(dtoList, hasNext);
+            return new FilteredResponse(updatedList, hasNext);
         }
+
 
         @Getter
         @NoArgsConstructor
