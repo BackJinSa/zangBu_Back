@@ -8,16 +8,16 @@ public interface NotificationMapper {
     // ====================== API 전용 ======================
 
     // 전체 알림 조회
-    List<Notification> getAllNotifications(String userId);
+    List<Notification> selectAllByMemberId(String memberId);
 
     // 알림 읽음 처리
-    int updateIsRead(String userId, Long notificationId);
+    int updateIsRead(String memberId, Long notificationId);
 
     // 전체 알림 읽음 처리
-    int updateAllIsRead(String userId);
+    int updateAllIsRead(String memberId);
 
     // 알림 삭제
-    int removeNotification(String userId, Long notificationId);
+    int removeNotification(String memberId, Long notificationId);
 
     // ====================== 트리거 전용 ===========================
 

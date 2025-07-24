@@ -44,11 +44,11 @@ public class ChatResponse {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class EnterChatRoomResponse {
-        //이미 존재하는 채팅방의 상세정보를 응답할 때 사용
+    public static class ChatRoomDetailResponse {
+        //채팅방의 상세정보를 응답할 때 사용
         private String chatRoomId;         //채팅방 id
         private Long buildingId;           //매물 id
-        private String buyerId;            //구매자 id
+        private String userId;            //사용자 id
         private String sellerNickname;     //판매자 닉네임
         private LocalDateTime createdAt;   //메시지 생성 시각
         private String info;             //결과 메시지
@@ -67,8 +67,7 @@ public class ChatResponse {
         private String buildingName;    //매물 이름
         private String lastMessage;     //해당 채팅방의 마지막 메시지
         private String lastMessageTime;     //해당 채팅방의 마시막 메시지 보낸 시각
-        private String buyerNickname;       //구매자 닉네임
-        private String sellerNickname;      //판매자 닉네임
+        private String otherUserNickname;       //대화 상대방 닉네임
         private String status;              //거래 상태
         private String sellerType;          //판매자 타입 : 집주인 or 세입자
         private boolean hasNext;            //페이지네이션 다음 여부
