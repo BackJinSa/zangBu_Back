@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 public class NotificationResponse {
 
@@ -18,10 +21,23 @@ public class NotificationResponse {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class All {
+    public static class NotificationAll {
         private int totalCount; // 전체 알림 개수
+
+        // notificationElement를 갖는 리스트
         private List<NotificationElement> notifications;
-        private boolean hasNext; // 다음 페이지가 존재하는지 확인
+
+        public static NotificationAll toDto(List<Notification> notifications) {
+            List<NotificationElement> result = notifications.stream()
+                    // Notification -> from(Notification) -> NotificationElement
+                    .map(notification -> NotificationElement.toDto(notification))
+                    .collect(Collectors.toList());
+
+            return new NotificationAll(
+                    result.size(),
+                    result
+            );
+        }
     }
 
 
@@ -45,7 +61,7 @@ public class NotificationResponse {
         private int rank;                 // 알림 등록한 찜한 매물의 리뷰 평점 ex) 2
 
         // VO → DTO 변환 (프론트에 보내줄 필요한 데이터만 추출해서 담아줌)
-        public static NotificationElement from(Notification vo) {
+        public static NotificationElement toDto(Notification vo) {
             return new NotificationElement(
                     vo.getNotificationId(), // 알림 식별 id
                     generateTitle(vo), // 알림의 제목을 가공해줌 generateTitle 메서드 호출
@@ -57,7 +73,7 @@ public class NotificationResponse {
                     vo.getAddress(), // 알림 등록한 찜한 매물의 주소
                     vo.getRank() // 알림 등록한 찜한 매물의 리뷰
             );
-        } // NotificationElement
+        } // toDto
 
         // 알림의 제목을 생성해주는 메서드
         private static String generateTitle(Notification vo) {

@@ -40,24 +40,13 @@ public class NotificationServiceImpl implements NotificationService {
     // [API] 전체 알림 조회(DB select)
     // 페이지네이션 구현 예정..
     @Override
-    public NotificationResponse.All getAllNotifications(String memberId) {
+    public NotificationResponse.NotificationAll getAllNotifications(String memberId) {
         try {
             // 1. 알림 vo 리스트 조회 (Notification 객체들)
             List<Notification> notifications = notificationMapper.selectAllByMemberId(memberId);
 
             // 2. Notification -> NotificationElement로 가공 -> 리스트로 다시 변환
-            List<NotificationResponse.NotificationElement> result = notifications.stream()
-                    // Notification -> from(Notification) -> NotificationElement
-                    .map(NotificationResponse.NotificationElement::from)
-                    .collect(toList());
-
-            // 3. 응답 객체 생성
-            NotificationResponse.All response = new NotificationResponse.All(
-                    result.size(),
-                    result,
-                    false
-            );
-            return response;
+            return NotificationResponse.NotificationAll.toDto(notifications);
         } catch (Exception e) {
             log.error("알림 전체 조회 실패, e");
             throw new RuntimeException("알림 조회 중 알 수 없는 오류 발생.");
