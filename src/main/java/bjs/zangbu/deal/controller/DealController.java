@@ -188,12 +188,12 @@ public class DealController {
     String relativePath = contractService.getContractPdf(dealId);
 
     //2. 절대 URL(Host·Port 포함) 생성
-    String absoultePath = ServletUriComponentsBuilder
+    String absolutePath = ServletUriComponentsBuilder
         .fromCurrentContextPath()
         .path(relativePath)
         .toUriString();
 
-    return ResponseEntity.ok(new DealResponse.Download(absoultePath));
+    return ResponseEntity.ok(new DealResponse.Download(absolutePath));
   }
 
   /**
