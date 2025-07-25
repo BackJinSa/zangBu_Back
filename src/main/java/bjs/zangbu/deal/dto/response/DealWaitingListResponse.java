@@ -20,14 +20,14 @@ public class DealWaitingListResponse {
   @AllArgsConstructor
   public static class WaitingListElement {
 
-    private Long buildingId; // building 식별 id
-    private int price; // 매물 가격
+    private Long buildingId;     // building 식별 id
+    private int price;           // 매물 가격
     private String buildingName; // 매물 이름
-    private String houseType; // 부동산 유형 ('APARTMENT', 'OFFICETEL', 'VILLA', 'HOUSE')
-    private String saleType; // 매매, 전세, 월세 구분 ('MONTHLY', 'CHARTER', 'TRADING')
-    private String imageUrl; // 매물 이미지 링크 TODO:상위 하나의 이미지만 가져오도록 서비스 메서드 추가되면 수정 예정
-    private String address; // 매물 주소
-    private String dealStatus; // 거래 상태(구매 중, 판매 중)
+    private String houseType;    // 부동산 유형 ('APARTMENT', 'OFFICETEL', 'VILLA', 'HOUSE')
+    private String saleType;     // 매매, 전세, 월세 구분 ('MONTHLY', 'CHARTER', 'TRADING')
+    private String imageUrl;     // 매물 이미지 링크
+    private String address;      // 매물 주소
+    private String dealStatus;   // 거래 상태(구매 중, 판매 중)
 
     // DealWithChatRoom DTO -> WaitingListElement DTO
     public static WaitingListElement toDto(

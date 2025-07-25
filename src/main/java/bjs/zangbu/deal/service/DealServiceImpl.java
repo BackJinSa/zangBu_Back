@@ -39,24 +39,24 @@ public class DealServiceImpl implements DealService {
 
   // 거래중인 list 모두 조회
   @Override
-  public WaitingList getAllWaitingList(String userId, String nickname) {
-    List<DealWithChatRoom> deals = dealMapper.getAllWaitingList(userId);
+  public WaitingList getAllWaitingList(String memberId, String nickname) {
+    List<DealWithChatRoom> deals = dealMapper.getAllWaitingList(memberId);
     return buildWaitingList(deals, nickname);
 
   }
 
   // 구매 중인 매물 조회
   @Override
-  public WaitingList getPurchaseWaitingList(String userId, String nickname) {
-    List<DealWithChatRoom> deals = dealMapper.getPurchaseWaitingList(userId);
+  public WaitingList getPurchaseWaitingList(String memberId, String nickname) {
+    List<DealWithChatRoom> deals = dealMapper.getPurchaseWaitingList(memberId);
     return buildWaitingList(deals, nickname);
 
   }
 
   // 판매중인 매물 조회
   @Override
-  public WaitingList getOnSaleWaitingList(String userId, String nickname) {
-    List<DealWithChatRoom> deals = dealMapper.getOnSaleWaitingList(userId);
+  public WaitingList getOnSaleWaitingList(String memberId, String nickname) {
+    List<DealWithChatRoom> deals = dealMapper.getOnSaleWaitingList(memberId);
     return buildWaitingList(deals, nickname);
   }
 

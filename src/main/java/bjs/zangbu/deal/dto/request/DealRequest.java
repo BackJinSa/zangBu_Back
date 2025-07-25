@@ -12,7 +12,7 @@ public class DealRequest {
   @AllArgsConstructor
   public static class IntentRequest {
 
-    private Long buildingId;
+    private Long buildingId; // building 식별 id
   }
 
   //  /deal/status Request
@@ -21,8 +21,8 @@ public class DealRequest {
   @AllArgsConstructor
   public static class Status {
 
-    private Long dealId;
-    private String status;
+    private Long dealId;   // building 식별 id
+    private String status; // 상태
   }
 
 }
