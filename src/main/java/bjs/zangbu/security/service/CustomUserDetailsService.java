@@ -22,10 +22,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        //email로 사용자 정보 조회
         Member member = userDetailsMapper.get(email);
+        //조회된 member 없으면 예외 발생
         if (member == null) {
-            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email);
+            throw new UsernameNotFoundException(email + "에 해당하는 사용자를 찾을 수 없습니다");
         }
+        //조회된 member를 customUser 객체로 감싸서 반환
         return new CustomUser(member);
     }
 }
