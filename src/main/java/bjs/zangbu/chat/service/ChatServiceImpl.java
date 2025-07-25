@@ -42,14 +42,25 @@ public class ChatServiceImpl implements ChatService{
 
     //채팅방 유무 확인 - 채팅방 중복 생성 방지
     @Override
-    public boolean existsChatRoom(Long buildingId, String consumerId) {
+    public ChatRoom existsChatRoom(Long buildingId, String consumerId) {
         return chatMapper.existsChatRoom(buildingId, consumerId);
     }
 
     //채팅방 생성
     @Override
-    public void createChatRoom(ChatRoom chatRoom) {
-        chatMapper.insertChatRoom(chatRoom);
+    public ChatRoom createChatRoom(ChatRoom chatRoom) {
+        Long buildingId = chatRoom.getBuildingId();
+        String consumerId = chatRoom.getConsumerId();
+
+        ChatRoom existsedChatRoom = chatMapper.existsChatRoom(buildingId, consumerId);
+
+        if (existsedChatRoom == null) { //buildingId, consumerId의 조합의 채팅방이 없을 때만 채팅방 생성
+            chatMapper.insertChatRoom(chatRoom);
+            return chatRoom;
+        } else {
+            //존재하는 경우에 어떻게 처리할지 나중에 적절히 코드 변경
+            return existsedChatRoom;
+        }
     }
 
     //채팅방 삭제
