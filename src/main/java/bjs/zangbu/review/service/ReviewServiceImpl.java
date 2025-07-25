@@ -1,7 +1,9 @@
 package bjs.zangbu.review.service;
 
+import bjs.zangbu.review.dto.response.ReviewDetailResponse;
 import bjs.zangbu.review.dto.response.ReviewListResponse;
 import bjs.zangbu.review.dto.response.ReviewListResult;
+import bjs.zangbu.review.exception.ReviewNotFoundException;
 import bjs.zangbu.review.mapper.ReviewMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -35,5 +37,18 @@ public class ReviewServiceImpl implements ReviewService{
 
         // 최종 결과 조립
         return new ReviewListResult(total, list, hasNext, latestRank);
+    }
+
+    // 리뷰 상세보기
+    @Override
+    public ReviewDetailResponse getReviewDetail(Long reviewId) {
+        if (reviewId == null || reviewId <= 0) {
+            throw new IllegalArgumentException("존재하지 않는 리뷰 식별자입니다.");
+        }
+        ReviewDetailResponse detail = reviewMapper.selectById(reviewId);
+        if (detail == null) {
+            throw new ReviewNotFoundException(reviewId);
+        }
+        return detail;
     }
 }
