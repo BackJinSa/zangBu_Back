@@ -176,6 +176,13 @@
     WHERE DATE (created_at) = CURDATE()
   </select>
 
+  <!-- dealId로 buildingId 조회 -->
+  <select id="getBuildingIdByDealId" resultType="java.lang.Long">
+    SELECT building_id
+    FROM deal
+    WHERE deal_id = #{dealId}
+  </select>
+
   <!-- 결과 매핑 -->
   <resultMap id="DealWithSaleTypeMap"
     type="bjs.zangbu.deal.dto.join.DealWithSaleType">
