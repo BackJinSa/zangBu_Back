@@ -7,29 +7,29 @@ import java.util.List;
 
 public interface NotificationService {
 
-    // 전체 알림 조회
-    List<NotificationResponse.NotificationElement> getAllNotifications(String userId);
+    // ====================== API 전용 ======================
+    // [API] 전체 알림 조회
+    NotificationResponse.NotificationAll getAllNotifications(String memberId);
 
-    // 찜한 매물 시세 변동 감지
-    void notificationPriceChanged(Long buildingId, int oldPrice, int newPrice);
+    // [API] 하나의 알림 읽음 처리 (DB 업데이트)
+    boolean markAsRead(String memberId, Long notificationId);
 
-    // 실거래 발생 감지
-    void notificationTradeHappened(Long buiildingId, int price);
+    // [API] 전체 알림 읽음 처리 (DB 업데이트) return 값 : 읽음 처리된 알림 개수
+    NotificationResponse.MarkAllReadResult markAllAsRead(String memberId);  // 처리된 개수 반환
 
-    // 리뷰 등록 알림
-    void notificationReviewPosted(Long buildingId);
+    // [API] 알림 삭제 (DB 삭제)
+    boolean removeNotification(String memberId, Long notificationId);
 
-    // 하나의 알림 읽음 처리
-    void bookmarkRead(String userId, Long notificationId);
+    // ====================== 트리거 전용 ===========================
 
-    // 알림 전체 읽음 처리
-    void bookmarkAllRead(String userId);
+    // [트리거] 시세 변동 감지 (스케줄러 + FCM 메시지 발송)
+    void detectPriceChangeForAllBookmarks();
 
-    // 알림 삭제
-    void removeNotification(String userId, Long notificationId);
+    // [트리거] 실거래 발생 감지 (스케줄러 + FCM 메시지 발송)
+    void detecTradeHappenedTody();
 
-    // 매물에 대한 알림 등록
-    void registerNotification(String userId, Long buildingId);
-
+    // [실시간 트리거] 리뷰 등록 감지
+    // (Review 등록 서비스 내부에서 실행 + FCM 메시지 발송)
+    void notificationReviewRegisterd(Long buildingId);
 
 }

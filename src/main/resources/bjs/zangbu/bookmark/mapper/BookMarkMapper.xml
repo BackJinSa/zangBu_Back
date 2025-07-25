@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="bjs.zangbu.bookmark.mapper.BookMarkMapper">
+
+    <!-- 회원이 특정 매물을 찜했을 때 bookmark 테이블에 기록 -->
+    <insert id="insertBookMark">
+        INSERT INTO bookmark (member_id, building_id)
+        VALUES (#{memberId}, #{buildingId})
+    </insert>
+
+    <!-- 건물의 찜 개수(bookmark_count) 1 증가 -->
+    <update id="incrementBookmarkCount">
+        UPDATE building
+        SET bookmark_count = IFNULL(bookmark_count, 0) + 1
+        WHERE building_id = #{buildingId}
+    </update>
+
+    <!-- 건물의 찜 개수(bookmark_count) 1 감소 -->
+    <update id="decrementBookmarkCount">
+        UPDATE building
+        SET bookmark_count = IFNULL(bookmark_count, 0) - 1
+        WHERE building_id = #{buildingId}
+    </update>
+
+    <!-- bookmark_id 기준으로 가격을 업데이트 -->
+    <update id="updateBookmarkPrice">
+        UPDATE bookmark
+        SET price = #{price}
+        WHERE bookmark_id = #{bookmarkId}
+    </update>
+
+    <!-- 회원이 찜한 특정 매물을 삭제 -->
+    <delete id="deleteBookMark">
+        DELETE FROM bookmark
+        WHERE member_id = #{memberId}
+          AND building_id = #{buildingId}
+    </delete>
+
+    <!-- 전체 bookmark 목록 조회 -->
+    <select id="selectAllBookmarks" resultType="bjs.zangbu.bookmark.vo.Bookmark">
+        SELECT bookmark_id, member_id, building_id, price
+        FROM bookmark
+    </select>
+
+    <!-- 특정 매물을 찜한 회원(member_id) 목록 조회 -->
+    <select id="selectUserIdsByBuildingId" resultType="java.lang.String">
+        SELECT member_id
+        FROM bookmark
+        WHERE building_id = #{buildingId}
+    </select>
+
+    <!-- 회원이 찜한 모든 건물(building_id) 목록 조회 -->
+    <select id="selectBookmarkedBuildingIdsByMember" resultType="java.lang.Long" parameterType="java.lang.String">
+        SELECT building_id
+        FROM bookmark
+        WHERE member_id = #{memberId}
+    </select>
+
+</mapper>

@@ -1,6 +1,7 @@
 package bjs.zangbu.global.config;
 
 
+import bjs.zangbu.chat.config.WebSocketConfig;
 import jakarta.servlet.Filter;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletRegistration;
@@ -21,7 +22,7 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
-        return new Class[]{ServletConfig.class};
+        return new Class[]{ServletConfig.class, WebSocketConfig.class};
     }
 
     // 스프링의 FrontController인 DispatcherServlet이 담당할 Url 매핑 패턴, / : 모든 요청에 대해 매핑

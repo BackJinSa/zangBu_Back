@@ -1,34 +1,36 @@
 package bjs.zangbu.deal.vo;
 
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 public class Deal {
-    // 거래 식별 id
-    private Long dealId;
 
-    // 거래 상태
-    private DealEnum status;
+  // 거래 식별 id
+  private Long dealId;
 
-    // ==== foreign key
+  // 거래 상태
+  private DealEnum status;
 
-    // 채팅방 식별 id
-    private String chatRoomId;
+  // 생성 날짜
+  private LocalDateTime createdAt;
 
-    // 매물 식별 id
-    private Long buildingId;
+  // ==== foreign key
 
-    // 유저 식별 id
-    private String userId;
+  // 채팅방 식별 id
+  private String chatRoomId;
 
-    // 단지 식별 id
-    private Long complexId;
+  // 매물 식별 id
+  private Long buildingId;
 
-    // 주소 식별 id
-    private Long addressId;
+  // 유저 식별 id
+  private String userId;
+
+  // 단지 식별 id
+  private Long complexId;
+
 }

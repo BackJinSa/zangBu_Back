@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="bjs.zangbu.deal.mapper.DealMapper">
+
+  <!-- Deal.status 업데이트 -->
+  <update id="patchStatus" parameterType="bjs.zangbu.deal.dto.request.DealRequest$Status">
+    UPDATE deal
+    SET status = #{status}
+    WHERE deal_id = #{dealId}
+  </update>
+
+  <!-- Deal 삭제 -->
+  <delete id="deleteDealById" parameterType="java.lang.Long">
+    DELETE
+    FROM deal
+    WHERE deal_id = #{dealId}
+  </delete>
+
+  <!-- 거래중인 list 모두 조회 -->
+  <select id="getAllWaitingList" resultMap="DealWithChatRoomMap">
+    SELECT d.deal_id,
+           d.chat_room_id,
+           d.building_id,
+           d.status,
+           d.created_at,
+           d.complex_id,
+
+           b.price,
+           b.building_name,
+           b.house_type,
+           b.sale_type,
+           b.image_url,
+
+           cl.address,
+
+           c.consumer_nickname,
+           c.seller_nickname
+--     ChatRoom, Building, Complex join
+    FROM deal d
+           JOIN chat_room c ON d.chat_room_id = c.chat_room_id
+           JOIN building b ON d.building_id = b.building_id
+           JOIN complex_list cl ON d.complex_id = cl.complex_id
+    WHERE d.member_id = #{userId}
+      AND d.status != 'BEFORE_TRANSACTION' AND d.status = 'CLOSE_DEAL'
+
+
+  </select>
+
+  <!-- Deal.status 가져오기 -->
+  <select id="getStatusByDealId" resultType="java.lang.String">
+    SELECT status
+    FROM deal
+    WHERE deal_id = #{dealId}
+  </select>
+
+  <!-- 구매중인 list 모두 조회 -->
+  <select id="getPurchaseWaitingList"
+    resultType="bjs.zangbu.deal.dto.join.DealWithChatRoom" resultMap="DealWithChatRoomMap">
+    SELECT d.deal_id,
+           d.chat_room_id,
+           d.building_id,
+           d.status,
+           d.created_at,
+           d.complex_id,
+
+           b.price,
+           b.building_name,
+           b.house_type,
+           b.sale_type,
+           b.image_url,
+
+           cl.address,
+
+           c.consumer_nickname,
+           c.seller_nickname
+--     ChatRoom, Building, Complex join
+    FROM deal d
+           JOIN chat_room c ON d.chat_room_id = c.chat_room_id
+           JOIN building b ON d.building_id = b.building_id
+           JOIN complex_list cl ON d.complex_id = cl.complex_id
+    WHERE c.consumer_nickname = #{nickname}
+      AND d.member_id = #{userId}
+      AND d.status != 'BEFORE_TRANSACTION' AND d.status = 'CLOSE_DEAL'
+
+
+  </select>
+
+  <!-- 판매중인 list 모두 조회-->
+  <select id="getOnSaleWaitingList" resultType="bjs.zangbu.deal.dto.join.DealWithChatRoom"
+    resultMap="DealWithChatRoomMap">
+    SELECT d.deal_id,
+           d.chat_room_id,
+           d.building_id,
+           d.status,
+           d.created_at,
+           d.complex_id,
+
+           b.price,
+           b.building_name,
+           b.house_type,
+           b.sale_type,
+           b.image_url,
+
+           cl.address,
+
+           c.consumer_nickname,
+           c.seller_nickname
+--     ChatRoom, Building, Complex join
+    FROM deal d
+           JOIN chat_room c ON d.chat_room_id = c.chat_room_id
+           JOIN building b ON d.building_id = b.building_id
+           JOIN complex_list cl ON d.complex_id = cl.complex_id
+    WHERE c.consumer_nickname = #{nickname}
+      AND d.member_id = #{userId}
+      AND d.status != 'BEFORE_TRANSACTION' AND d.status = 'CLOSE_DEAL'
+
+  </select>
+
+  <!-- getWaitingDealsWithChatRoom join 한 결과값 -->
+  <resultMap id="DealWithChatRoomMap" type="bjs.zangbu.deal.dto.join.DealWithChatRoom">
+    <id property="dealId" column="deal_id"/>
+    <result property="chatRoomId" column="chat_room_id"/>
+    <result property="buildingId" column="building_id"/>
+    <result property="status" column="status"/>
+    <result property="createdAt" column="created_at"/>
+
+    <result property="price" column="price"/>
+    <result property="buildingName" column="building_name"/>
+    <result property="houseType" column="house_type"/>
+    <result property="saleType" column="sale_type"/>
+    <result property="imageUrl" column="image_url"/>
+    <result property="address" column="address"/>
+
+    <result property="consumerNickname" column="consumer_nickname"/>
+    <result property="sellerNickname" column="seller_nickname"/>
+  </resultMap>
+
+<!--    표준계약서 xml 코드 -->
+    <select id="findWithType"
+            parameterType="long"
+            resultMap="DealWithSaleTypeMap">
+
+        SELECT d.deal_id,
+               d.status,
+               d.user_id,
+               d.building_id,
+               b.sale_type
+        FROM deal d
+                 JOIN building b ON b.building_id = d.building_id
+        WHERE d.deal_id = #{dealId}
+
+    </select>
+
+    <!-- 결과 매핑 -->
+    <resultMap id="DealWithSaleTypeMap"
+               type="bjs.zangbu.deal.dto.join.DealWithSaleType">
+
+        <id     property="dealId"     column="deal_id"/>
+        <result property="status"
+                column="status"
+                javaType="bjs.zangbu.deal.vo.DealEnum"/>
+        <result property="userId"     column="user_id"/>
+        <result property="buildingId" column="building_id"/>
+        <result property="saleType"
+                column="sale_type"
+                javaType="bjs.zangbu.notification.vo.SaleType"/>
+    </resultMap>
+</mapper>

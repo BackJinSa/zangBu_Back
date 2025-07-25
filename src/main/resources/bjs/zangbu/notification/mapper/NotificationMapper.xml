@@ -3,6 +3,62 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="">
+<mapper namespace="bjs.zangbu.notification.mapper.NotificationMapper">
+
+    <!-- ====================== API 전용 ====================== -->
+
+    <!-- 알림 전체 조회 -->
+    <select id="selectAllByMemberId" resultType="bjs.zangbu.notification.vo.Notification">
+        SELECT
+            notification_id AS notificationId,
+            member_id AS userId,
+            message,
+            is_read AS isRead,
+            type,
+            created_at AS createdAt,
+            sale_type AS saleType,
+            price,
+            address,
+            rank
+        FROM notification
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 알림 읽음 처리 -->
+    <update id="updateIsRead">
+        UPDATE notification
+        SET is_read = TRUE
+        WHERE member_id = #{userId}
+            AND notification_id = #{notificationId}
+    </update>
+
+    <!-- 전체 알림 읽음 처리 -->
+    <update id="updateAllIsRead" parameterType="String">
+        UPDATE notification
+        SET is_read = true
+        WHERE member_id = #{userId}
+          AND is_read = false
+    </update>
+
+    <!-- 알림 삭제 -->
+    <delete id="removeNotification">
+        DELETE FROM notification
+        WHERE member_id = #{userId}
+        AND notification_id = #{notificationId}
+    </delete>
+
+    <!-- ======================= 트리거 전용 ====================== -->
+
+    <!-- 시세 변동 알림 등록 -->
+
+    <insert id="insertNotification" parameterType="bjs.zangbu.notification.vo.Notification">
+        INSERT INTO notification (
+            member_id, message, is_read, type, created_at,
+            sale_type, price, address, rank
+        ) VALUES (
+            #{userId}, #{message}, false, #{type},
+            NOW(), #{saleType}, #{price}, #{address}, #{rank}
+                 )
+    </insert>
 
 </mapper>

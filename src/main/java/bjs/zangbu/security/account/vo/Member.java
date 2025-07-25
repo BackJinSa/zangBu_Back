@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 public class Member {
     //유저 식별 id
-    private String userId;
+    private String memberId;
 
     //아이디(이메일)
     private String email;
@@ -38,7 +38,7 @@ public class Member {
     private String birth;
 
     //사용자 이름
-    private String userName;
+    private String name;
 
     public Collection<? extends GrantedAuthority> getAuthorities(){
         return List.of(new SimpleGrantedAuthority(role.name()));
