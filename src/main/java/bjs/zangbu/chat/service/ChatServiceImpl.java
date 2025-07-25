@@ -1,5 +1,7 @@
 package bjs.zangbu.chat.service;
 
+import bjs.zangbu.chat.dto.request.ChatRequest;
+import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.mapper.ChatMapper;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
@@ -7,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -17,8 +21,30 @@ public class ChatServiceImpl implements ChatService{
 
     //메시지 전송
     @Override
-    public void sendMessage(ChatMessage message) {
+    public ChatResponse.SendMessageResponse sendMessage(String chatRoomId, ChatRequest.SendMessageRequest request) {
+        String senderId = "SENDER_ID";
+        LocalDateTime createdAt = LocalDateTime.now();
+
+        ChatMessage message = request.toEntity(chatRoomId, senderId, createdAt);
         chatMapper.insertMessage(message);
+
+        return ChatResponse.SendMessageResponse.builder()
+                .message(message.getMessage())
+                .sendNickname("보낸사람닉네임")
+                .createdAt(formatDate(message.getCreatedAt()))
+                .build();
+    }
+
+    //날짜 포맷
+    private String formatDate(LocalDateTime time) {
+        LocalDateTime now = LocalDateTime.now();
+        if (time.toLocalDate().equals(now.toLocalDate())) {
+            return time.format(DateTimeFormatter.ofPattern("HH:mm"));
+        } else if (time.getYear() == now.getYear()) {
+            return time.format(DateTimeFormatter.ofPattern("MM/dd"));
+        } else {
+            return time.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+        }
     }
 
     //chatRoomId 기준으로 해당 채팅방의 메시지들 가져오기
