@@ -15,37 +15,44 @@ public class ChatServiceImpl implements ChatService{
 
     private final ChatMapper chatMapper;
 
+    //메시지 전송
     @Override
     public void sendMessage(ChatMessage message) {
         chatMapper.insertMessage(message);
     }
 
+    //chatRoomId 기준으로 해당 채팅방의 메시지들 가져오기
     @Override
     public List<ChatMessage> getMessages(String chatRoomId, Long lastMessageId, int limit) {
         return chatMapper.selectMessagesByRoomId(chatRoomId, lastMessageId, limit);
     }
 
+    //chatRoomId 기준으로 채팅방 상세정보 가져오기
     @Override
     public ChatRoom getChatRoomDetail(String chatRoomId) {
         return chatMapper.selectChatRoomById(chatRoomId);
     }
 
+    //사용자(userId)가 참여하고 있는 채팅방 목록 가져오기
     @Override
     public List<ChatRoom> getChatRoomList(String userId, String type, int page, int size) {
         int offset = (page - 1) * size;
         return chatMapper.selectChatRoomList(userId, type, offset, size);
     }
 
+    //채팅방 유무 확인 - 채팅방 중복 생성 방지
     @Override
     public boolean existsChatRoom(Long buildingId, String consumerId) {
         return chatMapper.existsChatRoom(buildingId, consumerId);
     }
 
+    //채팅방 생성
     @Override
     public void createChatRoom(ChatRoom chatRoom) {
         chatMapper.insertChatRoom(chatRoom);
     }
 
+    //채팅방 삭제
     @Override
     @Transactional
     public void deleteChatRoom(String chatRoomId) {
