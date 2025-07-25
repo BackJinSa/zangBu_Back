@@ -6,7 +6,15 @@
 <mapper namespace="bjs.zangbu.security.account.mapper.UserDetailsMapper">
 
     <resultMap id="memberMap" type="bjs.zangbu.security.account.vo.Member">
-
+        <id property="memberId" column="member_id"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="phone" column="phone"/>
+        <result property="nickname" column="nickname"/>
+        <result property="identity" column="identity"/>
+        <result property="role" column="role"/>
+        <result property="birth" column="birth"/>
+        <result property="name" column="name"/>
     </resultMap>
 
     <select id="get" resultMap="memberMap">

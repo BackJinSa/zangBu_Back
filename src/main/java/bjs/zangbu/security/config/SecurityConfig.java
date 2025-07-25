@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CsrfFilter;
@@ -24,6 +25,8 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     // SecurityConfig : 전체 보안 정책 설정 클래스
+
+    private final UserDetailsService userDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -42,7 +45,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         http.addFilterBefore(encodingFilter(), CsrfFilter.class);
 
-// 경로별 접근 권한 설정
+        // 경로별 접근 권한 설정
         http.authorizeRequests()
                 .antMatchers("/security/all").permitAll()
                 .antMatchers("/security/admin").access("hasRole('ROLE_ADMIN')")
