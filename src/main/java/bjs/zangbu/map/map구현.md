@@ -20,16 +20,16 @@ JSON 응답을 MapLocationVo 에 바인딩
 
 <H1> /map/search 기능 구현 </H1>
 
-1. - [ ] Controller (/api/map/search POST)
+1. - [x] Controller (/api/map/search POST)
 클라이언트가 보낸 MapSearchRequestDto 바디로 받아서
 mapSearchService.search(body) 호출
 
-2. - [ ] Service (MapSearchServiceImpl)
+2. - [x] Service (MapSearchServiceImpl)
 request.getQuery() 유효성 검사 (빈 값 예외 처리)
 kakaoMapClient.searchByKeyword(query) 호출
 반환된 DTO 리스트를 그대로 반환
 
-3. - [ ] DTOs
+3. - [x] DTOs
 요청: { query: String }
 응답:
 [
@@ -43,7 +43,7 @@ kakaoMapClient.searchByKeyword(query) 호출
     }, …
 ]
 
-4. - [ ] Utility (KakaoMapClient)
+4. - [x] Utility (KakaoMapClient)
 RestTemplate 또는 WebClient 로
 https://dapi.kakao.com/v2/local/search/keyword.json?query={query} 호출
 Authorization: KakaoAK {REST_API_KEY} 헤더 세팅
