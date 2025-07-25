@@ -35,8 +35,8 @@ public class ReviewController {
     }
 
 
-    // GET /review/detail/{reviewId}
-    @GetMapping("/detail/{reviewId}")
+    // GET /review/{reviewId}
+    @GetMapping("/review/{reviewId}")
     public ResponseEntity<?> detail(
             @PathVariable Long reviewId) {
         try {
