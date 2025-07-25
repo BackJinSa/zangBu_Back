@@ -1,6 +1,8 @@
 package bjs.zangbu.review.controller;
 
+import bjs.zangbu.review.dto.response.ReviewDetailResponse;
 import bjs.zangbu.review.dto.response.ReviewListResult;
+import bjs.zangbu.review.exception.ReviewNotFoundException;
 import bjs.zangbu.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,29 @@ public class ReviewController {
         } catch (Exception e) {
             return ResponseEntity.status(500)
                     .body("서버에서 리뷰 목록을 불러오는 중 오류가 발생했습니다.");
+        }
+    }
+
+
+    // GET /review/detail/{reviewId}
+    @GetMapping("/detail/{reviewId}")
+    public ResponseEntity<?> detail(
+            @PathVariable Long reviewId) {
+        try {
+            ReviewDetailResponse resp = reviewService.getReviewDetail(reviewId);
+            return ResponseEntity.ok(resp); // 200
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("존재하지 않는 리뷰 식별자입니다.");
+        } catch (ReviewNotFoundException e) {
+            return ResponseEntity
+                    .status(404)
+                    .body("존재하지 않는 리뷰입니다.");
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(500)
+                    .body("서버에서 상세 리뷰를 불러오는 중 오류가 발생했습니다.");
         }
     }
 }
