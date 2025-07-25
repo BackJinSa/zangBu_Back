@@ -24,6 +24,18 @@ public class ServletConfig implements WebMvcConfigurer {
         /* ▼ 새로 추가: 계약서 PDF 두 개를 서빙 */
         registry.addResourceHandler("/contracts/**")
                 .addResourceLocations("classpath:/contracts/");   // src/main/resources/contracts/
+
+        // Swagger UI 리소스를 위한 핸들러 설정
+        registry.addResourceHandler("/swagger-ui.html")
+                .addResourceLocations("classpath:/META-INF/resources/");
+        // Swagger WebJar 리소스 설정
+        registry.addResourceHandler("/webjars/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/");
+        // Swagger 리소스 설정
+        registry.addResourceHandler("/swagger-resources/**")
+                .addResourceLocations("classpath:/META-INF/resources/");
+        registry.addResourceHandler("/v2/api-docs")
+                .addResourceLocations("classpath:/META-INF/resources/");
     }
 
 

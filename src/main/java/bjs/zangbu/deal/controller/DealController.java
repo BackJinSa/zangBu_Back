@@ -8,7 +8,7 @@ import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
 import bjs.zangbu.deal.service.ContractService;
 import bjs.zangbu.deal.service.DealService;
-import bjs.zangbu.member.service.UserService;
+import bjs.zangbu.member.service.MemberService;
 import com.github.pagehelper.PageHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -35,7 +35,7 @@ import org.w3c.dom.DocumentType;
 public class DealController {
 
   private final DealService dealService;
-  private final UserService userService;
+  private final MemberService userService;
   private final ContractService contractService;
 
   /* -------------------------------------------------
@@ -66,14 +66,14 @@ public class DealController {
       @RequestParam(defaultValue = "10") int size         // 페이지당 항목 수
   ) {
     try {
-      String userId = userDetails.getUsername();
-      String nickname = userService.getNickname(userId); // 닉네임 추출
+      String memberId = userDetails.getUsername();
+      String nickname = userService.getNickname(memberId); // 닉네임 추출
 
       // PageHelper 페이지네이션 시작
       PageHelper.startPage(page, size);
       // Response 생성
       // 내부적으로 LIMIT OFFSET 쿼리로 변환되어서 페이지네이션 됨
-      WaitingList response = dealService.getAllWaitingList(userId, nickname);
+      WaitingList response = dealService.getAllWaitingList(memberId, nickname);
 
       return ResponseEntity.status(HttpStatus.OK).body(response);
 
@@ -188,12 +188,12 @@ public class DealController {
     String relativePath = contractService.getContractPdf(dealId);
 
     //2. 절대 URL(Host·Port 포함) 생성
-    String absoultePath = ServletUriComponentsBuilder
+    String absolutePath = ServletUriComponentsBuilder
         .fromCurrentContextPath()
         .path(relativePath)
         .toUriString();
 
-    return ResponseEntity.ok(new DealResponse.Download(absoultePath));
+    return ResponseEntity.ok(new DealResponse.Download(absolutePath));
   }
 
   /**
