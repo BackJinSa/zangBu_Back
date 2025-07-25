@@ -13,7 +13,6 @@
         FROM review
         WHERE building_id = #{buildingId}
         ORDER BY created_at DESC
-            LIMIT #{offset}, #{limit}
     </select>
 
     <select id="countByBuilding" resultType="long">

@@ -8,11 +8,7 @@ import java.util.List;
 
 @Mapper
 public interface ReviewMapper {
-    List<ReviewListResponse> selectByBuilding(
-            @Param("buildingId") long buildingId,
-            @Param("offset") int offset,
-            @Param("limit") int limit
-    );
+    List<ReviewListResponse> selectByBuilding(@Param("buildingId") long buildingId);
 
     Long countByBuilding(@Param("building") Long buildingId);
 
