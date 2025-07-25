@@ -5,26 +5,20 @@ import bjs.zangbu.bookmark.vo.Bookmark;
 import bjs.zangbu.building.mapper.BuildingMapper;
 import bjs.zangbu.building.vo.Building;
 import bjs.zangbu.deal.mapper.DealMapper;
-import bjs.zangbu.notification.dto.request.NotificationRequest;
-import bjs.zangbu.notification.dto.response.NotificationResponse;
 import bjs.zangbu.notification.mapper.NotificationMapper;
 import bjs.zangbu.notification.vo.Notification;
-import bjs.zangbu.notification.vo.SaleType;
 import bjs.zangbu.notification.vo.Type;
+import com.github.pagehelper.PageInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
+import static bjs.zangbu.notification.dto.response.NotificationResponse.*;
 import static bjs.zangbu.notification.dto.response.NotificationResponse.NotificationElement.formatMoney;
-import static java.util.stream.Collectors.toList;
 
 @Log4j2
 @Service
@@ -38,19 +32,16 @@ public class NotificationServiceImpl implements NotificationService {
 
     // ====================== API 전용 ======================
     // [API] 전체 알림 조회(DB select)
-    // 페이지네이션 구현 예정..
     @Override
-    public NotificationResponse.NotificationAll getAllNotifications(String memberId) {
-        try {
-            // 1. 알림 vo 리스트 조회 (Notification 객체들)
-            List<Notification> notifications = notificationMapper.selectAllByMemberId(memberId);
+    public NotificationAll getAllNotifications(String memberId) {
+        // 1. 알림 VO 리스트 조회
+        List<Notification> notifications = notificationMapper.selectAllByMemberId(memberId);
 
-            // 2. Notification -> NotificationElement로 가공 -> 리스트로 다시 변환
-            return NotificationResponse.NotificationAll.toDto(notifications);
-        } catch (Exception e) {
-            log.error("알림 전체 조회 실패, e");
-            throw new RuntimeException("알림 조회 중 알 수 없는 오류 발생.");
-        }
+        // 2. PageInfo로 감싸서 페이지 정보 획득
+        PageInfo<Notification> pageInfo = new PageInfo<>(notifications);
+
+        // 3. DTO로 변환
+        return NotificationAll.toDto(pageInfo);
     }
 
     // [API] 하나의 알림 읽음 처리 (DB update)
@@ -67,13 +58,12 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     // [API] 전체 알림 읽음 처리 (DB update) return 값 : 읽음 처리된 알림 개수
-    // 페이지네이션 구현 예정..
     @Override
-    public NotificationResponse.MarkAllReadResult markAllAsRead(String memberId) {
+    public MarkAllReadResult markAllAsRead(String memberId) {
         try {
             // 전체 알림 수정 후 성공했다면 return 읽음처리된 알림 개수 / 0 이면 읽음처리된 알림이 없는것
             int updated = notificationMapper.updateAllIsRead(memberId);
-            return new NotificationResponse.MarkAllReadResult(updated);
+            return new MarkAllReadResult(updated);
         } catch (Exception e) {
             log.error("알림 읽음 처리 실패: memberId={}", memberId, e);
             throw new RuntimeException("알림 읽음 처리 중 오류가 발생했습니다.");
@@ -156,55 +146,52 @@ public class NotificationServiceImpl implements NotificationService {
         // =========================================================
     }
 
-    // 1. 실거래 발생 감지 알림
+    // 1. 실거래 발생 감지 알림 (deal 테이블의 상태가 CLOSE_DEAL(거래성사)로 바뀌는 순간 트리거 실행
     // 2. 스케줄러 + FCM 메시지 발송(예정)
     @Override
-    public void detecTradeHappenedTody() {
-        // 1. [DB] deal 테이블에서 오늘 거래된 building_id 목록을 가져온다.
+    public void detecTradeHappenedNow(Long dealId) {
+        // 1. [DB] deal 테이블에서 buildingId를 가져온다.
         // select building_id
-        List<Long> buildingIds = dealMapper.selectTodayTrade();
+        Long buildingId = dealMapper.getBuildingIdByDealId(dealId);
 
-        // 가져온 building_id를 하나씩 반복 처리
-        for (Long buildingId : buildingIds) {
-            // 2. [DB] building_id 를 통해 bookmark 테이블에서 이 매물을 찜한 유저 ID를 모두 가져온다.
-            // select member_id
-            List<String> membersIds = bookmarkMapper.selectUserIdsByBuildingId(buildingId);
+        // 2. [DB] bookmark 테이블에서 이 매물을 찜한 유저들 (memberId) 를 가져온다.
+        // select member_id
+        List<String> memberIds = bookmarkMapper.selectUserIdsByBuildingId(buildingId);
 
-            // 3. [DB] building 테이블에서 해당 매물(buildingId)의 정보를 가져온다. (알림 메시지에 표시하기 위해)
-            // select *
-            Building building =  buildingMapper.getBuildingById(buildingId);
+        // 3. building 테이블에서 매물의 정보를 가져온다.
+        // select *
+        Building building = buildingMapper.getBuildingById(buildingId);
+        Integer price = building.getPrice();
+        if (price == null || memberIds.isEmpty()) return;
 
-            // 4. 빌딩 가격 저장 (이 가격에 실거래 당시 가격임)
-            Integer price = building.getPrice();
-            if (price == null) continue;
+        // 4. 메시지 작성
+        String message = building.getBuildingName() + " 매물이 " + formatMoney(price) + "에 거래되었습니다.";
 
-            // 5. 알림 메시지 생성
-            String message = building.getBuildingName() + " 매물이 " + formatMoney(price) + "에 거래되었습니다.";
+        // 5. [DB] 알림 정보를 DB(notification 테이블)에 저장
+        for (String memberId : memberIds) {
+            Notification notification = new Notification(
+                    null,
+                    message,
+                    false,
+                    Type.BUILDING,
+                    new Date(),
+                    null,
+                    price,
+                    null,
+                    0,
+                    memberId
+            );
 
-            // 6. 알림 생성 → 유저 수만큼 반복 저장
-            for(int i=0; i<membersIds.size(); i++) {
-                Notification notification = new Notification(
-                        null,            // notification_id
-                        message,                    // 알림 메시지
-                        false,                      // 알림 읽음 여부
-                        Type.BUILDING,              // 알림 타입은 BUILDING (시세 변경)
-                        new Date(),                 // 알림 생성 날짜
-                        null,                       // 매물 종류
-                        price,                      // 알림 등록 당시 매물 시세
-                        null,                       // 주소
-                        0,                          // 평점
-                        building.getMemberId()      // 유저id
-                );
+            // 6. [DB] 알림 정보를 DB(notification 테이블)에 저장
+            notificationMapper.insertNotification(notification);
 
-                // 7. [DB] 알림 정보를 DB(notification 테이블)에 저장
-                notificationMapper.insertNotification(notification);
-            }
+            // =========================================================
+            // 알림은 생성했고 생성된 알림을 실시간으로 보내줘야됨
+            // =========================================================
         }
-
-        // =========================================================
-        // 알림은 생성했고 생성된 알림을 실시간으로 보내줘야됨
-        // =========================================================
     }
+
+
 
     // 1. 리뷰 등록 감지 (리뷰 등록 서비스에서 리뷰가 등록되는 순간 실행되어야함)
     // 2. 실시간 트리거 (Review 등록 서비스 내부에서 실행) + FCM 메시지 발송(예정)
