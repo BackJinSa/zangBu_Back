@@ -5,7 +5,22 @@
 
 <mapper namespace="bjs.zangbu.security.account.mapper.UserDetailsMapper">
 
-    <select id="get">
+    <resultMap id="memberMap" type="bjs.zangbu.security.account.vo.Member">
 
+    </resultMap>
+
+    <select id="get" resultMap="memberMap">
+        SELECT
+            member_id,
+            email,
+            password,
+            phone,
+            nickname,
+            identity,
+            role,
+            birth,
+            name
+        FROM member
+        WHERE email = #{email}
     </select>
 </mapper>
