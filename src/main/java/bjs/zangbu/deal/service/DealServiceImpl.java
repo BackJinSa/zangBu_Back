@@ -10,6 +10,7 @@ import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
 import bjs.zangbu.deal.mapper.DealMapper;
 import bjs.zangbu.deal.vo.DealEnum;
 import bjs.zangbu.imageList.service.ImageListService;
+import bjs.zangbu.notification.service.NotificationService;
 import com.github.pagehelper.PageInfo;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Log4j2
 @Service
@@ -27,8 +29,11 @@ public class DealServiceImpl implements DealService {
   private final DealMapper dealMapper;
   private final BuildingMapper buildingMapper;
   private final ImageListService imageListService;
+  private final NotificationService notificationService;
 
-  // 거래 전 안내
+  /**
+   * 거래 전 안내
+   */
   @Override
   public Notice getNotice(Long buildingId) {
     // buildMapper 에서 Building 조회
@@ -37,7 +42,9 @@ public class DealServiceImpl implements DealService {
     return Notice.toDto(buildingId, buildVO);
   }
 
-  // 거래중인 list 모두 조회
+  /**
+   * 거래중인 list 모두 조회
+   */
   @Override
   public WaitingList getAllWaitingList(String memberId, String nickname) {
     List<DealWithChatRoom> deals = dealMapper.getAllWaitingList(memberId);
@@ -45,7 +52,9 @@ public class DealServiceImpl implements DealService {
 
   }
 
-  // 구매 중인 매물 조회
+  /**
+   * 구매 중인 매물 조회
+   */
   @Override
   public WaitingList getPurchaseWaitingList(String memberId, String nickname) {
     List<DealWithChatRoom> deals = dealMapper.getPurchaseWaitingList(memberId);
@@ -53,14 +62,18 @@ public class DealServiceImpl implements DealService {
 
   }
 
-  // 판매중인 매물 조회
+  /**
+   * 판매중인 매물 조회
+   */
   @Override
   public WaitingList getOnSaleWaitingList(String memberId, String nickname) {
     List<DealWithChatRoom> deals = dealMapper.getOnSaleWaitingList(memberId);
     return buildWaitingList(deals, nickname);
   }
 
-  // 상위 이미지 포함해서 dto 생성
+  /**
+   * 상위 이미지 포함해서 dto 생성
+   */
   private WaitingList buildWaitingList(List<DealWithChatRoom> deals, String nickname) {
     PageInfo<DealWithChatRoom> pageInfo = new PageInfo<>(deals);
 
@@ -76,14 +89,20 @@ public class DealServiceImpl implements DealService {
     return WaitingList.toDto(pageInfo, nickname, imageMap);
   }
 
-  // Deal 삭제 메서드
+  /**
+   * Deal 삭제 메서드
+   */
   @Override
+  @Transactional
   public boolean deleteDealById(Long dealId) {
     return dealMapper.deleteDealById(dealId) == 1;
   }
 
-  // 상태 변환 메서드
+  /**
+   * 상태 변환 메서드
+   */
   @Override
+  @Transactional
   public boolean patchStatus(Status status) {
     // 이전 상태
     String from = status.getStatus();
@@ -91,6 +110,10 @@ public class DealServiceImpl implements DealService {
     String to = dealMapper.getStatusByDealId(status.getDealId());
     // 상태 FLOW 가 맞는 지 체크
     if (checkStatus(from, to)) {
+      // 만약 거래 성사 시 알람 트리거
+      if (to.equals("CLOSE_DEAL")) {
+        notificationService.detecTradeHappenedNow(status.getDealId());
+      }
       // status PATCH
       return dealMapper.patchStatus(status) == 1;
     } else {
@@ -98,21 +121,21 @@ public class DealServiceImpl implements DealService {
     }
   }
 
-  // 거래 생성 (생성된 dealId 반환)
+  /**
+   * 거래 생성 (생성된 dealId 반환)
+   */
   @Override
+  @Transactional
   public Long createDeal(String chatRoomId) {
     CreateResult result = new CreateResult();
     dealMapper.createDeal(chatRoomId, result);
     return result.getDealId();
   }
 
-  // 이전 상태에서 다음 상태 이어지는 게 맞는지 체크
-  /*
-     [거래 전] -> 채팅 시작 ->
-     [판매자 수락 전] -> 판매자 수락 ->
-     [구매자 수락 전] -> 구매자 수락 ->
-     [거래 중] -> 거래 완료 ->
-     [거래 성사]
+
+  /**
+   * 이전 상태에서 다음 상태 이어지는 게 맞는지 체크<br><br> [거래 전] -> 채팅 시작 -> <br> [판매자 수락 전] -> 판매자 수락 -> <br> [구매자
+   * 수락 전] -> 구매자 수락 -> <br> [거래 중] -> 거래 완료 -> <br> [거래 성사]
    */
   private static final Map<DealEnum, DealEnum> validTransitions = Map.of(
       DealEnum.BEFORE_TRANSACTION, DealEnum.BEFORE_OWNER,
