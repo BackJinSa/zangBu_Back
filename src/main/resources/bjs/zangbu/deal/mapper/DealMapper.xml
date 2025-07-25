@@ -5,6 +5,25 @@
 
 <mapper namespace="bjs.zangbu.deal.mapper.DealMapper">
 
+  <!-- 거래 신규 생성 -->
+  <insert id="createDeal" useGeneratedKeys="true" keyProperty="result.dealId">
+    INSERT INTO deal(chat_room_id,
+                     building_id,
+                     member_id,
+                     complex_id,
+                     status,
+                     created_at)
+    SELECT cr.chat_room_id,
+           cr.building_id,
+           cr.member_id,
+           cr.complex_id,
+           'BEFORE_TRANSACTION',
+           NOW()
+    FROM chat_room cr
+    WHERE cr.chat_room_id = #{chatRoomId}
+
+  </insert>
+
   <!-- Deal.status 업데이트 -->
   <update id="patchStatus" parameterType="bjs.zangbu.deal.dto.request.DealRequest$Status">
     UPDATE deal
@@ -32,8 +51,6 @@
            b.building_name,
            b.house_type,
            b.sale_type,
-           b.image_url,
-
            cl.address,
 
            c.consumer_nickname,
@@ -44,9 +61,9 @@
            JOIN building b ON d.building_id = b.building_id
            JOIN complex_list cl ON d.complex_id = cl.complex_id
     WHERE d.member_id = #{userId}
-      AND d.status != 'BEFORE_TRANSACTION' AND d.status = 'CLOSE_DEAL'
-
-
+      AND d.status != 'BEFORE_TRANSACTION'
+      AND d.status != 'CLOSE_DEAL'
+    ORDER BY d.created_at DESC
   </select>
 
   <!-- Deal.status 가져오기 -->
@@ -70,7 +87,6 @@
            b.building_name,
            b.house_type,
            b.sale_type,
-           b.image_url,
 
            cl.address,
 
@@ -82,10 +98,9 @@
            JOIN building b ON d.building_id = b.building_id
            JOIN complex_list cl ON d.complex_id = cl.complex_id
     WHERE c.consumer_nickname = #{nickname}
-      AND d.member_id = #{userId}
-      AND d.status != 'BEFORE_TRANSACTION' AND d.status = 'CLOSE_DEAL'
-
-
+      AND d.status != 'BEFORE_TRANSACTION'
+      AND d.status != 'CLOSE_DEAL'
+    ORDER BY d.created_at DESC
   </select>
 
   <!-- 판매중인 list 모두 조회-->
@@ -102,7 +117,6 @@
            b.building_name,
            b.house_type,
            b.sale_type,
-           b.image_url,
 
            cl.address,
 
@@ -113,9 +127,11 @@
            JOIN chat_room c ON d.chat_room_id = c.chat_room_id
            JOIN building b ON d.building_id = b.building_id
            JOIN complex_list cl ON d.complex_id = cl.complex_id
-    WHERE c.consumer_nickname = #{nickname}
+    WHERE c.seller_nickname = #{nickname}
       AND d.member_id = #{userId}
-      AND d.status != 'BEFORE_TRANSACTION' AND d.status = 'CLOSE_DEAL'
+      AND d.status != 'BEFORE_TRANSACTION'
+      AND d.status != 'CLOSE_DEAL'
+    ORDER BY d.created_at DESC
 
   </select>
 
@@ -131,41 +147,47 @@
     <result property="buildingName" column="building_name"/>
     <result property="houseType" column="house_type"/>
     <result property="saleType" column="sale_type"/>
-    <result property="imageUrl" column="image_url"/>
     <result property="address" column="address"/>
 
     <result property="consumerNickname" column="consumer_nickname"/>
     <result property="sellerNickname" column="seller_nickname"/>
   </resultMap>
 
-<!--    표준계약서 xml 코드 -->
-    <select id="findWithType"
-            parameterType="long"
-            resultMap="DealWithSaleTypeMap">
+  <!--    표준계약서 xml 코드 -->
+  <select id="findWithType"
+    parameterType="long"
+    resultMap="DealWithSaleTypeMap">
 
-        SELECT d.deal_id,
-               d.status,
-               d.user_id,
-               d.building_id,
-               b.sale_type
-        FROM deal d
-                 JOIN building b ON b.building_id = d.building_id
-        WHERE d.deal_id = #{dealId}
+    SELECT d.deal_id,
+           d.status,
+           d.user_id,
+           d.building_id,
+           b.sale_type
+    FROM deal d
+           JOIN building b ON b.building_id = d.building_id
+    WHERE d.deal_id = #{dealId}
 
-    </select>
+  </select>
 
-    <!-- 결과 매핑 -->
-    <resultMap id="DealWithSaleTypeMap"
-               type="bjs.zangbu.deal.dto.join.DealWithSaleType">
+  <!-- 오늘 거래된 매물들의 building_id 조회 -->
+  <select id="selectTodayTradedBuildingIds" resultType="java.lang.Long">
+    SELECT DISTINCT building_id
+    FROM deal
+    WHERE DATE (created_at) = CURDATE()
+  </select>
 
-        <id     property="dealId"     column="deal_id"/>
-        <result property="status"
-                column="status"
-                javaType="bjs.zangbu.deal.vo.DealEnum"/>
-        <result property="userId"     column="user_id"/>
-        <result property="buildingId" column="building_id"/>
-        <result property="saleType"
-                column="sale_type"
-                javaType="bjs.zangbu.notification.vo.SaleType"/>
-    </resultMap>
+  <!-- 결과 매핑 -->
+  <resultMap id="DealWithSaleTypeMap"
+    type="bjs.zangbu.deal.dto.join.DealWithSaleType">
+
+    <id property="dealId" column="deal_id"/>
+    <result property="status"
+      column="status"
+      javaType="bjs.zangbu.deal.vo.DealEnum"/>
+    <result property="userId" column="user_id"/>
+    <result property="buildingId" column="building_id"/>
+    <result property="saleType"
+      column="sale_type"
+      javaType="bjs.zangbu.notification.vo.SaleType"/>
+  </resultMap>
 </mapper>

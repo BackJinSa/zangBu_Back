@@ -24,4 +24,5 @@ public class DealRequest {
     private Long dealId;
     private String status;
   }
+
 }

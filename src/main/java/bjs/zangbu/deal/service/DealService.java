@@ -23,4 +23,7 @@ public interface DealService {
 
   // 상태 변환 메서드
   boolean patchStatus(Status status);
+
+  // 거래 생성
+  Long createDeal(String chatRoomId);
 }

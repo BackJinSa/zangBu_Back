@@ -106,4 +106,13 @@ public class DealResponse {
 
     private List<ReportElement> documentReport; // ReportElement 를 갖는 리스트
   }
+
+  // Deal 생성 후 dealId 반환 DTO
+  @Getter
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class CreateResult {
+
+    private Long dealId;
+  }
 }
