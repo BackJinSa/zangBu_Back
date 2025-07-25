@@ -10,13 +10,13 @@ public interface DealService {
   Notice getNotice(Long buildingId);
 
   // 거래중인 list 모두 조회
-  WaitingList getAllWaitingList(String userId, String nickname);
+  WaitingList getAllWaitingList(String memberId, String nickname);
 
   // 구매 중인 매물 조회
-  WaitingList getPurchaseWaitingList(String userId, String nickname);
+  WaitingList getPurchaseWaitingList(String memberId, String nickname);
 
   // 판매중인 매물 조회
-  WaitingList getOnSaleWaitingList(String userId, String nickname);
+  WaitingList getOnSaleWaitingList(String memberId, String nickname);
 
   // Deal 삭제 메서드
   boolean deleteDealById(Long dealId);
