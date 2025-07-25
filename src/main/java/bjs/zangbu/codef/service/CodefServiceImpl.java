@@ -73,7 +73,7 @@ public class CodefServiceImpl implements CodefService {
             parameterMap.put("identity", );
             parameterMap.put("birthDate", );
             parameterMap.put("identityEncYn", "Y");
-            parameterMap.put("loginTypeLevel", "1");
+            parameterMap.put("loginTypeLevel", );
             parameterMap.put("phoneNo", );
             parameterMap.put("addrSido", );
             parameterMap.put("addrSiGunGu", );
