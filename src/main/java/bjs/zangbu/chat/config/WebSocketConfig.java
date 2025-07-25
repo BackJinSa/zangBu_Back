@@ -15,8 +15,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         //ex: /topic/chat/123을 구독하면 서버는 그 주소로 메시지르 보낼 수 있음.
         config.enableSimpleBroker("/topic");    //simpleBroker : Spring에서 제공하는 메모리 기반 브로커
         // 클라이언트가 메시지를 보낼 때 사용하는 경로의 접두어
-        //ex: 클라이언트가 /app/send-message로 메시지를 보내면 Controller의 @MessageMapping("/send-message")로 매핑
-        config.setApplicationDestinationPrefixes("/app");
+        //ex: 클라이언트가 /pub/chat.message로 메시지를 보내면 Controller의 @MessageMapping("/chat.message")로 매핑
+        config.setApplicationDestinationPrefixes("/pub");
     }
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
