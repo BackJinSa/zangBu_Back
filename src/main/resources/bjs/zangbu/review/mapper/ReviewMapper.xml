@@ -30,4 +30,20 @@
             LIMIT 1
     </select>
 
+
+    <!-- 리뷰 상세보기 기능 쿼리 -->
+    <select id="selectById"
+            resultType="bjs.zangbu.review.dto.ReviewDetailResponse">
+        SELECT
+            review_id          AS reviewId,
+            building_id        AS buildingId,
+            address_id         AS addressId,
+            reviewer_nickname  AS reviewerNickname,
+            rank,
+            content,
+            DATE_FORMAT(created_at, '%Y-%m-%dT%H:%i:%s') AS createdAt
+        FROM review
+        WHERE review_id = #{reviewId}
+    </select>
+
 </mapper>
