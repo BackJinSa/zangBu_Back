@@ -57,11 +57,11 @@
         LIMIT #{size} OFFSET #{offset}
     </select>
 
-    <!-- 채팅방 유무 확인(중복 생성 방지: 매물 + 구매자 하나의 채팅방만 생기도록) -->
-    <select id="existsChatRoom" resultType="boolean">
-        SELECT EXISTS (
-            SELECT 1 FROM chat_room WHERE building_id = #{buildingId} AND member_id = #{consumerId}
-        )
+    <!-- 채팅방 유무 확인(중복 생성 방지: 매물 + 구매자 하나의 채팅방만 생기도록), 이미 채팅방 존재하면 ChatRoom 반환, 채팅방 없으면 null 반환. -->
+    <select id="existsChatRoom" resultType="bjs.zangbu.chat.vo.ChatRoom">
+        SELECT chat_room_id, building_id, member_id, complex_id, seller_nickname, consumer_nickname
+        FROM chat_room
+        WHERE building_id = #{buildingId} AND member_id = #{consumerId}
     </select>
 
     <!-- 채팅방 생성 -->
