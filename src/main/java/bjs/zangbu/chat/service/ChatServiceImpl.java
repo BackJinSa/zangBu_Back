@@ -54,7 +54,8 @@ public class ChatServiceImpl implements ChatService{
 
         ChatRoom existsedChatRoom = chatMapper.existsChatRoom(buildingId, consumerId);
 
-        if (existsedChatRoom == null) { //buildingId, consumerId으로 채팅방이 없을 때만 채팅방 생성
+
+        if (existsedChatRoom == null) { //buildingId, consumerId의 조합의 채팅방이 없을 때만 채팅방 생성
             chatMapper.insertChatRoom(chatRoom);
             return chatRoom;
         } else {
