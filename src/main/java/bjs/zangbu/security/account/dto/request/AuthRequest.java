@@ -1,8 +1,13 @@
 package bjs.zangbu.security.account.dto.request;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+
+import java.io.IOException;
 
 public class AuthRequest {
 
@@ -13,6 +18,15 @@ public class AuthRequest {
     public static class LoginRequest{
         private String email;
         private String password;
+
+        public static LoginRequest of(HttpServletRequest request) {
+            ObjectMapper om = new ObjectMapper();
+            try {
+                return om.readValue(request.getInputStream(), LoginRequest.class);
+            } catch (IOException e) {
+                throw new BadCredentialsException("username 또는 password가 없음");
+            } //catch
+        } //of
     }
 
     // /auth/email Request
