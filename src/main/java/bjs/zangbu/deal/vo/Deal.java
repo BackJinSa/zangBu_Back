@@ -28,7 +28,7 @@ public class Deal {
   private Long buildingId;
 
   // 유저 식별 id
-  private String userId;
+  private String memberId;
 
   // 단지 식별 id
   private Long complexId;

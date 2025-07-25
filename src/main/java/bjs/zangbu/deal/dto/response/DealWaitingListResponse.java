@@ -3,6 +3,7 @@ package bjs.zangbu.deal.dto.response;
 import bjs.zangbu.deal.dto.join.DealWithChatRoom;
 import com.github.pagehelper.PageInfo;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,7 +30,10 @@ public class DealWaitingListResponse {
     private String dealStatus; // 거래 상태(구매 중, 판매 중)
 
     // DealWithChatRoom DTO -> WaitingListElement DTO
-    public static WaitingListElement toDto(DealWithChatRoom dto, String myNickname) {
+    public static WaitingListElement toDto(
+        DealWithChatRoom dto,
+        String myNickname,
+        String imageUrl) {
       String status = "";
       if (myNickname.equals(dto.getConsumerNickname())) {
         status = "구매중";
@@ -43,10 +47,24 @@ public class DealWaitingListResponse {
           dto.getBuildingName(),
           dto.getHouseType(),
           dto.getSaleType(),
-          dto.getImageUrl(),
+          imageUrl,
           dto.getAddress(),
           status
       );
+    }
+
+    // 다건 변환: Service에서 imageMap 만들어서 넘겨줌
+    public static List<WaitingListElement> fromList(
+        List<DealWithChatRoom> deals,
+        String nickname,
+        Map<Long, String> imageMap
+    ) {
+      return deals.stream()
+          .map(deal -> {
+            String imageUrl = imageMap.getOrDefault(deal.getBuildingId(), "");
+            return toDto(deal, nickname, imageUrl);
+          })
+          .collect(Collectors.toList());
     }
   }
 
@@ -65,10 +83,13 @@ public class DealWaitingListResponse {
 
     private List<WaitingListElement> deals; // WaitingListElement 를 갖는 리스트
 
-    public static WaitingList toDto(PageInfo<DealWithChatRoom> dtoList, String nickname) {
-      List<WaitingListElement> convertedList = dtoList.getList().stream()
-          .map(deal -> WaitingListElement.toDto(deal, nickname))
-          .collect(Collectors.toList());
+    public static WaitingList toDto(
+        PageInfo<DealWithChatRoom> dtoList,
+        String nickname,
+        Map<Long, String> imageMap
+    ) {
+      List<WaitingListElement> convertedList = WaitingListElement.fromList(dtoList.getList(),
+          nickname, imageMap);
 
       return new WaitingList(
           dtoList.getPageNum(),

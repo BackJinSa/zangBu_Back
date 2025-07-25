@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import bjs.zangbu.deal.dto.join.DealWithChatRoom;
 import bjs.zangbu.deal.dto.join.DealWithSaleType;
 import bjs.zangbu.deal.dto.request.DealRequest.Status;
+import bjs.zangbu.deal.dto.response.DealResponse.CreateResult;
 import bjs.zangbu.deal.mapper.DealMapper;
 import bjs.zangbu.deal.service.ContractService;
 import bjs.zangbu.deal.service.ContractServiceImpl;
@@ -59,6 +60,17 @@ class DealControllerTest {
     public DealWithSaleType findWithType(Long id) {          // 테스트 대상
       return id.equals(dealId) ? build() : null;
     }
+
+    @Override
+    public List<Long> selectTodayTradedBuildingIds() {
+      return List.of();
+    }
+
+    @Override
+    public int createDeal(String chatRoomId, CreateResult result) {
+      return 0;
+    }
+
 
     /* 나머지 메서드는 테스트에 필요 없으므로 기본 구현 */
     @Override
