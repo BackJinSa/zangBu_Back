@@ -66,10 +66,10 @@ public class ReviewController {
 
         try {
             // 추후 토큰부 개발 시 수정
-            //String userId   = TokenUtil.getUserId(bearerToken);
+            //String memberId   = TokenUtil.getMemberId(bearerToken);
             //String nickname = TokenUtil.getNickname(bearerToken);
             ReviewCreateResponse resp =
-                    reviewService.createReview(req, "임시 아이디(userId)", "임시 닉네임(nickname)");
+                    reviewService.createReview(req, "임시 아이디(memberId)", "임시 닉네임(nickname)");
 
 
 

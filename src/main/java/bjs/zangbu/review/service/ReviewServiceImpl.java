@@ -73,7 +73,7 @@ public class ReviewServiceImpl implements ReviewService{
 
         ReviewInsertParam param = new ReviewInsertParam();
         param.setBuildingId(req.getBuildingId());
-        param.setUserId(userId);
+        param.setMemberId(userId);
         param.setAddressId(req.getAddressId());
         param.setReviewerNickname(nickname);
         param.setRank(req.getRank());

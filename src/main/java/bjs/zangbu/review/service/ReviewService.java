@@ -14,5 +14,5 @@ public interface ReviewService {
 
 
     // 리뷰 작성 기능
-    ReviewCreateResponse createReview(ReviewCreateRequest req, String userId, String nickname);
+    ReviewCreateResponse createReview(ReviewCreateRequest req, String memberId, String nickname);
 }

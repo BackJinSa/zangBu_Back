@@ -8,7 +8,7 @@ import lombok.Setter;
 public class ReviewInsertParam {
     private Long   reviewId; // 자동 생성된 PK
     private Long   buildingId;
-    private String userId;
+    private String memberId;
     private Long   addressId;
     private String reviewerNickname;
     private Integer rank;
