@@ -6,7 +6,6 @@ import bjs.zangbu.deal.dto.request.DealRequest.Status;
 import bjs.zangbu.deal.dto.response.DealResponse;
 import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
-import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingListElement;
 import bjs.zangbu.deal.service.ContractService;
 import bjs.zangbu.deal.service.DealService;
 import bjs.zangbu.member.service.UserService;
@@ -94,9 +93,12 @@ public class DealController {
       @RequestParam(defaultValue = "10") int size         // 페이지당 항목 수
   ) {
     try {
+
       String userId = userDetails.getUsername();
       String nickname = userService.getNickname(userId); // 닉네임 추출
 
+      // PageHelper 페이지네이션 시작
+      PageHelper.startPage(page, size);
       WaitingList response = dealService.getPurchaseWaitingList(userId, nickname);
       return ResponseEntity.status(HttpStatus.OK).body(response);
 
@@ -111,12 +113,16 @@ public class DealController {
    */
   @GetMapping("/waitinglist/onsale")
   public ResponseEntity<?> getOnSaleWaitingList(
-      @AuthenticationPrincipal UserDetails userDetails
+      @AuthenticationPrincipal UserDetails userDetails,
+      @RequestParam(defaultValue = "1") int page,         // 요청 페이지 (1부터 시작)
+      @RequestParam(defaultValue = "10") int size         // 페이지당 항목 수
   ) {
     try {
       String userId = userDetails.getUsername();
       String nickname = userService.getNickname(userId); // 닉네임 추출
 
+      // PageHelper 페이지네이션 시작
+      PageHelper.startPage(page, size);
       WaitingList response = dealService.getOnSaleWaitingList(userId, nickname);
       return ResponseEntity.status(HttpStatus.OK).body(response);
 
@@ -183,9 +189,9 @@ public class DealController {
 
     //2. 절대 URL(Host·Port 포함) 생성
     String absoultePath = ServletUriComponentsBuilder
-            .fromCurrentContextPath()
-            .path(relativePath)
-            .toUriString();
+        .fromCurrentContextPath()
+        .path(relativePath)
+        .toUriString();
 
     return ResponseEntity.ok(new DealResponse.Download(absoultePath));
   }

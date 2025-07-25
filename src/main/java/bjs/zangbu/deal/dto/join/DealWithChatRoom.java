@@ -22,7 +22,6 @@ public class DealWithChatRoom {
   private String buildingName;// 주소
   private String houseType;// 부동산 타입
   private String saleType;// 매물 종류
-  private String imageUrl; // 이미지
   private String address; // 주소
 
   private String consumerNickname; // 구매자 닉네임
