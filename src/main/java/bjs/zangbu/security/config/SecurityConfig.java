@@ -6,13 +6,17 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
@@ -43,28 +47,49 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return encodingFilter;
     }
 
+    // 접근 제한무시경로설정–resource
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/assets/**", "/*", "/api/member/**",
+                "/swagger-ui.html", "/webjars/**", "/swagger-resources/**", "/v2/api-docs"
+                // Swagger 관련url은보안에서제외
+        );
+    }
+
     //configure(HttpSecurity http) : http 요청별 보안 정책 설정
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.addFilterBefore(encodingFilter(), CsrfFilter.class);
+//        http.addFilterBefore(encodingFilter(), CsrfFilter.class); --WebConfig에 추가 되어있어서 삭제
+        http
+                .addFilterBefore(jwtUsernamePasswordAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, JwtUsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(authenticationErrorFilter, JwtAuthenticationFilter.class);
 
         // 경로별 접근 권한 설정
+        http.httpBasic().disable() // 기본 브라우저 팝업 로그인 창 비활성화
+                .csrf().disable() // CSRF 보호 기능 비활성화 (보통 API 개발 시 사용)
+                .formLogin().disable() // 스프링 시큐리티 기본 로그인 폼 비활성화
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); // 세션 사용 안 함 (JWT 등 사용할 때)
+        //-> JWT 기반 인증 : 매 요청마다 토큰으로 인증
+
         http.authorizeRequests()
-                .antMatchers("/security/all").permitAll()
-                .antMatchers("/security/admin").access("hasRole('ROLE_ADMIN')")
-                .antMatchers("/security/member").access("hasAnyRole('ROLE_MEMBER', 'ROLE_ADMIN')");
+                .antMatchers("/security/all").permitAll() // 누구나 접근 허용
+                .antMatchers("/security/admin").hasRole("ADMIN") // ADMIN 권한 필요
+                .antMatchers("/security/member").hasAnyRole("ADMIN", "MEMBER") // ADMIN 또는 MEMBER 권한 필요
+                .anyRequest().permitAll(); // 나머지 요청은 모두 허용
 
-        http.formLogin() //로그인 설정
-                .loginPage("/security/login") // 커스텀 로그인 페이지
-                .loginProcessingUrl("/security/login") // 로그인 요청 URL
-                .defaultSuccessUrl("/"); // 로그인 성공 시 이동할 URL
+        http.formLogin()
+                .loginPage("/security/login") // 커스텀 로그인 페이지 URL
+                .loginProcessingUrl("/security/login") // 로그인 form의 action URL (POST로 처리됨)
+                .defaultSuccessUrl("/"); // 로그인 성공 시 이동할 기본 경로
 
-        http.logout() // 로그아웃 설정 시작
-                .logoutUrl("/security/logout") // POST: 로그아웃 호출 url
-                .invalidateHttpSession(true) // 세션 invalidate
-                .deleteCookies("remember-me", "JSESSION-ID") // 삭제할 쿠키 목록
-                .logoutSuccessUrl("/security/logout"); // GET: 로그아웃 이후 이동할 페이지
+        http.logout()
+                .logoutUrl("/security/logout") // 로그아웃 처리 URL
+                .invalidateHttpSession(true) // 세션 무효화
+                .deleteCookies("remember-me", "JSESSION-ID") // 쿠키 제거
+                .logoutSuccessUrl("/security/logout"); // 로그아웃 성공 후 이동 경로
     }
+
 
     //configure(AuthenticationManagerBuilder) : 사용자 인증 방법/암호화 방식 설정
     @Override
@@ -73,5 +98,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
+    }
+
+    @Bean
+    @Override
+    //있어야 authenticationManager() 관련 기능이 제대로 동작
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
 }

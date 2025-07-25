@@ -40,6 +40,8 @@ public class Member {
     //사용자 이름
     private String name;
 
+    //security에서 로그인한 사용자 권한 표현
+    // -> role 값 기준으로 권한(ROLE_USER, ROLE_ADMIN) 넘겨줌
     public Collection<? extends GrantedAuthority> getAuthorities(){
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
