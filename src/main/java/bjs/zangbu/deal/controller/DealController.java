@@ -8,6 +8,8 @@ import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
 import bjs.zangbu.deal.service.ContractService;
 import bjs.zangbu.deal.service.DealService;
+import bjs.zangbu.documentReport.dto.response.DocumentReportResponse.DocumentReportElement;
+import bjs.zangbu.documentReport.service.DocumentReportService;
 import bjs.zangbu.member.service.MemberService;
 import com.github.pagehelper.PageHelper;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,7 @@ public class DealController {
   private final DealService dealService;
   private final MemberService userService;
   private final ContractService contractService;
+  private final DocumentReportService documentReportService;
 
   /* -------------------------------------------------
    * 1. 거래 안내/대기 목록
@@ -154,7 +157,7 @@ public class DealController {
    * ------------------------------------------------- */
 
   /**
-   * 6) 거래 중인 매물(전체)
+   * 6) 등기/건축 서류 다운로드
    */
   @GetMapping("/consumer/documents/{dealId}/{type}/download")
   public ResponseEntity<?> downloadDocument(@PathVariable Long dealId,
@@ -234,5 +237,19 @@ public class DealController {
 
   }
 
+  /**
+   * 13) 거래 상태 변경
+   */
+  @GetMapping("/consumer/report/{reportId}")
+  public ResponseEntity<?> getReport(@PathVariable Long reportId) {
+    try {
+      DocumentReportElement response = documentReportService.getDocumentReportByReportId(reportId);
+      return ResponseEntity.status(HttpStatus.OK).body(response);
+    } catch (NullPointerException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("리포트 요청에 실패했습니다.");
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("리포트를 찾을 수 없습니다.");
+    }
+  }
 
 }
