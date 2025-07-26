@@ -93,4 +93,16 @@ public class ReviewServiceImpl implements ReviewService{
                 createdAt
         );
     }
+
+    // 리뷰 삭제
+    @Override
+    public void deleteReview(Long reviewId) {
+        if (reviewId == null || reviewId <= 0) {
+            throw new IllegalArgumentException("리뷰 삭제에 실패했습니다.");
+        }
+        int deleted = reviewMapper.deleteReview(reviewId);
+        if (deleted == 0) {
+            throw new ReviewNotFoundException(reviewId);
+        }
+    }
 }
