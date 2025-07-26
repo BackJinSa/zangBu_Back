@@ -10,7 +10,7 @@ public interface NotificationMapper {
     // 전체 알림 조회
     List<Notification> selectAllByMemberId(String memberId);
 
-    // 알림 읽음 처리
+    // 하나의 알림 읽음 처리
     int updateIsRead(String memberId, Long notificationId);
 
     // 전체 알림 읽음 처리

@@ -1,21 +1,29 @@
 package bjs.zangbu.review.service;
 
+import bjs.zangbu.review.dto.request.ReviewCreateRequest;
+import bjs.zangbu.review.dto.response.ReviewCreateResponse;
 import bjs.zangbu.review.dto.response.ReviewDetailResponse;
 import bjs.zangbu.review.dto.response.ReviewListResponse;
 import bjs.zangbu.review.dto.response.ReviewListResult;
 import bjs.zangbu.review.exception.ReviewNotFoundException;
+import bjs.zangbu.review.mapper.ReviewInsertParam;
 import bjs.zangbu.review.mapper.ReviewMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService{
     private final ReviewMapper reviewMapper;
+
+    // 날짜 형식 설정
+    private static final DateTimeFormatter DF =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public ReviewListResult listReviews(Long buildingId, int page, int size) {
@@ -50,5 +58,39 @@ public class ReviewServiceImpl implements ReviewService{
             throw new ReviewNotFoundException(reviewId);
         }
         return detail;
+    }
+
+    // 리뷰 작성
+    @Override
+    public ReviewCreateResponse createReview(ReviewCreateRequest req, String userId, String nickname) {
+        if (req.getBuildingId() == null ||
+                req.getAddressId()  == null ||
+                req.getRank()       == null ||
+                req.getRank() < 1   ||
+                req.getRank() > 5) {
+            throw new IllegalArgumentException("리뷰 작성에 실패했습니다."); // 400
+        }
+
+        ReviewInsertParam param = new ReviewInsertParam();
+        param.setBuildingId(req.getBuildingId());
+        param.setMemberId(userId);
+        param.setAddressId(req.getAddressId());
+        param.setReviewerNickname(nickname);
+        param.setRank(req.getRank());
+        param.setContent(req.getContent());
+
+        reviewMapper.insertReview(param);
+        Long newId = param.getReviewId();
+
+        String createdAt = DF.format(java.time.LocalDateTime.now());
+        return new ReviewCreateResponse(
+                newId,
+                req.getBuildingId(),
+                nickname,
+                req.getFloor(),
+                req.getRank(),
+                req.getContent(),
+                createdAt
+        );
     }
 }

@@ -2,6 +2,7 @@ package bjs.zangbu.global.config;
 
 
 import bjs.zangbu.chat.config.WebSocketConfig;
+import bjs.zangbu.security.config.SecurityConfig;
 import jakarta.servlet.Filter;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletRegistration;
@@ -17,7 +18,7 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
 
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class[]{RootConfig.class};
+        return new Class[]{RootConfig.class, SecurityConfig.class};
     }
 
     @Override

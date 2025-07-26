@@ -26,7 +26,7 @@ public interface NotificationService {
     void detectPriceChangeForAllBookmarks();
 
     // [트리거] 실거래 발생 감지 (스케줄러 + FCM 메시지 발송)
-    void detecTradeHappenedTody();
+    void detecTradeHappenedNow(Long dealId);
 
     // [실시간 트리거] 리뷰 등록 감지
     // (Review 등록 서비스 내부에서 실행 + FCM 메시지 발송)
