@@ -1,14 +1,9 @@
 package bjs.zangbu.chat.config;
 
-import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,27 +15,6 @@ public class RabbitMQConfig {
     public static final String QUEUE_NAME = "chat.queue";           //메시지를 저장하고 소비하는 큐 이름
     public static final String EXCHANGE_NAME = "chat.exchange";     //메시지를 전달할 때 거치는 라우터 역할
     public static final String ROUTING_KEY = "chat.key";            //메시지를 어떤 큐로 보낼지 지정하는 주소 역할
-
-    @Bean
-    public ConnectionFactory connectionFactory() {
-        CachingConnectionFactory factory = new CachingConnectionFactory("localhost");
-        //기본 계정인 guest/guest로 로그인 설정
-        factory.setUsername("guest");
-        factory.setPassword("guest");
-        return factory;
-    }
-    
-    @Bean
-    public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
-        //Spirng AMQP에서 제공하는 RabbitMQ 관리 도구 (큐, 익스체인지, 바인딩 등을 자동으로 등록해줌)
-        return new RabbitAdmin(connectionFactory);
-    }
-
-    @Bean
-    public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
-        //실제로 메시지를 보낼 때 사용하는 객체, 내부적으로는 RabbitTemplate를 사용해서 메시지를 RabbitMQ에 전송
-        return new RabbitTemplate(connectionFactory);
-    }
 
     @Bean
     public Queue chatQueue() {

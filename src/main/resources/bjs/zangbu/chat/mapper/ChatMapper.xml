@@ -24,7 +24,8 @@
         <if test="lastMessageId != null">
             AND chat_message_id &lt; #{lastMessageId}
         </if>
-        ORDER BY chat_message_id DESC
+    <!-- created_at, chat_message_id 메시지 많아지면 두 컬럼에 인덱스 사용 고려(두 가지 한 번에 복합인덱스로) -->
+        ORDER BY created_at DESC, chat_message_id DESC
         LIMIT #{limit}
     </select>
 

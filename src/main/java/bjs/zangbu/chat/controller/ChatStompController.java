@@ -2,7 +2,6 @@ package bjs.zangbu.chat.controller;
 
 import bjs.zangbu.chat.dto.request.ChatRequest;
 import bjs.zangbu.chat.dto.response.ChatResponse;
-import bjs.zangbu.chat.service.ChatProducer;
 import bjs.zangbu.chat.service.ChatService;
 import bjs.zangbu.chat.vo.ChatMessage;
 import lombok.RequiredArgsConstructor;
@@ -14,13 +13,32 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 @RequiredArgsConstructor
-public class ChatStompController {
+public class ChatStompController {  //WebSocket 메시지 수신 컨트롤러
 
-    private final ChatProducer chatProducer;
+    private final ChatService chatService;
+    //서버에서 클라이언트로 STOMP 메시지를 보낼 때 사용하는 도구
+    private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/chat.send")
-    public void handleChat(ChatMessage message) {
-        chatProducer.sendMessage(message);  //RabbitMQ로 전달
+    @MessageMapping("/chat.send/{roomId}")
+    public void handleSendMessage(
+            //@MessageMapping 경로의 {roomId} 부분
+            //@DestinationVariable은 @PathVariable의 WebSocket(STOMP) 버전 
+            @DestinationVariable String roomId,
+            //클라이언트가 보낸 채팅 메시지(JSON 형식) -> @Payload로 역직렬화됨.
+            //@Payload는 메시지 본문 추출
+            @Payload ChatRequest.SendMessageRequest request
+
+            /*
+            나중에 필요시 사용
+            @Header("headerName") : Header 추출
+            @Header("simpSessionId") : SessionId 추출
+             */
+    ) {
+        // 받은 메시지 DB에 저장 -> 클라이언트에게 보낼 메시지 형태인 응답 DTO(SendMessageResponse)로 가공
+        ChatResponse.SendMessageResponse response = chatService.sendMessage(roomId, request);
+
+        // 채팅방 구독자(/topic/chat/{roomId}를 구독하고 있는 모든 클라이언트)에게 메시지 브로드캐스트(response를 실시간 전송)
+        messagingTemplate.convertAndSend("/topic/chat/" + roomId, response);
     }
 
 }
