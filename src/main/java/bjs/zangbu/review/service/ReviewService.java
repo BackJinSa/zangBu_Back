@@ -15,4 +15,8 @@ public interface ReviewService {
 
     // 리뷰 작성 기능
     ReviewCreateResponse createReview(ReviewCreateRequest req, String memberId, String nickname);
+
+
+    // 리뷰 삭제 기능
+    void deleteReview(Long reviewId);
 }

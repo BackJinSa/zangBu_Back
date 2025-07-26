@@ -69,4 +69,11 @@
              #{content},
              NOW())
     </insert>
+
+
+    <!-- 리뷰 삭제 -->
+    <delete id="deleteReview" parameterType="long">
+        DELETE FROM review
+        WHERE review_id = #{reviewId}
+    </delete>
 </mapper>

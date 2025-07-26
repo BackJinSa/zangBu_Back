@@ -85,4 +85,23 @@ public class ReviewController {
                     .body("서버에서 리뷰 작성 중 오류가 발생했습니다.");
         }
     }
+
+
+    // DELETE /review/{reviewId}
+    @DeleteMapping("/{reviewId}")
+    public ResponseEntity<?> delete(@PathVariable Long reviewId) {
+        try {
+            reviewService.deleteReview(reviewId);
+            return ResponseEntity.noContent().build(); // 204
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body("리뷰 삭제에 실패했습니다.");
+        } catch (ReviewNotFoundException e) {
+            return ResponseEntity.badRequest()
+                    .body("리뷰 삭제에 실패했습니다."); // 스펙에서 404가 아니라 400 처리
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body("서버에서 리뷰를 삭제하던중 오류가 발생했습니다.");
+        }
+    }
 }
