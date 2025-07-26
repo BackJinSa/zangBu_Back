@@ -37,7 +37,7 @@ import org.w3c.dom.DocumentType;
 public class DealController {
 
   private final DealService dealService;
-  private final MemberService userService;
+  private final MemberService memberService;
   private final ContractService contractService;
   private final DocumentReportService documentReportService;
 
@@ -70,7 +70,7 @@ public class DealController {
   ) {
     try {
       String memberId = userDetails.getUsername();
-      String nickname = userService.getNickname(memberId); // 닉네임 추출
+      String nickname = memberService.getNickname(memberId); // 닉네임 추출
 
       // PageHelper 페이지네이션 시작
       PageHelper.startPage(page, size);
@@ -98,7 +98,7 @@ public class DealController {
     try {
 
       String userId = userDetails.getUsername();
-      String nickname = userService.getNickname(userId); // 닉네임 추출
+      String nickname = memberService.getNickname(userId); // 닉네임 추출
 
       // PageHelper 페이지네이션 시작
       PageHelper.startPage(page, size);
@@ -122,7 +122,7 @@ public class DealController {
   ) {
     try {
       String userId = userDetails.getUsername();
-      String nickname = userService.getNickname(userId); // 닉네임 추출
+      String nickname = memberService.getNickname(userId); // 닉네임 추출
 
       // PageHelper 페이지네이션 시작
       PageHelper.startPage(page, size);
