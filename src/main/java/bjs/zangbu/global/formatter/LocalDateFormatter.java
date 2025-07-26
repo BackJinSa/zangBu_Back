@@ -22,7 +22,7 @@ public class LocalDateFormatter {
         return createdAt.format(DateTimeFormatter.ofPattern("MM/dd"));
       }
 
-      // 위의 두 조건 모두 해당되지 :ㅈㅂ않으면 년/월/일 형태로 반환
+      // 위의 두 조건 모두 해당되지 않으면 년/월/일 형태로 반환
       return createdAt.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
     }
   }
