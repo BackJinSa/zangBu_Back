@@ -2,6 +2,7 @@ package bjs.zangbu.notification.dto.response;
 
 import bjs.zangbu.notification.vo.Notification;
 import bjs.zangbu.notification.vo.Type;
+import com.github.pagehelper.PageInfo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,20 +23,24 @@ public class NotificationResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class NotificationAll {
-        private int totalCount; // 전체 알림 개수
-
-        // notificationElement를 갖는 리스트
+        private int pageNum;
+        private int pageSize;
+        private long totalElements;
+        private int totalPages;
         private List<NotificationElement> notifications;
 
-        public static NotificationAll toDto(List<Notification> notifications) {
-            List<NotificationElement> result = notifications.stream()
-                    // Notification -> from(Notification) -> NotificationElement
+        // PageInfo<Notification> → DTO로 변환
+        public static NotificationAll toDto(PageInfo<Notification> pageInfo) {
+            List<NotificationElement> notificationList = pageInfo.getList().stream()
                     .map(notification -> NotificationElement.toDto(notification))
                     .collect(Collectors.toList());
 
             return new NotificationAll(
-                    result.size(),
-                    result
+                    pageInfo.getPageNum(),
+                    pageInfo.getPageSize(),
+                    pageInfo.getTotal(),
+                    pageInfo.getPages(),
+                    notificationList
             );
         }
     }
