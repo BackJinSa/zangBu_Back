@@ -3,11 +3,15 @@ import bjs.zangbu.building.dto.response.BuildingResponse.*;
 import bjs.zangbu.building.dto.request.BuildingRequest.*;
 import bjs.zangbu.building.service.BuildingService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.api.gax.rpc.UnauthenticatedException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.io.UnsupportedEncodingException;
 
 @RestController
@@ -51,6 +55,9 @@ public class BuildingController {
     // 매물 등록 POST 요청 처리
     @PostMapping("/upload")
     public ResponseEntity<?> saleRegistration(@RequestBody SaleRegistrationRequest request, @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null || userDetails.getUsername().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인을 한 사용자만 매물 등록 가능합니다.");
+        }
         // 인증된 사용자 아이디 추출
         String memberId = userDetails.getUsername();
         // 매물 등록 서비스 호출

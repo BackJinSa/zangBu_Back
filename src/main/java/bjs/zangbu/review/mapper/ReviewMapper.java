@@ -18,4 +18,10 @@ public interface ReviewMapper {
 
     // 리뷰 상세보기 기능
     ReviewDetailResponse selectById(@Param("reviewId") Long reviewId);
+
+    // 리뷰 작성 기능
+    int insertReview(ReviewInsertParam param);
+
+    // 리뷰 삭제 기능
+    int deleteReview(@Param("reviewId") Long reviewId);
 }
