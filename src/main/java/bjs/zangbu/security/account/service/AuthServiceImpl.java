@@ -6,12 +6,14 @@ import bjs.zangbu.security.account.dto.request.AuthRequest.LoginRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.SignUp;
 import bjs.zangbu.security.account.dto.request.AuthRequest.VerifyRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.ResetPassword;
+import bjs.zangbu.security.account.dto.response.AuthResponse.TokenResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.EmailAuthResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.LoginResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.AuthVerify;
 import bjs.zangbu.security.account.mapper.AuthMapper;
 import bjs.zangbu.security.account.vo.Member;
 import bjs.zangbu.security.util.JwtProcessor;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -152,5 +154,40 @@ public class AuthServiceImpl implements AuthService {
         session.removeAttribute("verifiedEmail");
     }
 
+    //토큰 재발급
+    public TokenResponse reissue(String refreshToken){
+        //refresh 토큰 유효성 검사
+        if(!jwtProcessor.validateToken(refreshToken)){
+            throw new JwtException("유효하지 않은 refresh 토큰입니다.");
+        }
 
+        //refresh 토큰 비교할 때 필요한 email 추출
+        String email = jwtProcessor.getEmail(refreshToken);
+
+        //redis에 저장된 refresh 토큰과 일치 여부 확인
+        String storedRefreshToken = redisTemplate.opsForValue.get("refresh:"+email);
+        //저장된 refresh 토큰 없으면
+        if(storedRefreshToken == null){
+            throw new IllegalStateException("refresh 토큰이 서버에 존재하지 않습니다.");
+        }
+
+        //있으면, 일치하는지 확인
+        if(!storedRefreshToken.equals(refreshToken)){
+            throw new JwtException("서버에 저장된 refresh 토큰과 일치하지 않습니다.");
+        }
+
+        Member member = mapper.findByEmail(email);
+        if (member == null) {
+            throw new IllegalArgumentException("회원 정보를 찾을 수 없습니다.");
+        }
+
+        //새로운 access, refresh 토큰 발급 후 반환
+        String newAccessToken = jwtProcessor.generateAccessToken(email, member.getRole().name());
+        String newRefreshToken = jwtProcessor.generateRefreshToken(email);
+
+        //redis에 새 refresh 토큰 세팅
+        redisTemplate.opsForValue().set("refresh:"+email, newRefreshToken);
+
+        return new TokenResponse(newAccessToken, newRefreshToken);
+    }
 }

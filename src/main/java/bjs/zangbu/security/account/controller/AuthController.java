@@ -7,6 +7,11 @@ import bjs.zangbu.security.account.dto.response.AuthResponse.LoginResponse;
 
 import bjs.zangbu.security.account.service.AuthService;
 import bjs.zangbu.security.util.JwtProcessor;
+import com.google.api.client.auth.oauth2.TokenResponse;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +27,29 @@ public class AuthController {
 
     // 1. 로그인
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        LoginResponse response = authService.login(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<LoginResponse> login(
+            @RequestBody LoginRequest request,
+            HttpServletResponse response) {
+        LoginResponse loginResponse = authService.login(request);
+
+        //쿠키에 refresh 토큰 담기
+        Cookie refreshCookie = new Cookie("refreshToken", loginResponse.getRefreshToken());
+        refreshCookie.setHttpOnly(true); //JS 접근 방지
+        refreshCookie.setSecure(true); //Https에서만 전송 가능하도록
+        refreshCookie.setPath("/"); //전체 경로에 대해 유효함
+        refreshCookie.setMaxAge(7*24*60*60); //7일간 유효(초단위)
+
+        response.addCookie(refreshCookie);
+
+        //access 토큰은 클라이언트에 바디로 전달
+        //refresh 토큰은 쿠키로 숨겨서 클라이언트에 저장
+        return ResponseEntity.ok(new LoginResponse(loginResponse.getAccessToken(), null, loginResponse.getRole()));
     }
 
     // 2. 로그아웃
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String accessTokenHeader){
+    public ResponseEntity<Void> logout(
+            @RequestHeader("Authorization") String accessTokenHeader){
         //토큰 추출
         String accessToken = accessTokenHeader.replace("Bearer", "");
         //이메일(아이디) 추출
@@ -40,13 +60,15 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    // 3. 아이디 찾기
+    // 3. 아이디(이메일) 찾기
     @PostMapping("/email")
     public ResponseEntity<EmailAuthResponse> findEmail(
             @RequestHeader("Authorization") String accessTokenHeader,
             @RequestBody EmailAuthRequest request) {
 
+        //헤더에서 jwt만 추출
         String accessToken = accessTokenHeader.replace("Bearer ", "").trim();
+        //토큰 유효성 검사
         if (!jwtProcessor.validateToken(accessToken)) {
             return ResponseEntity.status(401).build();
         }
@@ -57,19 +79,39 @@ public class AuthController {
 
     //4. 비밀번호 재설정
     @PostMapping("/password")
-    public ResponseEntity<Void> resetPassword(@RequestBody ResetPassword request, HttpSession session) {
+    public ResponseEntity<Void> resetPassword(
+            @RequestHeader("Authorization") String accessTokenHeader,
+            @RequestBody ResetPassword request,
+            HttpSession session) {
+
+        //헤더에서 jwt만 추출
+        String accessToken = accessTokenHeader.replace("Bearer ", "").trim();
+        //토큰 유효성 검사
+        if (!jwtProcessor.validateToken(accessToken)) {
+            return ResponseEntity.status(401).build();
+        }
+
         authService.resetPassword(request, session);
         return ResponseEntity.ok().build();
     }
 
     //5. 본인인증 요청
     @PostMapping("/verify")
-    public ResponseEntity<AuthVerify> verifyAuthenticity(@RequestBody VerifyRequest request, HttpSession session) {
-        AuthVerify result = authService.verifyAuthenticity(request);
+    public ResponseEntity<AuthVerify> verifyAuthenticity(
+            @RequestHeader("Authorization") String accessTokenHeader,
+            @RequestBody VerifyRequest request,
+            HttpSession session) {
+        //헤더에서 jwt만 추출
+        String accessToken = accessTokenHeader.replace("Bearer ", "").trim();
+        //토큰 유효성 검사
+        if (!jwtProcessor.validateToken(accessToken)) {
+            return ResponseEntity.status(401).build();
+        }
 
+        AuthVerify result = authService.verifyAuthenticity(request);
         // 진위 확인 성공 시 인증 상태 세션에 저장
         if ("Y".equalsIgnoreCase(result.getResAuthenticity())) {
-            session.setAttribute("verifiedEmail", request.getEmail()); // or request.getIdentity() 등으로 조정
+            session.setAttribute("verifiedEmail", request.getEmail());
         }
 
         return ResponseEntity.ok(result);
@@ -98,5 +140,27 @@ public class AuthController {
 
     // 9. 토큰 재발급 요청 --access 토큰 만료 시 클라이언트가 refresh 토큰 전송
     // -> redis에 저장된 refresh 토큰과 비교해서 유효 시 새로운 access 토큰 발급
-
+    @PostMapping("/reissue")
+    public ResponseEntity<?> reissue(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            @RequestHeader(value = "Authorization", required = false) String accessTokenHeader){
+        if(refreshToken == null){
+            return ResponseEntity.status(409).body("쿠키가 존재하지 않습니다");
+        }
+        try{
+            //토큰 재발급
+            TokenResponse newTokens = authService.reissue(refreshToken);
+            //재발급 성공하면 리턴
+            return ResponseEntity.ok(newTokens);
+        } catch (ExpiredJwtException e){
+            //토큰 유효기간 만료 400
+            return ResponseEntity.badRequest().body("refresh 토큰이 만료되었습니다.");
+        } catch (JwtException e){
+            //토큰 손상된 경우(위조/서명 검증 실패) 400
+            return ResponseEntity.badRequest().body("유효하지 않은 토큰입니다.");
+        } catch (IllegalStateException e){
+            //Redis에 저장된 refreshToken이 없음 409
+            return ResponseEntity.status(409).body(e.getMessage());
+        }
+    }
 }

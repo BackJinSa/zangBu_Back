@@ -5,6 +5,7 @@ import bjs.zangbu.security.account.dto.request.AuthRequest.ResetPassword;
 import bjs.zangbu.security.account.dto.request.AuthRequest.VerifyRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.SignUp;
 import bjs.zangbu.security.account.dto.request.AuthRequest.LoginRequest;
+import bjs.zangbu.security.account.dto.response.AuthResponse.TokenResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.EmailAuthResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.LoginResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.AuthVerify;
@@ -37,4 +38,6 @@ public interface AuthService {
     // 비밀번호 변경 처리
     void resetPassword(ResetPassword request, HttpSession session);
 
+    //토큰 재발급 요청
+    TokenResponse reissue(String refreshToken);
 }
