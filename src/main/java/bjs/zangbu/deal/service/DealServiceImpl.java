@@ -112,7 +112,7 @@ public class DealServiceImpl implements DealService {
     if (checkStatus(from, to)) {
       // 만약 거래 성사 시 알람 트리거
       if (to.equals("CLOSE_DEAL")) {
-        notificationService.detecTradeHappenedNow(status.getDealId());
+        notificationService.detectTradeHappenedNow(status.getDealId());
       }
       // status PATCH
       return dealMapper.patchStatus(status) == 1;
