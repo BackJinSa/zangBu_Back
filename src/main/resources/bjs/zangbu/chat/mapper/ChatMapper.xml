@@ -40,11 +40,18 @@
     <!-- consumer_visible = false : 구매자가 채팅방 나가기해서 구매자 채팅방 목록에 해당 채팅방 표시x -->
     <select id="selectChatRoomList" resultType="bjs.zangbu.chat.vo.ChatRoom">
         SELECT cr.chat_room_id, cr.building_id, cr.member_id, cr.complex_id,
-        cr.seller_nickname, cr.consumer_nickname
+        cr.seller_nickname, cr.consumer_nickname, b.building_name, b.seller_type
         FROM chat_room cr
         JOIN building b ON cr.building_id = b.building_id
         WHERE
+        <!-- 채팅방 목록에서 필터링 하기 위해서 -->
         <choose>
+            <!-- 전체: 구매자이거나 판매자인 경우 -->
+            <when test="type == 'ALL'">
+                (cr.member_id = #{userId} AND cr.consumer_visible = TRUE)
+                OR
+                (b.member_id = #{userId} AND cr.seller_visible = TRUE)
+                </when>
             <!-- 구매자(BUYER)인 경우 ChatRoom 테이블에서 id-->
             <when test="type == 'BUYER'">
                 cr.member_id = #{userId}
@@ -95,6 +102,20 @@
     </delete>
 
 
+    <!-- chatRoomId에 해당하는 채팅방에서 안 읽은 메시지 수 조회 -->
+    <select id="countUnreadMessages" resultType="int">
+        SELECT COUNT(*) FROM chat_message
+        WHERE chat_room_id = #{chatRoomId}
+          AND member_id != #{userId}
+          AND is_read = false
+    </select>
+
+    <!-- 채팅방의 마지막 메시지 조회 -->
+    <select id="selectLastMessageByRoomId" resultType="bjs.zangbu.chat.vo.ChatMessage">
+        SELECT * FROM chat_message WHERE chat_room_id = #{chatRoomId}
+        ORDER BY created_at DESC, chat_message_id DESC
+        LIMIT 1
+    </select>
 
     <!-- nickname으로 member_id 조회 (memberMapper로 옮길지 생각해보기)-->
     <select id="selectMemberIdByNickname" resultType="String">
