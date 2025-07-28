@@ -18,6 +18,13 @@
         where member_id = #{memberId}
     </update>
 
+    <!--알림 수신 여부 변경-->
+    <update id="updateFcmConsent">
+        UPDATE member
+        SET consent = #{consent}
+        WHERE member_id = #{memberId}
+    </update>
+
     <!--bookmark 삭제-->
     <delete id="deleteBookMark">
         delete
@@ -106,6 +113,16 @@
         select nickname
         from member
         where member_id = #{memberId}
+    </select>
+
+    <!--알림 수신 여부 조회-->
+    <select id="selectFcmConsentByMemberId" resultType="java.lang.Boolean">
+        SELECT consent
+        FROM member
+        WHERE member_id = #{memberId}
+    </select>
+    <select id="findByEmail" resultType="bjs.zangbu.security.account.vo.Member">
+        SELECT * FROM member WHERE email = #{email}
     </select>
 
     <!--  getBookmarksByMemberId join 한 결과값 -->
