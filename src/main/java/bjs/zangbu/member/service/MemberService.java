@@ -28,5 +28,12 @@ public interface MemberService {
     //탈퇴
     void removeMember(String memberId);
 
+    //닉네임 가져오기
     String getNickname(String memberId);
+
+    //알림 수신 여부 변경
+    void updateFcmConsent(String memberId, boolean consent);
+
+    //알림 수신 여부 조회
+    boolean getFcmConsent(String memberId);
 }
