@@ -84,29 +84,11 @@ public class CodefException {
     /**
      * 클라이언트에게 전달될 에러 응답 구조를 표현하는 내부 클래스입니다.
      */
+    @Getter
+    @Setter
+    @AllArgsConstructor
     public static class ErrorResponse {
         private String code;
         private String message;
-
-        public ErrorResponse(String code, String message) {
-            this.code = code;
-            this.message = message;
-        }
-
-        public String getCode() {
-            return code;
-        }
-
-        public void setCode(String code) {
-            this.code = code;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
     }
 }
