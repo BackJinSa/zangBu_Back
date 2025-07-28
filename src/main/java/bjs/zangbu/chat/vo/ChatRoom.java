@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigInteger;
-
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,6 +16,8 @@ public class ChatRoom {
     private String complexId;           //단지 id
     private String sellerNickname;      //판매자 닉네임
     private String consumerNickname;    //구매자 닉네임
-    private Boolean seller_visible;     //판매자 채팅방 목록에서 보일지 유무(채팅방 나가기 구현에 사용)
-    private Boolean consumer_visible;   //구매자 채팅방 목록에서 보일지 유무(채팅방 나가기 구현에 사용)
+    private Boolean sellerVisible;     //판매자 채팅방 목록에서 보일지 유무(채팅방 나가기 구현에 사용)
+    private Boolean consumerVisible;   //구매자 채팅방 목록에서 보일지 유무(채팅방 나가기 구현에 사용)
+    private String buildingName;       //매물 이름
+    private String sellerType;         //판매자 타입(집주인, 세입자)
 }
