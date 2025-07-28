@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="bjs.zangbu.fcm.mapper.FcmMapper">
+
+
+    <!-- 디바이스 토큰 등록 -->
+    <insert id="insertFcmToken">
+        INSERT IGNORE INTO fcm_tokens (member_id, token, created_at)
+        VALUES (#{memberId}, #{token}, NOW())
+    </insert>
+
+    <!-- 디바이스 토큰 모두 삭제 -->
+    <delete id="deleteAllTokensByMemberId">
+        DELETE FROM fcm_tokens
+        WHERE member_id = #{memberId}
+    </delete>
+
+    <!-- 유저 id로 디바이스 토큰 모두 검색 -->
+    <select id="selectTokensByMemberId" resultType="string">
+        SELECT token
+        FROM fcm_tokens
+        WHERE member_id = #{memberId}
+    </select>
+</mapper>

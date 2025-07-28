@@ -45,4 +45,7 @@ public class Notification {
     // 유저 식별 id
     private String memberId;
 
+    // 매물 식별 id
+    private Long buildingId;
+
 }

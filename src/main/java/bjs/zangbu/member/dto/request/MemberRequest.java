@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 public class MemberRequest {
 
     //비밀번호 변경
-    // /user/mypage/edit/password
+    // /member/mypage/edit/password
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -17,7 +17,7 @@ public class MemberRequest {
     }
 
     //닉네임 중복 확인
-    // /user/mypage/edit/nickname/check
+    // /member/mypage/edit/nickname/check
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -26,7 +26,7 @@ public class MemberRequest {
     }
 
     //닉네임 변경 요청
-    // /user/mypage/edit/nickname Request
+    // /member/mypage/edit/nickname Request
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -34,4 +34,13 @@ public class MemberRequest {
         private String currentNickname;
         private String newNickname;
     }
+
+    // /member/mypage/edit/notification/consent
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EditNotificationConsentRequest{
+        private Boolean consent;
+    }
+
 }

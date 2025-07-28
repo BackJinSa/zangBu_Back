@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -101,7 +102,7 @@ public class AuthController {
         String accessToken = accessTokenHeader.replace("Bearer ", "").trim();
         //토큰 유효성 검사
         if (!jwtProcessor.validateToken(accessToken)) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         authService.resetPassword(request, session);
@@ -118,7 +119,7 @@ public class AuthController {
         String accessToken = accessTokenHeader.replace("Bearer ", "").trim();
         //토큰 유효성 검사
         if (!jwtProcessor.validateToken(accessToken)) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         AuthVerify result = authService.verifyAuthenticity(request);
@@ -160,7 +161,7 @@ public class AuthController {
             HttpServletResponse response
             ){
         if(refreshToken == null){
-            return ResponseEntity.status(409).body("쿠키가 존재하지 않습니다");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("쿠키가 존재하지 않습니다");
         }
         try{
             //토큰 재발급
@@ -192,7 +193,8 @@ public class AuthController {
             return ResponseEntity.badRequest().body("유효하지 않은 토큰입니다.");
         } catch (IllegalStateException e){
             //Redis에 저장된 refreshToken이 없음 409
-            return ResponseEntity.status(409).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+
         }
     }
 }
