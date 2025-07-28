@@ -1,5 +1,6 @@
 package bjs.zangbu.review.service;
 
+import bjs.zangbu.notification.service.NotificationService;
 import bjs.zangbu.review.dto.request.ReviewCreateRequest;
 import bjs.zangbu.review.dto.response.ReviewCreateResponse;
 import bjs.zangbu.review.dto.response.ReviewDetailResponse;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService{
     private final ReviewMapper reviewMapper;
+    private final NotificationService notificationService;
 
     // 날짜 형식 설정
     private static final DateTimeFormatter DF =
@@ -83,6 +85,7 @@ public class ReviewServiceImpl implements ReviewService{
         Long newId = param.getReviewId();
 
         String createdAt = DF.format(java.time.LocalDateTime.now());
+        notificationService.notificationReviewRegisterd(req.getBuildingId());
         return new ReviewCreateResponse(
                 newId,
                 req.getBuildingId(),
