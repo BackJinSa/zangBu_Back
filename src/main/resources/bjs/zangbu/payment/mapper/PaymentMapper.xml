@@ -9,10 +9,17 @@
             useGeneratedKeys="true"
             keyProperty="paymentId">
         INSERT INTO payment
-            (member_id, token, membership_date)
+        (member_id,
+        order_id,
+        amount,           
+        membership_date)
         VALUES
-            (#{memberId}, #{token}, NOW())
+        (#{memberId},
+        #{orderId},
+        #{amount},
+        NOW())
     </insert>
+
 
     <update id="confirmPayment"
             parameterType="bjs.zangbu.payment.dto.PaymentConfirmRequest">

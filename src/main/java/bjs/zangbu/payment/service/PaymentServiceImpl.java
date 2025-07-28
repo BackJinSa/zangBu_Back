@@ -31,22 +31,68 @@ public class PaymentServiceImpl implements PaymentService{
     private String apiBaseUrl;
 
 
+    //프론트엔드에 연결하면
+    //POST /payment 호출 → { orderId, paymentPageUrl } 응답
+    //window.location.href = paymentPageUrl; 로 테스트용 결제창 띄우기
     @Override
     public PaymentResponse createPayment(PaymentRequest req, String memberId) {
-        if (req.getOrderId() == null || req.getAmount() == null || req.getAmount() <= 0) {
-            throw new IllegalArgumentException("결제 요청에 실패했습니다.");
+        // 1) 요청 유효성 검사
+        if (req.getOrderId()    == null ||
+                req.getAmount()     == null || req.getAmount() <= 0 ||
+                req.getOrderName()  == null ||
+                req.getSuccessUrl() == null ||
+                req.getFailUrl()    == null ||
+                req.getMethod()     == null ||
+                req.getEasyPay()    == null ||
+                req.getFlowMode()   == null) {
+            throw new IllegalArgumentException("결제 요청이 실패했습니다.");
         }
 
-        // TODO: 실제 간편결제 API 호출 로직을 여기 넣을 수도 있습니다.
+        // 2) Basic Auth 헤더 준비
+        String auth = Base64.getEncoder()
+                .encodeToString((secretKey + ":").getBytes(StandardCharsets.UTF_8));
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Basic " + auth);
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // DB에 결제 레코드 저장 (token 필드에 amount 저장)
+        // 3) Toss Ready API 호출
+        Map<String, Object> readyBody = Map.of(
+                "amount",       req.getAmount(),
+                "orderId",      req.getOrderId(),
+                "orderName",    req.getOrderName(),
+                "customerName", req.getCustomerName(),
+                "successUrl",   req.getSuccessUrl(),
+                "failUrl",      req.getFailUrl(),
+                "method",       req.getMethod(),
+                "easyPay",      req.getEasyPay(),
+                "flowMode",     req.getFlowMode()
+        );
+        HttpEntity<Map<String,Object>> readyReq = new HttpEntity<>(readyBody, headers);
+
+        // 4) REST 호출 → 결제 페이지 URL 획득
+        String readyUrl = UriComponentsBuilder
+                .fromHttpUrl(apiBaseUrl)
+                .path("/v1/payments/ready")
+                .toUriString();
+        ResponseEntity<Map> readyResp = restTemplate.exchange(
+                readyUrl, HttpMethod.POST, readyReq, Map.class
+        );
+        if (!readyResp.getStatusCode().is2xxSuccessful() || readyResp.getBody() == null) {
+            throw new RuntimeException("결제 준비 API 호출 실패");
+        }
+        Map<String, Object> paymentNode = (Map<String,Object>)readyResp.getBody().get("payment");
+        Map<String, String> urlNode     = (Map<String,String>)paymentNode.get("url");
+        String paymentPageUrl           = urlNode.get("mobile");
+
+        // 5) DB에 주문 + 금액 기록
         PaymentInsertParam param = new PaymentInsertParam();
         param.setMemberId(memberId);
-        param.setToken(req.getAmount());
+        param.setOrderId(req.getOrderId());
+        param.setAmount(req.getAmount());
         paymentMapper.insertPayment(param);
 
-        // 응답에는 orderId 만 반환
-        return new PaymentResponse(req.getOrderId());
+        // 6) Response DTO 반환 (orderId + paymentPageUrl)
+        return new PaymentResponse(req.getOrderId(), paymentPageUrl);
     }
 
     // 결제 승인 요청 기능
