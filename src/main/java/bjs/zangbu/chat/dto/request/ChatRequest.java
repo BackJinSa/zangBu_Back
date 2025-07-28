@@ -1,9 +1,12 @@
 package bjs.zangbu.chat.dto.request;
 
+import bjs.zangbu.chat.vo.ChatMessage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 public class ChatRequest {
 
@@ -24,8 +27,16 @@ public class ChatRequest {
     @AllArgsConstructor
     @Builder
     public static class SendMessageRequest {
-        private String chatRoomId;   //채팅방 ID
-        private String message;      //보낼 메시지 내용
+        private String message;
+
+        public ChatMessage toEntity(String chatRoomId, String senderId, LocalDateTime createdAt) {
+            return ChatMessage.builder()
+                    .chatRoomId(chatRoomId)
+                    .senderId(senderId)
+                    .message(message)
+                    .createdAt(createdAt)
+                    .build();
+        }
     }
 
     //  /chat/list?page={page}&size={size}&type={type}
