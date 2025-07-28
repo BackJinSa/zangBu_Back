@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Log4j2
 @Service
@@ -30,6 +31,9 @@ public class AuthServiceImpl implements AuthService {
     final AuthMapper mapper;
     private final PassApiClient passApiClient; // PASS와 통신하는 클라이언트
     final JwtProcessor jwtProcessor;
+
+    //redis 설정 있다고 가정 --- 추후 수정
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
@@ -46,9 +50,25 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtProcessor.generateAccessToken(member.getEmail(), member.getRole().name());
         String refreshToken = jwtProcessor.generateRefreshToken(member.getEmail());
 
+        //redis에 refresh 토큰 저장
+        redisTemplate.opsForValue().set(
+                "refresh:" + member.getEmail(),   // Key
+                refreshToken,                     // Value
+                jwtProcessor.getRefreshTokenExpiration(), // refresh 토큰 유효시간
+                TimeUnit.MILLISECONDS
+        );
+
         return new LoginResponse(accessToken, refreshToken, member.getRole());
     }
 
+    //로그아웃
+    @Override
+    public void logout(String accessToken) {
+        //accesstoken으로 사용자 증명
+        String email = jwtProcessor.getEmail(accessToken);
+        //redis에 저장된 리프레시 토큰 삭제
+        redisTemplate.delete("refresh:" + email);
+    }
 
     @Override
     public void signUp(SignUp signUpRequest) {

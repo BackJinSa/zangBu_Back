@@ -6,6 +6,7 @@ import bjs.zangbu.security.account.dto.response.AuthResponse.AuthVerify;
 import bjs.zangbu.security.account.dto.response.AuthResponse.LoginResponse;
 
 import bjs.zangbu.security.account.service.AuthService;
+import bjs.zangbu.security.util.JwtProcessor;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtProcessor jwtProcessor;
 
     // 1. 로그인
     @PostMapping("/login")
@@ -26,11 +28,29 @@ public class AuthController {
     }
 
     // 2. 로그아웃
-    //
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String accessTokenHeader){
+        //토큰 추출
+        String accessToken = accessTokenHeader.replace("Bearer", "");
+        //이메일(아이디) 추출
+        String email = jwtProcessor.getEmail(accessToken);
+        //redis에서 refresh 토큰 제거
+        redisTemplate.delete("refresh:"+email);
+
+        return ResponseEntity.ok().build();
+    }
 
     // 3. 아이디 찾기
     @PostMapping("/email")
-    public ResponseEntity<EmailAuthResponse> findEmail(@RequestBody EmailAuthRequest request) {
+    public ResponseEntity<EmailAuthResponse> findEmail(
+            @RequestHeader("Authorization") String accessTokenHeader,
+            @RequestBody EmailAuthRequest request) {
+
+        String accessToken = accessTokenHeader.replace("Bearer ", "").trim();
+        if (!jwtProcessor.validateToken(accessToken)) {
+            return ResponseEntity.status(401).build();
+        }
+
         EmailAuthResponse response = authService.findEmail(request);
         return ResponseEntity.ok(response);
     }
@@ -76,6 +96,7 @@ public class AuthController {
         return ResponseEntity.ok(isDuplicated);
     }
 
-    // 9. 토큰 재발급 요청
+    // 9. 토큰 재발급 요청 --access 토큰 만료 시 클라이언트가 refresh 토큰 전송
+    // -> redis에 저장된 refresh 토큰과 비교해서 유효 시 새로운 access 토큰 발급
 
 }

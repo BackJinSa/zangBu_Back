@@ -16,6 +16,9 @@ public interface AuthService {
     //로그인
     LoginResponse login(LoginRequest loginRequest);
 
+    //로그아웃
+    void logout(String accessToken);
+
     //회원가입
     void signUp(SignUp signUpRequest);
 
