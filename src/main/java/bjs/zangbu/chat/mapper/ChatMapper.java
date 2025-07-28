@@ -38,7 +38,12 @@ public interface ChatMapper {
     //채팅방 삭제
     void deleteChatRoom(String chatRoomId);
 
+    //채팅방의 마지막 메시지 조회
+    ChatMessage selectLastMessageByRoomId(String chatRoomId);
 
+    //채팅방의 안 읽은 메시지 수 조회
+    int countUnreadMessages(String chatRoomId, String userId);
+    
     //아이디로 닉네임 가져오기
     String selectMemberIdByNickname(String nickname);
 }
