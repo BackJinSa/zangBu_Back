@@ -17,9 +17,11 @@ import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,8 +36,8 @@ public class AuthServiceImpl implements AuthService {
     private final PassApiClient passApiClient; // PASS와 통신하는 클라이언트
     final JwtProcessor jwtProcessor;
 
-    //redis 설정 있다고 가정 --- 추후 수정
     private final RedisTemplate<String, String> redisTemplate;
+    private static final String REFRESH_TOKEN_PREFIX = "refresh:"; //prefix
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
@@ -54,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
 
         //redis에 refresh 토큰 저장
         redisTemplate.opsForValue().set(
-                "refresh:" + member.getEmail(),   // Key
+                REFRESH_TOKEN_PREFIX + member.getEmail(),   // Key
                 refreshToken,                     // Value
                 jwtProcessor.getRefreshTokenExpiration(), // refresh 토큰 유효시간
                 TimeUnit.MILLISECONDS
@@ -69,10 +71,12 @@ public class AuthServiceImpl implements AuthService {
         //accesstoken으로 사용자 증명
         String email = jwtProcessor.getEmail(accessToken);
         //redis에 저장된 리프레시 토큰 삭제
-        redisTemplate.delete("refresh:" + email);
+        redisTemplate.delete(REFRESH_TOKEN_PREFIX + email);
     }
 
+    //회원가입
     @Override
+    @Transactional
     public void signUp(SignUp signUpRequest) {
         if (isEmailDuplicated(signUpRequest.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
@@ -165,7 +169,7 @@ public class AuthServiceImpl implements AuthService {
         String email = jwtProcessor.getEmail(refreshToken);
 
         //redis에 저장된 refresh 토큰과 일치 여부 확인
-        String storedRefreshToken = redisTemplate.opsForValue.get("refresh:"+email);
+        String storedRefreshToken = redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX+email);
         //저장된 refresh 토큰 없으면
         if(storedRefreshToken == null){
             throw new IllegalStateException("refresh 토큰이 서버에 존재하지 않습니다.");
@@ -186,7 +190,12 @@ public class AuthServiceImpl implements AuthService {
         String newRefreshToken = jwtProcessor.generateRefreshToken(email);
 
         //redis에 새 refresh 토큰 세팅
-        redisTemplate.opsForValue().set("refresh:"+email, newRefreshToken);
+        redisTemplate.opsForValue().set(
+                REFRESH_TOKEN_PREFIX+email,
+                newRefreshToken,
+                jwtProcessor.getRefreshTokenExpiration(), // refresh 토큰 유효시간
+                TimeUnit.MILLISECONDS
+                );
 
         return new TokenResponse(newAccessToken, newRefreshToken);
     }
