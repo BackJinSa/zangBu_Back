@@ -45,3 +45,7 @@ bin/
 database.sql
 application.properties
 application.yml
+
+# Firebase 인증 키
+firebase-key.json
+src/main/resources/firebase-key.json

@@ -29,7 +29,7 @@
         UPDATE notification
         SET is_read = TRUE
         WHERE member_id = #{userId}
-            AND notification_id = #{notificationId}
+          AND notification_id = #{notificationId}
     </update>
 
     <!-- 전체 알림 읽음 처리 -->
@@ -44,7 +44,7 @@
     <delete id="removeNotification">
         DELETE FROM notification
         WHERE member_id = #{userId}
-        AND notification_id = #{notificationId}
+          AND notification_id = #{notificationId}
     </delete>
 
     <!-- ======================= 트리거 전용 ====================== -->
@@ -56,9 +56,23 @@
             member_id, message, is_read, type, created_at,
             sale_type, price, address, rank
         ) VALUES (
-            #{userId}, #{message}, false, #{type},
-            NOW(), #{saleType}, #{price}, #{address}, #{rank}
+                     #{userId}, #{message}, false, #{type},
+                     NOW(), #{saleType}, #{price}, #{address}, #{rank}
                  )
     </insert>
+
+    <!-- 시세 변동 중복 체크: 동일한 유저/매물/타입/가격의 알림이 오늘 안에 이미 존재하는지 -->
+    <select id="existsSamePriceNotificationToday" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM notification
+            WHERE member_id = #{memberId}
+              AND type = #{type}
+              AND price = #{price}
+              AND created_at >= CURDATE()
+              AND building_id = #{buildingId}
+        )
+    </select>
+
 
 </mapper>
