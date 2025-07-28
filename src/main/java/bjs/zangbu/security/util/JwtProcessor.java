@@ -59,6 +59,9 @@ public class JwtProcessor {
 
     // username = email 추출
     public String getEmail(String token) {
+        if (!validateToken(token)) {
+            throw new JwtException("유효하지 않은 토큰입니다.");
+        }
         return getClaims(token).getSubject();
     }
 
@@ -80,7 +83,7 @@ public class JwtProcessor {
     // Claims 추출 (토큰 파싱)
     private Claims getClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(key) //jwt 생성/검증 시 사용
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
