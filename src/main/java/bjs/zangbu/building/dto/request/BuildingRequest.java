@@ -19,8 +19,6 @@ public class BuildingRequest {
     public static class ViewDetailRequest {
         // 조회할 건물 ID (필수)
         private Long buildingId;
-        // 검색 구분자 (옵션, 예: 단지/매물 등)
-        private String searchGbn;
         // 단지 번호 (옵션)
         private String complexNo;
         // 동 정보 (옵션)
