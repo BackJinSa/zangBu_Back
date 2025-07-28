@@ -18,6 +18,12 @@
         where member_id = #{memberId}
     </update>
 
+    <update id="updateFcmConsent">
+        UPDATE member
+        SET consent = #{consent}
+        WHERE member_id = #{memberId}
+    </update>
+
     <!--bookmark 삭제-->
     <delete id="deleteBookMark">
         delete
@@ -106,6 +112,12 @@
         select nickname
         from member
         where member_id = #{memberId}
+    </select>
+
+    <select id="selectFcmConsentByMemberId" resultType="java.lang.Boolean">
+        SELECT consent
+        FROM member
+        WHERE member_id = #{memberId}
     </select>
 
     <!--  getBookmarksByMemberId join 한 결과값 -->

@@ -2,6 +2,7 @@ package bjs.zangbu.member.mapper;
 
 import bjs.zangbu.member.dto.join.BookmarkBuilding;
 import bjs.zangbu.security.account.vo.Member;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -11,7 +12,6 @@ public interface MemberMapper {
     Member get(String memberId);
 
     //2. member id별 북마크 되어있는 building 리스트 가져오기
-//    List<BookmarkBuilding> getBookmarksByMemberId(String memberId);
     List<BookmarkBuilding> getBookmarksByMemberId(String memberId);
 
     //3. 북마크 삭제하기
@@ -35,4 +35,11 @@ public interface MemberMapper {
 
     //3. 회원 탈퇴
     int deleteMemberId(String memberId);
+
+    //알림-----------------------------------------------
+    //1. 알림 수신 여부 변경
+    void updateFcmConsent(@Param("memberId") String memberId, @Param("consent") boolean consent);
+
+    //2. 알림 수신 여부 조회
+    Boolean selectFcmConsentByMemberId(@Param("memberId") String memberId);
 }

@@ -72,4 +72,15 @@ public class MemberServiceImpl implements MemberService{
     public String getNickname(String memberId) {
         return memberMapper.getNicknameByMemberId(memberId);
     }
+
+    @Override
+    public void updateFcmConsent(String memberId, boolean consent) {
+        memberMapper.updateFcmConsent(memberId, consent);
+    }
+
+    @Override
+    public boolean getFcmConsent(String memberId) {
+        Boolean result = memberMapper.selectFcmConsentByMemberId(memberId);
+        return result != null && result;
+    }
 }

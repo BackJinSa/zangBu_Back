@@ -6,6 +6,8 @@ import bjs.zangbu.member.dto.request.MemberRequest.EditNicknameRequest;
 import bjs.zangbu.member.dto.request.MemberRequest.EditPassword;
 import bjs.zangbu.member.dto.response.MemberResponse.EditMyPage;
 import bjs.zangbu.member.service.MemberService;
+import bjs.zangbu.security.util.JwtProcessor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,7 @@ import java.util.List;
 public class MemberController {
 
     private final MemberService memberService;
+    private final JwtProcessor jwtProcessor;
 
     //1. 찜한 매물 리스트 조회
     @GetMapping("/favorites")
@@ -34,7 +37,10 @@ public class MemberController {
 
     //3. 회원정보 수정 페이지로 이동
     @GetMapping("/edit")
-    public ResponseEntity<EditMyPage> getEditPage(@RequestParam String memberId) {
+    public ResponseEntity<EditMyPage> getEditPage(
+            @RequestHeader("Authorization") String accessTokenHeader
+    ) {
+        String email = jwtProcessor.getEmail(accessTokenHeader.replace("Bearer ","").trim());
         return ResponseEntity.ok(memberService.getMyPageInfo(memberId));
     }
 
@@ -65,4 +71,13 @@ public class MemberController {
         memberService.removeMember(memberId);
         return ResponseEntity.ok().build();
     }
+
+    //8. 알림 수신 여부 변경
+    @PostMapping("/edit/notifiaction/consent")
+
+
+
+    //9. 알림 수신 여부 조회
+    @GetMapping("/notification/consent")
+
 }
