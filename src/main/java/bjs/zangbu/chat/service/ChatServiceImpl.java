@@ -1,5 +1,7 @@
 package bjs.zangbu.chat.service;
 
+import bjs.zangbu.chat.dto.request.ChatRequest;
+import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.mapper.ChatMapper;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
@@ -7,7 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import static bjs.zangbu.global.formatter.LocalDateFormatter.CreatedAt.formattingCreatedAt;
 
 @Service
 @RequiredArgsConstructor
@@ -17,8 +23,18 @@ public class ChatServiceImpl implements ChatService{
 
     //메시지 전송
     @Override
-    public void sendMessage(ChatMessage message) {
+    public ChatResponse.SendMessageResponse sendMessage(String chatRoomId, ChatRequest.SendMessageRequest request) {
+        String senderId = "SENDER_ID";    // TODO: 인증 도입 시 변경
+        LocalDateTime createdAt = LocalDateTime.now();
+
+        ChatMessage message = request.toEntity(chatRoomId, senderId, createdAt);
         chatMapper.insertMessage(message);
+
+        return ChatResponse.SendMessageResponse.builder()
+                .message(message.getMessage())
+                .sendNickname("보낸사람 닉네임")   //TODO: 보낸 사람 닉네임 조회 로직 추가
+                .createdAt(formattingCreatedAt(message.getCreatedAt()))
+                .build();
     }
 
     //chatRoomId 기준으로 해당 채팅방의 메시지들 가져오기
