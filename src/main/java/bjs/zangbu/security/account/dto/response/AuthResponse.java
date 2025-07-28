@@ -33,4 +33,13 @@ public class AuthResponse {
         private String resAuthenticity; // 진위확인 결과 (ex: "Y", "N")
         private String resAuthenticityDesc; // 진위확인 내용 (ex: "성공", "주민번호 불일치")
     }
+
+    // /auth/reissue Response
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TokenResponse{
+        private String accessToken;
+        private String refreshToken;
+    }
 }

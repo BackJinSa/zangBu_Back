@@ -46,10 +46,11 @@ public class ChatController {
         return chatService.getMessages(roomId, lastMessageId, limit);
     }
 
-    // 채팅방 삭제
-    @DeleteMapping("/room/{roomId}")
-    public void deleteChatRoom(@PathVariable String roomId) {
-        chatService.deleteChatRoom(roomId);
+    // 채팅방 나가기
+    @PatchMapping("/room/leave/{roomId}")
+    public void leaveChatRoom(@PathVariable String roomId, @RequestParam String userId) {
+        // TODO: 실제 구현 시 userId는 인증 기반에서 추출
+        chatService.leaveChatRoom(roomId, userId);
     }
 
 }

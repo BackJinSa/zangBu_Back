@@ -9,9 +9,23 @@
             useGeneratedKeys="true"
             keyProperty="paymentId">
         INSERT INTO payment
-            (member_id, token, membership_date)
+        (member_id,
+        order_id,
+        token, <!-- DB 칼럼명 token 그대로 -->
+        membership_date)
         VALUES
-            (#{memberId}, #{token}, NOW())
+        (#{memberId},
+        #{orderId},
+        #{amount}, <!-- DTO 필드 amount 에서 꺼내서 token 칼럼에 삽입 -->
+        NOW())
     </insert>
+
+
+    <update id="confirmPayment"
+            parameterType="bjs.zangbu.payment.dto.PaymentConfirmRequest">
+        UPDATE payment
+        SET membership_date = NOW()  <!-- 승인 시각 갱신 -->
+        WHERE order_id = #{orderId}
+    </update>
 
 </mapper>
