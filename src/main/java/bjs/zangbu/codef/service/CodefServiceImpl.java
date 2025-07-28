@@ -1,13 +1,15 @@
 package bjs.zangbu.codef.service;
-
 import bjs.zangbu.building.dto.request.BuildingRequest;
 import bjs.zangbu.codef.encryption.CodefEncryption;
-import bjs.zangbu.codef.thread.CodefThread;
+import bjs.zangbu.codef.exception.CodefException;
+import bjs.zangbu.codef.session.CodefAuthSession;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.codef.api.EasyCodef;
+import io.codef.api.EasyCodefMessageConstant;
 import io.codef.api.EasyCodefServiceType;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -23,6 +25,9 @@ public class CodefServiceImpl implements CodefService {
 
     // CODEF SDK 객체 초기화에 사용
     private EasyCodef codef;
+
+    // Redis 선언
+    private final RedisTemplate<String, Object> redisTemplate;
 
     // 애플리케이션이 시작되면 CODEF 인스턴스를 초기화
     @PostConstruct
@@ -61,50 +66,24 @@ public class CodefServiceImpl implements CodefService {
     }
 
     @Override
-    public String residentRegistrationCertificate(어쩌구저쩌구 request) {
-        String productUrl = "/v1/kr/public/mw/resident-registration-abstract/issuance";
-        List<CodefThread> threadList = new ArrayList<>();
-        for(int i = 0; i < 2; i++) {
-            // 주민등록 초본을 위한 map 구성
-            HashMap<String, Object> parameterMap = new HashMap<>();
-            parameterMap.put("organization", "0001");
-            parameterMap.put("loginType", "5");
-            parameterMap.put("userName", );
-            parameterMap.put("identity", );
-            parameterMap.put("birthDate", );
-            parameterMap.put("identityEncYn", "Y");
-            parameterMap.put("loginTypeLevel", );
-            parameterMap.put("phoneNo", );
-            parameterMap.put("addrSido", );
-            parameterMap.put("addrSiGunGu", );
-            parameterMap.put("personalInfoChangeYN", "0");
-            parameterMap.put("pastAddrChangeYN", "1");
-            parameterMap.put("nameRelationYN", "0");
-            parameterMap.put("militaryServiceYN", "0");
-            parameterMap.put("overseasKoreansIDYN", "0");
-            parameterMap.put("isIdentityViewYn", "0");
-            parameterMap.put("originDataYN", "0");
+    public String processSecureNo(String sessionKey, String secureNo) {
+        CodefAuthSession session = (CodefAuthSession) redisTemplate.opsForValue().get(sessionKey);
 
-            CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
-            t.start();
-            threadList.add(t);
-            try { Thread.sleep(10000); } catch (InterruptedException e) { throw new RuntimeException(e); }
+        if (session == null) {
+            throw new CodefException.CodefServiceException(EasyCodefMessageConstant.INVALID_SESSION);
         }
 
-        StringBuilder sb = new StringBuilder();
-        for (CodefThread t : threadList) {
-            try { t.join(); } catch (InterruptedException e) { throw new RuntimeException(e); }
-            sb.append("[Thread ").append(t.getThreadNo()).append("]\n");
+        HashMap<String, Object> param = new HashMap<>(session.getParameterMap());
+        param.put("jobIndex", session.getJobIndex());
+        param.put("threadIndex", session.getThreadIndex());
+        param.put("jti", session.getJti());
+        param.put("twoWayTimestamp", session.getTwoWayTimestamp());
+        param.put("secureNo", secureNo);
 
-            sb.append("1차 응답:\n").append(t.getFirstResponse()).append("\n");
-            if (t.getSecondResponse() != null) {
-                sb.append("2차 인증 응답:\n").append(t.getSecondResponse()).append("\n");
-            } else {
-                sb.append("2차 인증 없음(단건 처리)\n");
-            }
-            sb.append("-----\n");
+        try {
+            return codef.requestProduct(session.getProductUrl(), EasyCodefServiceType.DEMO, param);
+        } catch (Exception e) {
+            throw new CodefException.CodefServiceException(EasyCodefMessageConstant.SERVER_PROCESSING_ERROR, e.getMessage());
         }
-
-        return sb.toString();
     }
 }
