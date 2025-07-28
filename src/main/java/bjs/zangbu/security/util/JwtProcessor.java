@@ -52,6 +52,11 @@ public class JwtProcessor {
                 .compact();
     }
 
+    //refresh 토큰 유효시간 반환
+    public long getRefreshTokenExpiration(){
+        return refreshTokenValidMs;
+    }
+
     // username = email 추출
     public String getEmail(String token) {
         return getClaims(token).getSubject();
