@@ -9,5 +9,5 @@ public interface CodefService {
 
     String priceInformation(BuildingRequest.ViewDetailRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 
-    String residentRegistrationCertificate();
+    String processSecureNo(String sessionKey, String secureNo);
 }
