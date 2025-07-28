@@ -26,9 +26,19 @@ public interface ChatMapper {
     //채팅방 생성
     ChatRoom insertChatRoom(ChatRoom chatRoom);
 
+    //seller가 채팅방 나갔을 경우
+    void updateSellerVisible(String chatRoomId);
+
+    //consumer가 채팅방 나갔을 경우
+    void updateConsumerVisible(String chatRoomId);
+
     //채팅방 삭제 전 해당 채팅방의 메시지 삭제
     void deleteMessagesByRoomId(String chatRoomId);
 
     //채팅방 삭제
     void deleteChatRoom(String chatRoomId);
+
+
+    //아이디로 닉네임 가져오기
+    String selectMemberIdByNickname(String nickname);
 }

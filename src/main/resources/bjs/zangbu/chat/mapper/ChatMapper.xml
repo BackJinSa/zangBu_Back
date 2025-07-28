@@ -31,12 +31,13 @@
 
     <!-- roomId를 기준으로 채팅방 상세 정보 가져오기 -->
     <select id="selectChatRoomById" resultType="bjs.zangbu.chat.vo.ChatRoom">
-        SELECT chat_room_id, building_id, member_id, complex_id, seller_nickname, consumer_nickname
+        SELECT *
         FROM chat_room
         WHERE chat_room_id = #{chatRoomId}
     </select>
 
     <!-- 사용자의 채팅방 목록 조회 -->
+    <!-- consumer_visible = false : 구매자가 채팅방 나가기해서 구매자 채팅방 목록에 해당 채팅방 표시x -->
     <select id="selectChatRoomList" resultType="bjs.zangbu.chat.vo.ChatRoom">
         SELECT cr.chat_room_id, cr.building_id, cr.member_id, cr.complex_id,
         cr.seller_nickname, cr.consumer_nickname
@@ -47,10 +48,12 @@
             <!-- 구매자(BUYER)인 경우 ChatRoom 테이블에서 id-->
             <when test="type == 'BUYER'">
                 cr.member_id = #{userId}
+                AND cr.consumer_visible = TRUE
             </when>
             <!-- 판매자(SELLER)인 경우 building 테이블에서 id-->
             <when test="type == 'SELLER'">
                 b.member_id = #{userId}
+                AND cr.seller_visible = TRUE
             </when>
         </choose>
         ORDER BY cr.chat_room_id DESC
@@ -59,7 +62,7 @@
     </select>
 
     <!-- 채팅방 유무 확인(중복 생성 방지: 매물 + 구매자 하나의 채팅방만 생기도록), 이미 채팅방 존재하면 ChatRoom 반환, 채팅방 없으면 null 반환. -->
-    <select id="existsChatRoom" resultType="bjs.zangbu.chat.vo.ChatRoom">
+    <select id="existsChatRoom" resultType="bjs.zangbu.chat.vo.ChatRoom">zangbu
         SELECT chat_room_id, building_id, member_id, complex_id, seller_nickname, consumer_nickname
         FROM chat_room
         WHERE building_id = #{buildingId} AND member_id = #{consumerId}
@@ -71,15 +74,31 @@
         VALUES (#{chatRoomId}, #{buildingId}, #{consumerId}, #{complexId}, #{sellerNickname}, #{consumerNickname})
     </insert>
 
+    <!-- seller가 채팅방 나갔을 경우 -->
+    <update id="updateSellerVisible">
+        UPDATE chat_room SET seller_visible = FALSE WHERE chat_room_id = #{chatRoomId}
+    </update>
+
+    <!-- consumer가 채팅방 나갔을 경우 -->
+    <update id="updateConsumerVisible">
+        UPDATE chat_room SET consumer_visible = FALSE WHERE chat_room_id = #{chatRoomId}
+    </update>
+
     <!-- roomId에 해당하는 채팅방의 메시지들 모두 삭제(채팅방 삭제 전 메시지 먼저 삭제) -->
     <delete id="deleteMessagesByRoomId">
-        DELETE FROM chat_message
-        WHERE chat_room_id = #{chatRoomId}
+        DELETE FROM chat_message WHERE chat_room_id = #{chatRoomId}
     </delete>
 
     <!-- 채팅방 삭제 (해당 채팅방의 메시지들 삭제 우선되어야함: deleteMessagesByRoomId.)-->
     <delete id="deleteChatRoom">
         DELETE FROM chat_room WHERE chat_room_id = #{chatRoomId}
     </delete>
+
+
+
+    <!-- nickname으로 member_id 조회 (memberMapper로 옮길지 생각해보기)-->
+    <select id="selectMemberIdByNickname" resultType="String">
+        SELECT member_id FROM member WHERE nickname = #{nickname}
+    </select>
 
 </mapper>

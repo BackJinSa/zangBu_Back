@@ -27,6 +27,6 @@ public interface ChatService {
     //채팅방 생성
     ChatRoom createChatRoom(ChatRoom chatRoom);
 
-    //채팅방 삭제
-    void deleteChatRoom(String chatRoomId);
+    //채팅방 나가기
+    void leaveChatRoom(String chatRoomId, String userId);
 }
