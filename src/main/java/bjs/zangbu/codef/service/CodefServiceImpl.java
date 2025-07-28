@@ -47,21 +47,45 @@ public class CodefServiceImpl implements CodefService {
         map.put("dong", request.getDong());           // 동 정보
         map.put("ho", request.getHo());               // 호 정보
 
-        // 리스트로 감싸서 "buildingList" 구조에 맞게 구성
-        List<HashMap<String, Object>> buildingList = new ArrayList<>();
-        buildingList.add(map);
-
-        // 전체 파라미터 구성
-        HashMap<String, Object> parameterMap = new HashMap<>();
-        parameterMap.put("buildingList", buildingList);
 
         // CODEF 공개 시세조회 API 요청 URL
         String url = "/v1/kr/public/lt/real-estate-board/market-price-information";
 
         // CODEF Demo 환경에 API 요청 전송
-        String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, parameterMap);
+        String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
 
         // 응답 JSON 문자열 그대로 반환 (파싱은 다른 계층에서 수행)
+        return response;
+    }
+
+    @Override
+    public String realEstateRegistrationIssuance(Object request)
+            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException  {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("organization", "0002");
+        map.put("phoneNo", );
+        map.put("password", );
+        map.put("inquiryType", "3");
+        map.put("realtyType", "1");
+        map.put("addr_sido", );
+        map.put("addr_sigungu", );
+        map.put("addr_roadName", );
+        map.put("addr_buildingNumber", );
+        map.put("dong", );
+        map.put("ho", );
+        map.put("ePrepayNo", );
+        map.put("ePrepayPass", );
+        map.put("issueType", "1");
+        map.put("registerSummaryYN", "1");
+        map.put("tradingYN", "1");
+        map.put("jointMortgageJeonseYN", "1");
+
+        // CODEF 공개 시세조회 API 요청 URL
+        String url = "/v1/kr/public/lt/real-estate-board/market-price-information";
+
+        // CODEF Demo 환경에 API 요청 전송
+        String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
+
         return response;
     }
 
@@ -79,9 +103,10 @@ public class CodefServiceImpl implements CodefService {
         param.put("jti", session.getJti());
         param.put("twoWayTimestamp", session.getTwoWayTimestamp());
         param.put("secureNo", secureNo);
-
         try {
-            return codef.requestProduct(session.getProductUrl(), EasyCodefServiceType.DEMO, param);
+            String result = codef.requestProduct(session.getProductUrl(), EasyCodefServiceType.DEMO, param);
+            redisTemplate.delete(sessionKey);
+            return result;
         } catch (Exception e) {
             throw new CodefException.CodefServiceException(EasyCodefMessageConstant.SERVER_PROCESSING_ERROR, e.getMessage());
         }

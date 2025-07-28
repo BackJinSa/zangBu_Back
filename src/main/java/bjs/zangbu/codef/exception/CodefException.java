@@ -1,10 +1,19 @@
 package bjs.zangbu.codef.exception;
+<<<<<<< Updated upstream
 
+=======
+import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.Setter;
+import lombok.Getter;
+import lombok.AllArgsConstructor;
+>>>>>>> Stashed changes
 import io.codef.api.EasyCodefMessageConstant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * CODEF 관련 예외의 전역 핸들러
@@ -64,6 +73,44 @@ public class CodefException {
         System.err.println("CodefServiceException 발생: " + ex.getErrorCode() + " - " + ex.getErrorMessage());
         // 커스텀 에러 응답과 함께 400(BAD_REQUEST) 상태 반환
         return new ResponseEntity<>(new ErrorResponse(ex.getErrorCode(), ex.getErrorMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * UnsupportedEncodingException 처리 (ex: 인코딩 오류)
+     */
+    @ExceptionHandler(UnsupportedEncodingException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedEncoding(UnsupportedEncodingException ex) {
+        System.err.println("UnsupportedEncodingException 발생: " + ex.getMessage());
+        return new ResponseEntity<>(
+                new ErrorResponse("CF-80001", "인코딩 오류: " + ex.getMessage()),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    /**
+     * JsonProcessingException 처리 (ex: JSON 파싱/변환 오류)
+     */
+    @ExceptionHandler(JsonProcessingException.class)
+    public ResponseEntity<ErrorResponse> handleJsonProcessing(JsonProcessingException ex) {
+        System.err.println("JsonProcessingException 발생: " + ex.getMessage());
+        return new ResponseEntity<>(
+                new ErrorResponse("CF-80002", "JSON 파싱 오류: " + ex.getMessage()),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    /**
+     * InterruptedException 처리 (ex: 스레드 인터럽트 등)
+     */
+    @ExceptionHandler(InterruptedException.class)
+    public ResponseEntity<ErrorResponse> handleInterrupted(InterruptedException ex) {
+        System.err.println("InterruptedException 발생: " + ex.getMessage());
+        // 인터럽트 플래그 복구(필수!)
+        Thread.currentThread().interrupt();
+        return new ResponseEntity<>(
+                new ErrorResponse("CF-80003", "스레드 인터럽트: " + ex.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
     }
 
     /**
