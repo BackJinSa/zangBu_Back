@@ -1,5 +1,6 @@
 package bjs.zangbu.chat.controller;
 
+import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.service.ChatService;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
@@ -24,7 +25,7 @@ public class ChatController {
 
     // 사용자가 참여하고 있는 채팅방 목록 조회
     @GetMapping("/list")
-    public List<ChatRoom> getChatRoomList(
+    public List<ChatResponse.ChatRoomListResponse> getChatRoomList(
             @RequestParam String userId, @RequestParam String type,
             @RequestParam int page, @RequestParam int size) {
         return chatService.getChatRoomList(userId, type, page, size);

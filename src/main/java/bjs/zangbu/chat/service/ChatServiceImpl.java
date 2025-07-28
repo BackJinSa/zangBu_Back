@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import static bjs.zangbu.global.formatter.LocalDateFormatter.CreatedAt.formattingCreatedAt;
@@ -56,9 +56,42 @@ public class ChatServiceImpl implements ChatService{
 
     //사용자(userId)가 참여하고 있는 채팅방 목록 가져오기
     @Override
-    public List<ChatRoom> getChatRoomList(String userId, String type, int page, int size) {
+    public List<ChatResponse.ChatRoomListResponse> getChatRoomList(String userId, String type, int page, int size) {
         int offset = (page - 1) * size;
-        return chatMapper.selectChatRoomList(userId, type, offset, size);
+
+        //채팅방 목록 조회
+        List<ChatRoom> chatRooms = chatMapper.selectChatRoomList(userId, type, offset, size);
+
+        //응답 DTO 리스트 생성
+        List<ChatResponse.ChatRoomListResponse> result = new ArrayList<>();
+
+        for (ChatRoom room : chatRooms) {
+            String chatRoomId = room.getChatRoomId();
+
+            //채팅방의 안 읽은 메시지 수 조회
+            int unreadCount = chatMapper.countUnreadMessages(chatRoomId, userId);
+
+            //마지막 메시지 조회
+            ChatMessage lastMessage = chatMapper.selectLastMessageByRoomId(chatRoomId);
+
+            //대화 상대방 닉네임 조회
+            String otherNickname = userId.equals(room.getConsumerId())
+                    ? room.getSellerNickname()
+                    : room.getConsumerNickname();
+
+            result.add(ChatResponse.ChatRoomListResponse.builder()
+                    .chatRoomId(chatRoomId)
+                    .buildingName(room.getBuildingName())
+                    .lastMessage(lastMessage != null ? lastMessage.getMessage() : null)
+                    .lastMessageTime(lastMessage != null ? formattingCreatedAt(lastMessage.getCreatedAt()) : null)
+                    .otherUserNickname(otherNickname)
+                    .status("거래상태") // TODO: 거래상태 어떻게 처리할지...
+                    .sellerType(room.getSellerType())
+                    .hasNext(chatRooms.size() == size) // 페이지 사이즈와 같으면 다음 있음
+                    .unreadCount(unreadCount)
+                    .build());
+        }
+        return result;
     }
 
     //채팅방 유무 확인 - 채팅방 중복 생성 방지
@@ -103,11 +136,13 @@ public class ChatServiceImpl implements ChatService{
         }
 
         //일대일 채팅에 참여한 둘 모두 나간 경우에 DB에서 완전 삭제
-        if (!chatRoom.getSeller_visible() && !chatRoom.getConsumer_visible()) {
+        if (!chatRoom.getSellerVisible() && !chatRoom.getConsumerVisible()) {
             //chatRoomId의 ChatMessage들 삭제
             chatMapper.deleteMessagesByRoomId(chatRoomId);
             //chatRoomId의 ChatRoom 삭제
             chatMapper.deleteChatRoom(chatRoomId);
         }
     }
+
+
 }

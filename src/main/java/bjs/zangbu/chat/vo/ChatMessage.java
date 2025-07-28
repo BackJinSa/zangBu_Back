@@ -20,4 +20,5 @@ public class ChatMessage {
     private Long complexId;      //단지 id
     private String message;     //메시지 내용
     private LocalDateTime createdAt;    //메시지 작성 시간
+    private boolean isRead;             //메시지 읽음 여부
 }
