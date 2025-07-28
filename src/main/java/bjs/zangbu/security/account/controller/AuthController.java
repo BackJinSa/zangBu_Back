@@ -194,6 +194,7 @@ public class AuthController {
         } catch (IllegalStateException e){
             //Redis에 저장된 refreshToken이 없음 409
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+
         }
     }
 }
