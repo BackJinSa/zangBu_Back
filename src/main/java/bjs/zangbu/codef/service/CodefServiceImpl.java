@@ -103,6 +103,7 @@ public class CodefServiceImpl implements CodefService {
         param.put("jti", session.getJti());
         param.put("twoWayTimestamp", session.getTwoWayTimestamp());
         param.put("secureNo", secureNo);
+
         try {
             String result = codef.requestProduct(session.getProductUrl(), EasyCodefServiceType.DEMO, param);
             redisTemplate.delete(sessionKey);

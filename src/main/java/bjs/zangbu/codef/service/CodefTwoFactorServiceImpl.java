@@ -3,11 +3,11 @@ package bjs.zangbu.codef.service;
 import bjs.zangbu.codef.encryption.CodefEncryption;
 import bjs.zangbu.codef.thread.CodefThread;
 import io.codef.api.EasyCodef;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +57,6 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
             CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
             t.start();
             threadList.add(t);
-
             Thread.sleep(10000); // throws InterruptedException
         }
 
@@ -73,7 +72,6 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
         }
         return sb.toString();
     }
-
     @Override
     public String generalBuildingLeader(Object request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {

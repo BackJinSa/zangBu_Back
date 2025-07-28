@@ -8,9 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import java.io.UnsupportedEncodingException;
-
 /**
  * CODEF 관련 예외의 전역 핸들러
  * EasyCodefMessageConstant로 표현되는 모든 예외를 커스텀 CodefServiceException으로 래핑하여 처리합니다.
@@ -109,7 +107,7 @@ public class CodefException {
         );
     }
 
-    /**
+    /** 
      * 일반적인 RuntimeException을 처리해서 적절한 ResponseEntity로 반환합니다.
      * 예상하지 못한 런타임 예외의 마지막 방어선 역할을 합니다.
      *
@@ -127,29 +125,12 @@ public class CodefException {
     /**
      * 클라이언트에게 전달될 에러 응답 구조를 표현하는 내부 클래스입니다.
      */
+  
+    @Getter
+    @Setter
+    @AllArgsConstructor
     public static class ErrorResponse {
         private String code;
         private String message;
-
-        public ErrorResponse(String code, String message) {
-            this.code = code;
-            this.message = message;
-        }
-
-        public String getCode() {
-            return code;
-        }
-
-        public void setCode(String code) {
-            this.code = code;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
     }
 }
