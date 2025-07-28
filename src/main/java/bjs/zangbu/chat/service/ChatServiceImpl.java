@@ -5,6 +5,7 @@ import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.mapper.ChatMapper;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
+import bjs.zangbu.member.mapper.MemberMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import static bjs.zangbu.global.formatter.LocalDateFormatter.CreatedAt.formattin
 public class ChatServiceImpl implements ChatService{
 
     private final ChatMapper chatMapper;
+    private final MemberMapper memberMapper;
 
     //메시지 전송
     @Override
@@ -30,9 +32,12 @@ public class ChatServiceImpl implements ChatService{
         ChatMessage message = request.toEntity(chatRoomId, senderId, createdAt);
         chatMapper.insertMessage(message);
 
+        //보낸 사람 닉네임 조회
+        String senderNickname = memberMapper.getNicknameByMemberId(senderId);
+
         return ChatResponse.SendMessageResponse.builder()
                 .message(message.getMessage())
-                .sendNickname("보낸사람 닉네임")   //TODO: 보낸 사람 닉네임 조회 로직 추가
+                .sendNickname(senderNickname)
                 .createdAt(formattingCreatedAt(message.getCreatedAt()))
                 .build();
     }
