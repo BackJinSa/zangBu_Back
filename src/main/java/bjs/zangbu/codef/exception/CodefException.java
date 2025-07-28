@@ -1,4 +1,5 @@
 package bjs.zangbu.codef.exception;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Setter;
 import lombok.Getter;
 import lombok.AllArgsConstructor;
@@ -7,7 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
+import java.io.UnsupportedEncodingException;
 /**
  * CODEF 관련 예외의 전역 핸들러
  * EasyCodefMessageConstant로 표현되는 모든 예외를 커스텀 CodefServiceException으로 래핑하여 처리합니다.
@@ -69,6 +70,44 @@ public class CodefException {
     }
 
     /**
+     * UnsupportedEncodingException 처리 (ex: 인코딩 오류)
+     */
+    @ExceptionHandler(UnsupportedEncodingException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedEncoding(UnsupportedEncodingException ex) {
+        System.err.println("UnsupportedEncodingException 발생: " + ex.getMessage());
+        return new ResponseEntity<>(
+                new ErrorResponse("CF-80001", "인코딩 오류: " + ex.getMessage()),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    /**
+     * JsonProcessingException 처리 (ex: JSON 파싱/변환 오류)
+     */
+    @ExceptionHandler(JsonProcessingException.class)
+    public ResponseEntity<ErrorResponse> handleJsonProcessing(JsonProcessingException ex) {
+        System.err.println("JsonProcessingException 발생: " + ex.getMessage());
+        return new ResponseEntity<>(
+                new ErrorResponse("CF-80002", "JSON 파싱 오류: " + ex.getMessage()),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    /**
+     * InterruptedException 처리 (ex: 스레드 인터럽트 등)
+     */
+    @ExceptionHandler(InterruptedException.class)
+    public ResponseEntity<ErrorResponse> handleInterrupted(InterruptedException ex) {
+        System.err.println("InterruptedException 발생: " + ex.getMessage());
+        // 인터럽트 플래그 복구(필수!)
+        Thread.currentThread().interrupt();
+        return new ResponseEntity<>(
+                new ErrorResponse("CF-80003", "스레드 인터럽트: " + ex.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+
+    /** 
      * 일반적인 RuntimeException을 처리해서 적절한 ResponseEntity로 반환합니다.
      * 예상하지 못한 런타임 예외의 마지막 방어선 역할을 합니다.
      *
@@ -86,6 +125,7 @@ public class CodefException {
     /**
      * 클라이언트에게 전달될 에러 응답 구조를 표현하는 내부 클래스입니다.
      */
+  
     @Getter
     @Setter
     @AllArgsConstructor

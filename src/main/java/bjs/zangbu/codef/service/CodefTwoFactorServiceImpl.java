@@ -3,9 +3,12 @@ package bjs.zangbu.codef.service;
 import bjs.zangbu.codef.encryption.CodefEncryption;
 import bjs.zangbu.codef.thread.CodefThread;
 import io.codef.api.EasyCodef;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +30,8 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
     }
 
     @Override
-    public String residentRegistrationCertificate(Object request) {
+    public String residentRegistrationCertificate(Object request)
+            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         String productUrl = "/v1/kr/public/mw/resident-registration-abstract/issuance";
         List<CodefThread> threadList = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
@@ -53,25 +57,24 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
             CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
             t.start();
             threadList.add(t);
-            try { Thread.sleep(10000); } catch (InterruptedException e) { throw new RuntimeException(e); }
+            Thread.sleep(10000); // throws InterruptedException
         }
 
         StringBuilder sb = new StringBuilder();
         for (CodefThread t : threadList) {
-            try { t.join(); } catch (InterruptedException e) { throw new RuntimeException(e); }
-            // 오직 응답 값만: 2차 응답 있으면 그 값, 없으면 1차 응답만!
+            t.join(); // throws InterruptedException
             if (t.getSecondResponse() != null) {
                 sb.append(t.getSecondResponse());
             } else if (t.getFirstResponse() != null) {
                 sb.append(t.getFirstResponse());
             }
-            sb.append("\n"); // 줄 구분(필요 없으면 이 줄 생략)
+            sb.append("\n");
         }
         return sb.toString();
     }
-
     @Override
-    public String generalBuildingLeader(Object request) {
+    public String generalBuildingLeader(Object request)
+            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         String productUrl = "/v1/kr/public/ck/real-estate-register/identity-matching";
         List<CodefThread> threadList = new ArrayList<>();
         for(int i = 0; i < 2; i++) {
@@ -95,19 +98,18 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
             CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
             t.start();
             threadList.add(t);
-            try { Thread.sleep(10000); } catch (InterruptedException e) { throw new RuntimeException(e); }
+            Thread.sleep(10000);
         }
 
         StringBuilder sb = new StringBuilder();
         for (CodefThread t : threadList) {
-            try { t.join(); } catch (InterruptedException e) { throw new RuntimeException(e); }
-            // 오직 응답 값만: 2차 응답 있으면 그 값, 없으면 1차 응답만!
+            t.join();
             if (t.getSecondResponse() != null) {
                 sb.append(t.getSecondResponse());
             } else if (t.getFirstResponse() != null) {
                 sb.append(t.getFirstResponse());
             }
-            sb.append("\n"); // 줄 구분(필요 없으면 이 줄 생략)
+            sb.append("\n");
         }
         return sb.toString();
     }
