@@ -1,6 +1,7 @@
 package bjs.zangbu.chat.vo;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ChatMessage {
     private Long chatMessageId;   //채팅 메시지 식별 id
     private String chatRoomId;    //채팅방 id

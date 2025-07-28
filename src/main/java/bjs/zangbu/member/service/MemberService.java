@@ -1,4 +1,32 @@
 package bjs.zangbu.member.service;
 
-public class MemberService {
+import bjs.zangbu.member.dto.join.BookmarkBuilding;
+import bjs.zangbu.member.dto.request.MemberRequest.*;
+import bjs.zangbu.member.dto.response.MemberResponse.*;
+
+import java.util.List;
+
+public interface MemberService {
+    //찜한 매물 리스트 조회
+    List<BookmarkBuilding> getBookmarks(String memberId);
+
+    //찜한 매물 삭제
+    void deleteBookmark(String memberId, Long buildingId);
+
+    //회원정보 수정페이지
+    EditMyPage getMyPageInfo(String memberId);
+
+    //비밀번호 변경
+    void editPassword(String memberId, EditPassword request);
+
+    //닉네임 중복 체크하기
+    boolean isNicknameDuplicated(String nickname);
+
+    //닉네임 변경
+    void editNickname(String memberId, EditNicknameRequest request);
+
+    //탈퇴
+    void removeMember(String memberId);
+
+    String getNickname(String memberId);
 }

@@ -2,10 +2,12 @@ package bjs.zangbu.codef.thread;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.codef.api.EasyCodef;
 import io.codef.api.EasyCodefServiceType;
+import lombok.Getter;
 
 import java.util.HashMap;
 
 
+@Getter
 public class CodefThread extends Thread {
     private EasyCodef codef;
     private HashMap<String, Object> parameterMap;

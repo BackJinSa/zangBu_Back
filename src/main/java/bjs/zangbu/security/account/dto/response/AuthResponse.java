@@ -17,7 +17,7 @@ public class AuthResponse {
         private MemberEnum role;
     }
 
-    // /auth/email Response
+    // /auth/email Response 이메일 찾기 응답
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor

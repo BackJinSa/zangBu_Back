@@ -2,6 +2,7 @@ package bjs.zangbu.chat.mapper;
 
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 
