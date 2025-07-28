@@ -18,14 +18,14 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
-    // Spring Framework
+    // Spring Framework (6.x)
     implementation "org.springframework:spring-context:6.2.8"
     implementation "org.springframework:spring-webmvc:6.2.8"
     implementation "org.springframework:spring-tx:6.2.8"
     implementation "org.springframework:spring-jdbc:6.2.8"
     implementation "org.springframework:spring-test:6.2.8"
 
-    // Jakarta EE (Servlet/JSP/JSTL/DI)
+    // Jakarta EE
     implementation 'jakarta.inject:jakarta.inject-api:2.0.1'
     implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
     implementation 'jakarta.servlet.jsp:jakarta.servlet.jsp-api:3.1.1'
@@ -65,7 +65,7 @@ dependencies {
     implementation "org.springframework.amqp:spring-amqp:3.1.2"
     implementation "org.springframework.amqp:spring-rabbit:3.1.2"
 
-    // SnakeYAML (YAML 파싱용)
+    // SnakeYAML (YAML 파싱)
     implementation 'org.yaml:snakeyaml:2.0'
 
     // test
@@ -75,35 +75,32 @@ dependencies {
     // codef
     implementation 'io.codef.api:easycodef-java:1.0.6'
 
-    // Firebase 메시징 라이브러리
+    // Firebase 메시징
     implementation 'com.google.firebase:firebase-admin:9.2.0'
 
-    // 보안
-//    implementation("org.springframework.security:spring-security-web:5.8.13")
-//    implementation("org.springframework.security:spring-security-config:5.8.13")
-//    implementation("org.springframework.security:spring-security-core:5.8.13")
-//    implementation("org.springframework.security:spring-security-taglibs:5.8.13")
-
+    // 보안 (Spring Security 6.x)
     implementation "org.springframework.security:spring-security-web:6.2.3"
     implementation "org.springframework.security:spring-security-config:6.2.3"
     implementation "org.springframework.security:spring-security-core:6.2.3"
     implementation "org.springframework.security:spring-security-taglibs:6.2.3"
 
-    //jwt
+    // jwt
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 처리용 (Jackson 사용 시)
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
     // 웹 소켓
     implementation "org.springframework:spring-websocket:6.2.8"
     implementation "org.springframework:spring-messaging:6.2.8"
     implementation "org.springframework.integration:spring-integration-stomp:5.5.20"
 
-    //swagger
-    implementation 'io.springfox:springfox-swagger2:2.9.2'
-    implementation 'io.springfox:springfox-swagger-ui:2.9.2'
-}
+    // swagger (Springfox 사용 불가) → springdoc-openapi로 대체
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
 
+    // Redis
+    implementation 'org.springframework.data:spring-data-redis:3.3.0'
+    implementation 'redis.clients:jedis:4.4.3'
+}
 test {
     useJUnitPlatform()
 }
