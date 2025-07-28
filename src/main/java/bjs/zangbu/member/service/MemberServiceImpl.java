@@ -20,22 +20,26 @@ public class MemberServiceImpl implements MemberService{
     private final MemberMapper memberMapper;
     private final PasswordEncoder passwordEncoder;
 
+    //북마크 리스트 가져오기
     @Override
     public List<BookmarkBuilding> getBookmarks(String memberId) {
         return memberMapper.getBookmarksByMemberId(memberId);
     }
 
+    //찜한 매물 삭제
     @Override
     public void deleteBookmark(String memberId, Long buildingId) {
         memberMapper.deleteBookMark(memberId, buildingId);
     }
 
+    //마이페이지에 뜰 정보
     @Override
-    public EditMyPage getMyPageInfo(String memberId) {
-        Member member = memberMapper.get(memberId);
+    public EditMyPage getMyPageInfo(String email) {
+        Member member = memberMapper.get(email);
         return new EditMyPage(member.getNickname(), member.getPassword());
     }
 
+    //비밀번호 변경
     @Override
     public void editPassword(String memberId, EditPassword request) {
         String currentPasswordEncoded = memberMapper.findPasswordByMemberId(memberId);
@@ -46,11 +50,13 @@ public class MemberServiceImpl implements MemberService{
         memberMapper.updatePassword(memberId, newEncodedPassword);
     }
 
+    //닉네임 중복 여부
     @Override
     public boolean isNicknameDuplicated(String nickname) {
         return memberMapper.countByNickname(nickname) > 0;
     }
 
+    //닉네임 변경
     @Override
     public void editNickname(String memberId, EditNicknameRequest request) {
         String currentNickname = memberMapper.getNicknameByMemberId(memberId);
@@ -63,21 +69,25 @@ public class MemberServiceImpl implements MemberService{
         memberMapper.updateNickname(memberId, request.getNewNickname());
     }
 
+    //회원 탈퇴
     @Override
     public void removeMember(String memberId) {
         memberMapper.deleteMemberId(memberId);
     }
 
+    //닉네임 가져오기
     @Override
     public String getNickname(String memberId) {
         return memberMapper.getNicknameByMemberId(memberId);
     }
 
+    //알림 수신 여부 변경
     @Override
     public void updateFcmConsent(String memberId, boolean consent) {
         memberMapper.updateFcmConsent(memberId, consent);
     }
 
+    //알림 수신 여부 조회
     @Override
     public boolean getFcmConsent(String memberId) {
         Boolean result = memberMapper.selectFcmConsentByMemberId(memberId);

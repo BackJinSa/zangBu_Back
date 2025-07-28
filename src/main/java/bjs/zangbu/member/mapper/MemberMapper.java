@@ -42,4 +42,6 @@ public interface MemberMapper {
 
     //2. 알림 수신 여부 조회
     Boolean selectFcmConsentByMemberId(@Param("memberId") String memberId);
+
+    Member findByEmail(String email);
 }
