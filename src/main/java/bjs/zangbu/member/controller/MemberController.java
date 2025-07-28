@@ -24,6 +24,7 @@ public class MemberController {
     private final MemberMapper memberMapper;
     private final JwtProcessor jwtProcessor;
 
+    //공통 부분 메서드
     private Member getAuthenticatedMember(String accessTokenHeader) {
         String token = accessTokenHeader.replace("Bearer ", "").trim();
         //이메일만 가져오기

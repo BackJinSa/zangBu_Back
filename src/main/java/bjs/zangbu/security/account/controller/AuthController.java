@@ -29,6 +29,22 @@ public class AuthController {
     private final RedisTemplate<String, String> redisTemplate;
     private static final String REFRESH_TOKEN_PREFIX = "refresh:";
 
+    //공통 부분 메서드
+    private String validateAndExtractEmail(String accessTokenHeader) {
+        //토큰 유효성 검사
+        if (accessTokenHeader == null || !accessTokenHeader.startsWith("Bearer ")) {
+            throw new JwtException("유효하지 않은 토큰입니다.");
+        }
+
+        String token = accessTokenHeader.replace("Bearer ", "").trim();
+
+        if (!jwtProcessor.validateToken(token)) {
+            throw new JwtException("토큰이 유효하지 않습니다.");
+        }
+
+        return jwtProcessor.getEmail(token);
+    }
+
     // 1. 로그인
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
@@ -84,7 +100,7 @@ public class AuthController {
         String accessToken = accessTokenHeader.replace("Bearer ", "").trim();
         //토큰 유효성 검사
         if (!jwtProcessor.validateToken(accessToken)) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         EmailAuthResponse response = authService.findEmail(request);
