@@ -1,5 +1,7 @@
 package bjs.zangbu.chat.service;
 
+import bjs.zangbu.chat.dto.request.ChatRequest;
+import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
 
@@ -8,7 +10,7 @@ import java.util.List;
 public interface ChatService {
 
     //메시지 전송
-    void sendMessage(ChatMessage message);
+    ChatResponse.SendMessageResponse sendMessage(String chatRoomId, ChatRequest.SendMessageRequest request);
 
     //chatRoomId로 해당 채팅방의 메시지들 limit개 불러오기
     List<ChatMessage> getMessages(String chatRoomId, Long lastMessageId, int limit);
