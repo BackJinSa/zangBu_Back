@@ -5,6 +5,7 @@ import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.mapper.ChatMapper;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
+import bjs.zangbu.member.mapper.MemberMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import static bjs.zangbu.global.formatter.LocalDateFormatter.CreatedAt.formattin
 public class ChatServiceImpl implements ChatService{
 
     private final ChatMapper chatMapper;
+    private final MemberMapper memberMapper;
 
     //메시지 전송
     @Override
@@ -30,9 +32,12 @@ public class ChatServiceImpl implements ChatService{
         ChatMessage message = request.toEntity(chatRoomId, senderId, createdAt);
         chatMapper.insertMessage(message);
 
+        //보낸 사람 닉네임 조회
+        String senderNickname = memberMapper.getNicknameByMemberId(senderId);
+
         return ChatResponse.SendMessageResponse.builder()
                 .message(message.getMessage())
-                .sendNickname("보낸사람 닉네임")   //TODO: 보낸 사람 닉네임 조회 로직 추가
+                .sendNickname(senderNickname)
                 .createdAt(formattingCreatedAt(message.getCreatedAt()))
                 .build();
     }
@@ -79,13 +84,30 @@ public class ChatServiceImpl implements ChatService{
         }
     }
 
-    //채팅방 삭제
+    //채팅방 나가기
     @Override
     @Transactional
-    public void deleteChatRoom(String chatRoomId) {
-        //chatRoomId의 ChatMessage들 삭제
-        chatMapper.deleteMessagesByRoomId(chatRoomId);
-        //chatRoomId의 ChatRoom 삭제
-        chatMapper.deleteChatRoom(chatRoomId);
+    public void leaveChatRoom(String chatRoomId, String userId) {
+
+        ChatRoom chatRoom = chatMapper.selectChatRoomById(chatRoomId);
+
+        boolean isSeller = userId.equals(chatMapper.selectMemberIdByNickname(userId));
+        boolean isBuyer = userId.equals(chatRoom.getConsumerId());
+
+        if (isSeller) {
+            chatMapper.updateSellerVisible(chatRoomId);
+        } else if (isBuyer) {
+            chatMapper.updateConsumerVisible(chatRoomId);
+        } else {
+            throw new IllegalStateException("채팅방 참여자가 아닙니다.");
+        }
+
+        //일대일 채팅에 참여한 둘 모두 나간 경우에 DB에서 완전 삭제
+        if (!chatRoom.getSeller_visible() && !chatRoom.getConsumer_visible()) {
+            //chatRoomId의 ChatMessage들 삭제
+            chatMapper.deleteMessagesByRoomId(chatRoomId);
+            //chatRoomId의 ChatRoom 삭제
+            chatMapper.deleteChatRoom(chatRoomId);
+        }
     }
 }
