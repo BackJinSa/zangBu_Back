@@ -1,9 +1,7 @@
 package bjs.zangbu.codef.service;
-
 import bjs.zangbu.codef.encryption.CodefEncryption;
 import bjs.zangbu.codef.thread.CodefThread;
 import io.codef.api.EasyCodef;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -17,52 +15,61 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
 
-    // CODEF 암호화 및 인증을 위한 유틸 클래스
+    // CODEF 암호화 및 인증을 위한 유틸 클래스 (DI)
     private final CodefEncryption codefEncryption;
 
-    // CODEF SDK 객체 초기화에 사용
+    // CODEF SDK 객체 (실제 API 연동 용)
     private EasyCodef codef;
 
-    // 애플리케이션이 시작되면 CODEF 인스턴스를 초기화
+    // 서비스 인스턴스화 시 CODEF 객체 한 번만 초기화
     @PostConstruct
     public void init() {
         codef = codefEncryption.getCodefInstance();
     }
 
+    /**
+     * 주민등록초본 발급 (2차 인증 자동 포함)
+     * - 필수 파라미터 추출 및 Map 생성 후 CODEF 주민등록초본 발급 API 요청
+     * - 각 스레드별로 2차 인증(FIDO/휴대폰 등)까지의 응답값만 반환
+     */
     @Override
     public String residentRegistrationCertificate(Object request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         String productUrl = "/v1/kr/public/mw/resident-registration-abstract/issuance";
         List<CodefThread> threadList = new ArrayList<>();
+        // 2번을 예시로 여러 동시 요청 처리 가능 (for문 반복수 조정 시 멀티 인증 확장 가능)
         for (int i = 0; i < 2; i++) {
+            // 주민등록초본 API 파라미터 셋팅
             HashMap<String, Object> parameterMap = new HashMap<>();
-            parameterMap.put("organization", "0001");
-            parameterMap.put("loginType", "5");
-            parameterMap.put("userName", );
-            parameterMap.put("identity", );
-            parameterMap.put("birthDate", );
-            parameterMap.put("identityEncYn", "Y");
-            parameterMap.put("loginTypeLevel", );
-            parameterMap.put("phoneNo", );
-            parameterMap.put("addrSido", );
-            parameterMap.put("addrSiGunGu",);
-            parameterMap.put("personalInfoChangeYN", "0");
-            parameterMap.put("pastAddrChangeYN", "1");
-            parameterMap.put("nameRelationYN", "0");
-            parameterMap.put("militaryServiceYN", "0");
-            parameterMap.put("overseasKoreansIDYN", "0");
-            parameterMap.put("isIdentityViewYn", "0");
-            parameterMap.put("originDataYN", "0");
+            parameterMap.put("organization", "0001");      // 기관코드
+            parameterMap.put("loginType", "5");            // 로그인 유형 (통합인증/휴대폰 등)
+            parameterMap.put("userName", );                // 사용자 이름
+            parameterMap.put("identity", );                // 주민등록번호
+            parameterMap.put("birthDate", );               // 생년월일
+            parameterMap.put("identityEncYn", "Y");        // 주민번호 암호화 여부
+            parameterMap.put("loginTypeLevel", );          // 인증 레벨
+            parameterMap.put("phoneNo", );                 // 휴대폰 번호
+            parameterMap.put("addrSido", );                // 주소(시/도)
+            parameterMap.put("addrSiGunGu", );             // 주소(시군구)
+            parameterMap.put("personalInfoChangeYN", "0"); // 개인정보 변경이력 포함 여부
+            parameterMap.put("pastAddrChangeYN", "1");     // 과거 주소 포함 여부
+            parameterMap.put("nameRelationYN", "0");       // 친족관계 포함 여부
+            parameterMap.put("militaryServiceYN", "0");    // 병역사항 포함 여부
+            parameterMap.put("overseasKoreansIDYN", "0");  // 해외교포 여부
+            parameterMap.put("isIdentityViewYn", "0");     // 주민등록번호 표기 여부
+            parameterMap.put("originDataYN", "0");         // 원본 데이터 표기 여부
 
+            // 스레드별로 CODEF API 호출(병렬 실행)
             CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
             t.start();
             threadList.add(t);
-            Thread.sleep(10000); // throws InterruptedException
+            Thread.sleep(10000); // (각 스레드 간 간격, 실전에서는 필요시 조정)
         }
 
+        // 모든 스레드의 인증 결과 JSON 반환(2차 응답 있으면 2차, 없으면 1차)
         StringBuilder sb = new StringBuilder();
         for (CodefThread t : threadList) {
-            t.join(); // throws InterruptedException
+            t.join();
             if (t.getSecondResponse() != null) {
                 sb.append(t.getSecondResponse());
             } else if (t.getFirstResponse() != null) {
@@ -72,28 +79,121 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
         }
         return sb.toString();
     }
+
+    /**
+     * 일반건축물대장 소유자/세대주 실명 일치 검사 (2차 인증 자동 포함)
+     * - codefThread 올바르게 순차 실행, 결과값만 스트링으로 묶어 반환
+     */
     @Override
     public String generalBuildingLeader(Object request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         String productUrl = "/v1/kr/public/ck/real-estate-register/identity-matching";
         List<CodefThread> threadList = new ArrayList<>();
-        for(int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++) {
+            // 건축물대장 실명 일치 확인 파라미터
+            HashMap<String, Object> parameterMap = new HashMap<>();
+            parameterMap.put("organization", "0001");     // 기관코드
+            parameterMap.put("loginType", "5");           // 로그인 유형
+            parameterMap.put("userName", );               // 사용자명
+            parameterMap.put("identity", );               // 주민등록번호
+            parameterMap.put("identityEncYn", "Y");       // 주민번호 암호화 여부
+            parameterMap.put("birthDate", );              // 생년월일
+            parameterMap.put("loginTypeLevel", "1");      // 인증레벨
+            parameterMap.put("phoneNo", );                // 휴대폰번호
+            parameterMap.put("telecom", );                // 통신사 유형
+            parameterMap.put("address", );                // 소유자 주소
+            parameterMap.put("dong", );                   // 동
+            parameterMap.put("ho", );                     // 호
+            parameterMap.put("type", "0");                // 건물 구분(주택/비주택 등, 상품별 참조)
+            parameterMap.put("zipCode", );                // 우편번호
+            parameterMap.put("originDateYN", "1");        // 원본자료 포함여부
+
+            CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
+            t.start();
+            threadList.add(t);
+            Thread.sleep(10000);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (CodefThread t : threadList) {
+            t.join();
+            if (t.getSecondResponse() != null) {
+                sb.append(t.getSecondResponse());
+            } else if (t.getFirstResponse() != null) {
+                sb.append(t.getFirstResponse());
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 주민등록증 진위확인 (2차 인증 상품)
+     * - 실명인증/진위확인 CODEF API 요청
+     * - 각종 파라미터(주소, 발급일 등) 포함해야 인증 정상 동작
+     */
+    @Override
+    public String residentRegistrationAuthenticityConfirmation(Object request)
+            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        String productUrl = "/v1/kr/public/mw/identity-card/check-status";
+        List<CodefThread> threadList = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            // 주민등록증 진위확인용 파라미터
+            HashMap<String, Object> parameterMap = new HashMap<>();
+            parameterMap.put("organization", "0002");
+            parameterMap.put("loginType", "6");         // 인증유형
+            parameterMap.put("loginTypeLevel", );       // 인증레벨
+            parameterMap.put("phoneNo", );              // 휴대폰번호
+            parameterMap.put("loginUserName", );        // 로그인 사용자명
+            parameterMap.put("loginBirthDate", );       // 로그인 생년월일
+            parameterMap.put("birthDate", );            // 실제 생년월일
+            parameterMap.put("loginIdentity", );        // 로그인 아이디(주민번호)
+            parameterMap.put("identity", );             // 주민등록번호
+            parameterMap.put("userName", );             // 사용자명
+            parameterMap.put("issueDate", );            // 주민등록증 발급일자
+            parameterMap.put("identityEncYn", "Y");     // 암호화 여부
+
+            CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
+            t.start();
+            threadList.add(t);
+            Thread.sleep(10000);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (CodefThread t : threadList) {
+            t.join();
+            if (t.getSecondResponse() != null) {
+                sb.append(t.getSecondResponse());
+            } else if (t.getFirstResponse() != null) {
+                sb.append(t.getFirstResponse());
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 지방세 납부증명서 발급
+     * - 필수 파라미터로 CODEF 지방세 납세증명 API 호출
+     */
+    @Override
+    public String localTaxProof(Object request)
+            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        String productUrl = "/v1/kr/public/mw/localtax-payment-certificate/inquiry";
+        List<CodefThread> threadList = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            // 지방세 납부증명서 API 파라미터
             HashMap<String, Object> parameterMap = new HashMap<>();
             parameterMap.put("organization", "0001");
-            parameterMap.put("loginType", "5");
-            parameterMap.put("userName", );
-            parameterMap.put("identity", );
-            parameterMap.put("identityEncYn", "Y");
-            parameterMap.put("birthDate", );
-            parameterMap.put("loginTypeLevel", "1");
-            parameterMap.put("phoneNo", );
-            parameterMap.put("telecom", );
-            parameterMap.put("address", );
-            parameterMap.put("dong", );
-            parameterMap.put("ho", );
-            parameterMap.put("type", "0");
-            parameterMap.put("zipCode", );
-            parameterMap.put("originDateYN", "1");
+            parameterMap.put("loginType", "6");         // 인증유형
+            parameterMap.put("userName", );             // 사용자 성명
+            parameterMap.put("identity", );             // 주민번호 등
+            parameterMap.put("identityEncYn", "Y");     // 암호화 여부
+            parameterMap.put("birthDate", );            // 생년월일
+            parameterMap.put("loginTypeLevel", );       // 인증레벨
+            parameterMap.put("phoneNo", );              // 휴대폰번호
+            parameterMap.put("address", );              // 주소(일부 인증상품 필요)
+            parameterMap.put("phoneNo1", );             // 추가 휴대폰번호
 
             CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
             t.start();
