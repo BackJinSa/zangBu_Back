@@ -1,35 +1,42 @@
 package bjs.zangbu.notification.service;
 
-import bjs.zangbu.notification.dto.response.NotificationResponse;
-import bjs.zangbu.notification.vo.Notification;
-
-import java.util.List;
+import bjs.zangbu.notification.dto.response.NotificationResponse.*;
 
 public interface NotificationService {
 
     // ====================== API 전용 ======================
-    // [API] 전체 알림 조회
-    NotificationResponse.NotificationAll getAllNotifications(String memberId);
 
-    // [API] 하나의 알림 읽음 처리 (DB 업데이트)
+    /** [API] 전체 알림 조회 */
+    NotificationAll getAllNotifications(String memberId);
+
+    /** [API] 하나의 알림 읽음 처리 */
     boolean markAsRead(String memberId, Long notificationId);
 
-    // [API] 전체 알림 읽음 처리 (DB 업데이트) return 값 : 읽음 처리된 알림 개수
-    NotificationResponse.MarkAllReadResult markAllAsRead(String memberId);  // 처리된 개수 반환
+    /** [API] 전체 알림 읽음 처리 (읽음 처리된 개수 반환) */
+    MarkAllReadResult markAllAsRead(String memberId);
 
-    // [API] 알림 삭제 (DB 삭제)
+    /** [API] 알림 삭제 */
     boolean removeNotification(String memberId, Long notificationId);
 
     // ====================== 트리거 전용 ===========================
 
-    // [트리거] 시세 변동 감지 (스케줄러 + FCM 메시지 발송)
+    /** [트리거] 시세 변동 감지 (스케줄러 + FCM 메시지 발송) */
     void detectPriceChangeForAllBookmarks();
 
-    // [트리거] 실거래 발생 감지 (스케줄러 + FCM 메시지 발송)
-    void detecTradeHappenedNow(Long dealId);
+    /** [트리거] 실거래 발생 감지 (스케줄러 + FCM 메시지 발송) */
+    void detectTradeHappenedNow(Long dealId);
 
-    // [실시간 트리거] 리뷰 등록 감지
-    // (Review 등록 서비스 내부에서 실행 + FCM 메시지 발송)
+    /** [트리거] 리뷰 등록 감지 (즉시 실행 + FCM 메시지 발송) */
     void notificationReviewRegisterd(Long buildingId);
 
+    // ====================== 내부 공용 기능 ===========================
+
+    // 중복 알림 여부를 확인한 뒤 알림 저장 및 FCM 전송
+
+    void sendNotificationIfNotExists(String memberId,
+                                     bjs.zangbu.building.vo.Building building,
+                                     bjs.zangbu.notification.vo.Type type,
+                                     String title,
+                                     String message,
+                                     int currentPrice);
 }

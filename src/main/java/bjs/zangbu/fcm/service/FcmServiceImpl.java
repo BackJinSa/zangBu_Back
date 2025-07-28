@@ -13,11 +13,13 @@ public class FcmServiceImpl implements FcmService {
 
     private final FcmMapper fcmMapper;
 
+    // 디바이스 토큰 등록
     @Override
     public void registerToken(String memberId, String token) {
         fcmMapper.insertFcmToken(memberId, token);
     }
 
+    // 디바이스 토큰 모두 삭제
     @Override
     public void deleteAllTokensByMemberId(String memberId) {
         fcmMapper.deleteAllTokensByMemberId(memberId);

@@ -24,5 +24,8 @@ public interface NotificationMapper {
     // 알림 등록 (시세 변동, 실거래, 리뷰 모두 같은 쿼리 사용)
     int insertNotification(Notification notification);
 
+    // 오늘 같은 건물/가격/타입의 알림이 있는지 확인 (시세 변동 중복 방지)
+    boolean existsSamePriceNotificationToday(String memberId, Long buildingId,
+                                             String type, int price);
 
 }

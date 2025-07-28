@@ -22,9 +22,9 @@ public class FcmSenderImpl implements FcmSender {
 
         try {
             String response = FirebaseMessaging.getInstance().send(message);
-            System.out.println("✅ FCM 전송 성공: " + response);
+            System.out.println("FCM 전송 성공: " + response);
         } catch (Exception e) {
-            System.err.println("❌ FCM 전송 실패: " + e.getMessage());
+            System.err.println("FCM 전송 실패: " + e.getMessage());
         }
     }
 
