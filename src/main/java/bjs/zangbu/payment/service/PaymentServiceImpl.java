@@ -22,8 +22,7 @@ import java.util.Map;
 public class PaymentServiceImpl implements PaymentService{
 
     private final PaymentMapper paymentMapper;
-    private final RestTemplate restTemplate = new RestTemplate();
-
+    private final RestTemplate restTemplate;
     // Toss 샌드박스 키
     @Value("${toss.secretKey}")
     private String secretKey;
