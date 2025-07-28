@@ -1,12 +1,8 @@
 package bjs.zangbu.codef.exception;
-<<<<<<< Updated upstream
-
-=======
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Setter;
 import lombok.Getter;
 import lombok.AllArgsConstructor;
->>>>>>> Stashed changes
 import io.codef.api.EasyCodefMessageConstant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
