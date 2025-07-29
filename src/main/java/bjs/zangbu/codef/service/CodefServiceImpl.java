@@ -117,6 +117,11 @@ public class CodefServiceImpl implements CodefService {
 
         return response;
     }
+    /**
+     * 건축물대장 발급 절차
+     * - 파라미터맵을 구성하여 증명서 발급 CODEF API 요청 후, JSON 응답을 바로 반환
+     */
+
 
     /**
      * 납입증명서(세금납부 증명 등) 발급
