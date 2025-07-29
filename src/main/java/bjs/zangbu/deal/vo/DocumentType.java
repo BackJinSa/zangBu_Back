@@ -9,7 +9,7 @@ package bjs.zangbu.deal.vo;
  *  - RIGHT_REPORT      : 권리관계보고서
  */
 public enum DocumentType {
-    BUILDING_REGISTER,
+    BUILDING_REGISTER, // 건축물대장
     REGISTRY,
     TAX_CERT,
     RIGHT_REPORT
