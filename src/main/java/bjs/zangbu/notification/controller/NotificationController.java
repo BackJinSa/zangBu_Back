@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/notification")
-@Tag(name = "알림 API", description = "FCM 및 트리거 기반 알림 관련 기능을 제공합니다.")
+@Tag(name = "Notification API", description = "FCM 및 트리거 기반 알림 관련 기능을 제공합니다.")
 @SecurityRequirement(name = "Authorization") // Swagger JWT 인증 적용
 public class NotificationController {
 
