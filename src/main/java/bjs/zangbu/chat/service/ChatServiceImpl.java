@@ -2,6 +2,7 @@ package bjs.zangbu.chat.service;
 
 import bjs.zangbu.chat.dto.request.ChatRequest;
 import bjs.zangbu.chat.dto.response.ChatResponse;
+import bjs.zangbu.chat.exception.ChatException;
 import bjs.zangbu.chat.mapper.ChatMapper;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static bjs.zangbu.global.formatter.LocalDateFormatter.CreatedAt.formattingCreatedAt;
 
@@ -25,15 +27,20 @@ public class ChatServiceImpl implements ChatService{
 
     //메시지 전송
     @Override
-    public ChatResponse.SendMessageResponse sendMessage(String chatRoomId, ChatRequest.SendMessageRequest request) {
-        String senderId = "SENDER_ID";    // TODO: 인증 도입 시 변경
+    public ChatResponse.SendMessageResponse sendMessage(String senderId, ChatRequest.SendMessageRequest request){
         LocalDateTime createdAt = LocalDateTime.now();
 
-        ChatMessage message = request.toEntity(chatRoomId, senderId, createdAt);
-        chatMapper.insertMessage(message);
+        ChatMessage message = request.toEntity(senderId, createdAt);
+        int result = chatMapper.insertMessage(message);
+        if (result == 0) {
+            throw new IllegalStateException("메시지 저장에 실패했습니다.");
+        }
 
         //보낸 사람 닉네임 조회
         String senderNickname = memberMapper.getNicknameByMemberId(senderId);
+        if (senderNickname == null) {
+            throw new IllegalArgumentException(senderId + "님의 닉네임을 찾을 수 없습니다. ");
+        }
 
         return ChatResponse.SendMessageResponse.builder()
                 .message(message.getMessage())
@@ -51,7 +58,11 @@ public class ChatServiceImpl implements ChatService{
     //chatRoomId 기준으로 채팅방 상세정보 가져오기
     @Override
     public ChatRoom getChatRoomDetail(String chatRoomId) {
-        return chatMapper.selectChatRoomById(chatRoomId);
+        ChatRoom room = chatMapper.selectChatRoomById(chatRoomId);
+        if (room == null) {
+            throw new IllegalArgumentException(chatRoomId+ "를 id로 하는 채팅방이 존재하지 않습니다.");
+        }
+        return room;
     }
 
     //사용자(userId)가 참여하고 있는 채팅방 목록 가져오기
@@ -85,7 +96,7 @@ public class ChatServiceImpl implements ChatService{
                     .lastMessage(lastMessage != null ? lastMessage.getMessage() : null)
                     .lastMessageTime(lastMessage != null ? formattingCreatedAt(lastMessage.getCreatedAt()) : null)
                     .otherUserNickname(otherNickname)
-                    .status("거래상태") // TODO: 거래상태 어떻게 처리할지...
+                    .status(room.getStatus())
                     .sellerType(room.getSellerType())
                     .hasNext(chatRooms.size() == size) // 페이지 사이즈와 같으면 다음 있음
                     .unreadCount(unreadCount)
@@ -109,6 +120,18 @@ public class ChatServiceImpl implements ChatService{
         ChatRoom existsedChatRoom = chatMapper.existsChatRoom(buildingId, consumerId);
 
         if (existsedChatRoom == null) { //buildingId, consumerId으로 채팅방이 없을 때만 채팅방 생성
+            String uuid = UUID.randomUUID().toString();
+            chatRoom = ChatRoom.builder()
+                    .chatRoomId(uuid)
+                    .buildingId(chatRoom.getBuildingId())
+                    .consumerId(chatRoom.getConsumerId())
+                    .complexId(chatRoom.getComplexId())
+                    .sellerNickname(chatRoom.getSellerNickname())
+                    .consumerNickname(chatRoom.getConsumerNickname())
+                    .sellerVisible(true)    // 초기값 true
+                    .consumerVisible(true)  // 초기값 true
+                    .build();
+
             chatMapper.insertChatRoom(chatRoom);
             return chatRoom;
         } else {
@@ -123,6 +146,9 @@ public class ChatServiceImpl implements ChatService{
     public void leaveChatRoom(String chatRoomId, String userId) {
 
         ChatRoom chatRoom = chatMapper.selectChatRoomById(chatRoomId);
+        if (chatRoom == null) {
+            throw new IllegalArgumentException(chatRoomId+ "를 id로 하는 채팅방이 존재하지 않습니다.");
+        }
 
         boolean isSeller = userId.equals(chatMapper.selectMemberIdByNickname(userId));
         boolean isBuyer = userId.equals(chatRoom.getConsumerId());
