@@ -4,6 +4,10 @@ import bjs.zangbu.notification.dto.response.NotificationResponse.MarkAllReadResu
 import bjs.zangbu.notification.dto.response.NotificationResponse.NotificationAll;
 import bjs.zangbu.notification.service.NotificationService;
 import com.github.pagehelper.PageHelper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -16,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/notification")
+@Tag(name = "알림 API", description = "FCM 및 트리거 기반 알림 관련 기능을 제공합니다.")
+@SecurityRequirement(name = "Authorization") // Swagger JWT 인증 적용
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -24,6 +30,10 @@ public class NotificationController {
     * 전체 알림 조회
     *
     * ------------------------------------------------- */
+    @Operation(
+            summary = "전체 알림 조회",
+            description = "현재 로그인한 사용자의 전체 알림 목록을 페이지 단위로 조회합니다."
+    )
     @GetMapping("/all")
     public ResponseEntity<?> getAllNotifications(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -51,6 +61,10 @@ public class NotificationController {
      * 하나의 알림 읽음 처리
      *
      * ------------------------------------------------- */
+    @Operation(
+            summary = "알림 읽음 처리",
+            description = "특정 알림 1개를 읽음 처리합니다. 이미 읽음 처리된 경우 실패 응답을 반환합니다."
+    )
     @PatchMapping("/read/{notificationId}")
     public ResponseEntity<?> notificationRead(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -85,6 +99,10 @@ public class NotificationController {
      * 알림 전체 읽음 처리
      *
      * ------------------------------------------------- */
+    @Operation(
+            summary = "전체 알림 읽음 처리",
+            description = "현재 로그인한 사용자의 모든 안 읽은 알림을 읽음 처리합니다."
+    )
     @PatchMapping("/read/all")
     public ResponseEntity<?> notificationAllRead(
         @AuthenticationPrincipal UserDetails userDetails
@@ -117,6 +135,10 @@ public class NotificationController {
      * 알림 삭제
      *
      * ------------------------------------------------- */
+    @Operation(
+            summary = "알림 삭제",
+            description = "특정 알림을 삭제합니다. 이미 삭제되었거나 존재하지 않는 경우 실패 응답을 반환합니다."
+    )
     @PatchMapping("/remove/{notificationId}")
     public ResponseEntity<?> removeNotification(
             @AuthenticationPrincipal UserDetails userDetails,
