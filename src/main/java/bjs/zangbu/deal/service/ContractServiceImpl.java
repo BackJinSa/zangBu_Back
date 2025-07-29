@@ -1,6 +1,10 @@
 package bjs.zangbu.deal.service;
 
+import bjs.zangbu.codef.service.CodefService;
+import bjs.zangbu.deal.dto.join.DealDocumentInfo;
 import bjs.zangbu.deal.dto.join.DealWithSaleType;
+import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
+import bjs.zangbu.deal.dto.response.BuildingRegisterResponse;
 import bjs.zangbu.deal.mapper.DealMapper;
 import bjs.zangbu.notification.vo.SaleType;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ContractServiceImpl implements ContractService {
     private final DealMapper dealMapper;
+    private final CodefService codefService;
 
     @Override
     @Transactional(readOnly = true)
@@ -36,5 +41,16 @@ public class ContractServiceImpl implements ContractService {
             throw new IllegalStateException("거래 타입 오류, saleType : " + type);
         }
         return path;
+    }
+
+    @Override
+    public BuildingRegisterResponse generateRegisterPdf(Long dealId) throws Exception {
+        // 1) DB 조회
+        DealDocumentInfo deal = dealMapper.selectDocumentInfo(dealId);
+
+        // 2) DTO -> Codef 요청
+        BuildingRegisterRequest request = BuildingRegisterRequest.from(deal);
+
+        String codefjson = codefService.callBuildingRegister(request);
     }
 }
