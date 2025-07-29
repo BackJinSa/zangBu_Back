@@ -1,9 +1,7 @@
 package bjs.zangbu.building.service;
-import bjs.zangbu.bookmark.mapper.BookMarkMapper;
 import bjs.zangbu.bookmark.service.BookMarkService;
 import bjs.zangbu.building.dto.request.BuildingRequest.SaleRegistrationRequest.ComplexDetails;
 import bjs.zangbu.building.dto.request.BuildingRequest.SaleRegistrationRequest.ImageDetails;
-import bjs.zangbu.building.dto.response.BuildingResponse.FilteredResponse.Filtered;
 import bjs.zangbu.building.filter.BuildingFilter;
 import bjs.zangbu.building.vo.Building;
 import bjs.zangbu.codef.converter.CodefConverter;
@@ -11,125 +9,163 @@ import bjs.zangbu.codef.service.CodefService;
 import bjs.zangbu.building.dto.request.BuildingRequest.*;
 import bjs.zangbu.building.dto.response.BuildingResponse.*;
 import bjs.zangbu.building.mapper.BuildingMapper;
-import bjs.zangbu.complexList.mapper.ComplexListMapper;
 import bjs.zangbu.complexList.service.ComplexListService;
 import bjs.zangbu.complexList.vo.ComplexList;
 import bjs.zangbu.imageList.service.ImageListService;
 import bjs.zangbu.imageList.vo.ImageList;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * BuildingService 구현체
+ * 매물 관련 비즈니스 로직 처리 클래스
+ */
 @Service
 @RequiredArgsConstructor
 public class BuildingServiceImpl implements BuildingService {
-    // 외부 서비스 및 매퍼 주입
+
     private final CodefService codefService;
     private final BuildingMapper buildingMapper;
     private final BuildingFilter buildingFilter;
     private final ComplexListService complexListService;
     private final ImageListService imageListService;
-    private final BookMarkService  bookMarkService;
+    private final BookMarkService bookMarkService;
 
-    // 특정 매물 상세 정보를 조회하는 서비스
+    /**
+     * 특정 매물 상세 정보를 조회한다.
+     * - DB 존재 여부 확인
+     * - CODEF API 호출하여 가격 정보 조회
+     * - JSON 응답을 DTO로 변환 후 반환
+     *
+     * @param request 매물 상세 조회 요청 DTO
+     * @return 매물 상세 조회 응답 DTO
+     * @throws UnsupportedEncodingException 인코딩 예외
+     * @throws JsonProcessingException JSON 처리 예외
+     * @throws InterruptedException API 호출 지연 예외
+     */
     @Override
     public ViewDetailResponse viewDetailService(ViewDetailRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        // 요청된 buildingId가 DB에 존재하는지 검증
         buildingFilter.validateBuildingExists(request.getBuildingId());
-        // CodefService를 통해 매물 가격 정보 JSON 데이터 조회
         String jsonResponse = codefService.priceInformation(request);
-        // JSON 데이터를 ViewDetailResponse DTO로 변환
-        ViewDetailResponse response = CodefConverter.parseDataToDto(jsonResponse, ViewDetailResponse.class);
-        return response;
+        return CodefConverter.parseDataToDto(jsonResponse, ViewDetailResponse.class);
     }
 
-    // 매물 찜하기 서비스 - 찜 추가
+    /**
+     * 매물 찜하기 서비스 (찜 추가)
+     * - 매물 존재 여부 검증
+     * - 찜 추가 및 찜 수 증가 처리
+     *
+     * @param request 찜 요청 DTO
+     * @param memberId 찜하는 회원 ID
+     */
     @Transactional
     @Override
     public void bookMarkService(BookmarkRequest request, String memberId) {
-        // building 존재 여부 검증
         buildingFilter.validateBuildingExists(request.getBuildingId());
-        // 찜 정보 insert
         bookMarkService.insertBookMark(memberId, request.getBuildingId());
-        // 찜 수 증가
         buildingMapper.incrementBookmarkCount(request.getBuildingId());
     }
 
-    // 매물 찜 해제 서비스 - 찜 삭제
+    /**
+     * 매물 찜 해제 서비스 (찜 삭제)
+     * - 매물 존재 여부 검증
+     * - 찜 삭제 처리
+     *
+     * @param buildingId 찜 해제할 매물 ID
+     * @param memberId 찜 해제하는 회원 ID
+     */
     @Transactional
     @Override
     public void bookMarkServiceDelete(Long buildingId, String memberId) {
-        // building 존재 여부 검증
         buildingFilter.validateBuildingExists(buildingId);
-        // 찜 정보 삭제
         bookMarkService.deleteBookMark(memberId, buildingId);
     }
 
-    // 매물 등록 서비스
+    /**
+     * 매물 등록 서비스
+     * - 복합 단지 정보 저장
+     * - 건물 정보 저장 및 buildingId 반환
+     * - 이미지 정보 저장
+     *
+     * @param request 매물 등록 요청 DTO
+     * @param memberId 매물 등록자 회원 ID
+     */
     @Transactional
     @Override
     public void SaleRegistration(SaleRegistrationRequest request, String memberId) {
-        // 복합 단지 정보 변환 및 DB 저장 후 생성된 complexId 반환
         ComplexList complexList = ComplexDetails.toVo(request.getComplexList());
         Long complexId = complexListService.createComplexList(complexList);
 
-        // 건물 정보 변환 및 저장 후 buildingId 반환
         Building building = SaleRegistrationRequest.BuildingDetails.toVo(request.getBuilding(), complexId, memberId);
         Long buildingId = buildingMapper.createBuilding(building);
 
-        // 이미지 정보 변환 후 저장
         ImageList imageList = ImageDetails.toVo(request.getImage(), complexId, memberId, buildingId);
         imageListService.createImageList(imageList);
     }
 
-    // 매물 목록 조회 (필터링 및 페이징)
+    /**
+     * 필터 조건과 페이징 정보를 기반으로 매물 목록을 조회한다.
+     * - PageHelper로 페이징 처리
+     * - 로그인 회원의 찜 정보 반영
+     * - 결과를 DTO로 변환하여 반환
+     *
+     * @param buildingName 매물명 필터
+     * @param saleType 매물 판매 유형 필터
+     * @param startPrice 가격 범위 시작 필터
+     * @param endPrice 가격 범위 종료 필터
+     * @param propertyType 부동산 종류 필터
+     * @param page 요청 페이지 번호
+     * @param size 페이지당 데이터 수
+     * @param memberId 로그인 회원 ID (찜 여부 체크용)
+     * @return 페이징된 매물 목록 응답 DTO
+     */
     @Transactional
     @Override
-    public FilteredResponse getBuildingList(String buildingName, String saleType, Long startPrice, Long endPrice, String propertyType, int page, int size, String memberId) {
-        int offset = page * size;
+    public FilteredResponse getBuildingList(
+            String buildingName, String saleType, Long startPrice, Long endPrice,
+            String propertyType, int page, int size, String memberId) {
 
-        // 매퍼에서 바로 DTO 리스트 받기
-        List<Filtered> filteredList = buildingMapper.selectFilteredBuildings(
-                buildingName, saleType, startPrice, endPrice, propertyType, offset, size);
+        PageHelper.startPage(page, size);
 
-        // 다음 페이지 여부
-        boolean hasNext = filteredList.size() == size;
+        List<FilteredResponse.Filtered> filteredList = buildingMapper.selectFilteredBuildings(
+                buildingName, saleType, startPrice, endPrice, propertyType);
 
-        // 로그인 회원 찜한 매물 ID 목록 조회
-        List<Long> bookmarkedBuildingIds;
-        if (memberId != null && !memberId.isBlank()) {
-            bookmarkedBuildingIds = bookMarkService.selectBookmarkedBuildingIdsByMember(memberId);
-        } else {
-            bookmarkedBuildingIds = List.of();
-        }
+        List<Long> bookmarkedBuildingIds = (memberId != null && !memberId.isBlank())
+                ? bookMarkService.selectBookmarkedBuildingIdsByMember(memberId)
+                : List.of();
 
-        // 찜 여부 업데이트: 새 객체 생성
-        List<Filtered> updatedList = filteredList.stream()
-                .map(f -> new Filtered(
+        List<FilteredResponse.Filtered> updatedList = filteredList.stream()
+                .map(f -> new FilteredResponse.Filtered(
                         f.getBuildingId(),
                         f.getBuildingName(),
                         f.getPrice(),
                         f.getRankAverage(),
                         bookmarkedBuildingIds.contains(f.getBuildingId())
                 ))
-                .collect(Collectors.toList());
+                .toList();
 
-        // 응답 DTO로 반환
-        return new FilteredResponse(updatedList, hasNext);
+        PageInfo<FilteredResponse.Filtered> pageInfo = new PageInfo<>(updatedList);
+
+        return FilteredResponse.toDto(pageInfo);
     }
 
-    // 매물 삭제 서비스
+    /**
+     * 매물을 삭제한다.
+     * - 매물 존재 여부 검증 후 삭제 처리
+     *
+     * @param buildingId 삭제할 매물 ID
+     */
     @Transactional
     @Override
     public void removeBuilding(Long buildingId) {
-        // 매물 존재 여부 검증
         buildingFilter.validateBuildingExists(buildingId);
-        // 매물 삭제
         buildingMapper.deleteBuilding(buildingId);
     }
 }
