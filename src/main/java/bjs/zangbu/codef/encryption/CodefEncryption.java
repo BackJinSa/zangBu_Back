@@ -5,6 +5,14 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+/**
+ * CODEF SDK(EasyCodef) 에 클라이언트 정보·퍼블릭키를 주입하고
+ * 암호화 모듈을 반환하는 헬퍼.
+ *
+ *  ✔️@Value 로 주입 받는 값들은 application‑*.yml 에 반드시 설정
+ *  ✔️getCodefInstance() 는 매번 clientInfo / publicKey 세팅 후 돌려준다
+ *     → 싱글턴이라 사용 직전에 setXXX 를 호출해도 thread‑safe
+ */
 @Component
 public class CodefEncryption {
     @Value("${client_id}")

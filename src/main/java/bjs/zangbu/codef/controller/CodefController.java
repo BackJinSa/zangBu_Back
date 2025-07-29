@@ -1,6 +1,5 @@
 package bjs.zangbu.codef.controller;
 
-import bjs.zangbu.codef.dto.request.CodefRequest;
 import bjs.zangbu.codef.dto.request.CodefRequest.secureNoRequest;
 import bjs.zangbu.codef.service.CodefService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,7 @@ public class CodefController {
     private final CodefService codefService;
 
     @PostMapping("/secure")
-    public ResponseEntity<?> sercure(@RequestBody secureNoRequest request) {
+    public ResponseEntity<?> secure(@RequestBody secureNoRequest request) {
         codefService.processSecureNo(request.getSessionKey(), request.getSecureNo());
         return ResponseEntity.ok().build();
     }

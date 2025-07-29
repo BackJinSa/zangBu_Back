@@ -4,7 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.Map;
 
-
+/**
+ * CODEF 응답(JSON) → 우리 도메인 DTO 변환 헬퍼.
+ *
+ *  ※ CODEF 응답 구조
+ *    {
+ *       "result": { "code": "...", ... },
+ *       "data"  : { ... 실데이터 ... }   ◀ 여기만 파싱해 DTO 로 내려보냄
+ *    }
+ *
+ *  • parseDataToDto()  : data 노드를 원하는 DTO 로 역직렬화
+ *  • 예외 발생 시 RuntimeException 래핑 → 글로벌 예외 핸들러에서 처리
+ */
 public class CodefConverter {
 
     private static final ObjectMapper mapper = new ObjectMapper();
