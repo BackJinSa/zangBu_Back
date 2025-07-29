@@ -13,6 +13,7 @@ import lombok.Setter;
 // 건축물대장에 필요한 정보
 public class DealDocumentInfo {
     private Long dealId;
+
     /* ----- member 테이블 ----- */
     private String identity;   // 암호화된 주민번호
     private String birth;      // 생년월일(YYMMDD)
@@ -26,4 +27,5 @@ public class DealDocumentInfo {
     // building (or 저장된 추가 컬럼)
 //    private String dong;
 //    private String ho;
+
 }

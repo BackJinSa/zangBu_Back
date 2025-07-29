@@ -196,7 +196,6 @@
     FROM deal
     WHERE deal_id = #{dealId}
   </select>
-
     <select id="selectDocumentInfo"
             resultType="bjs.zangbu.deal.dto.join.DealDocumentInfo">
         SELECT  m.identity,
