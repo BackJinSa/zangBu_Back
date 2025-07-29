@@ -17,19 +17,24 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = { RootConfig.class })
 class NotificationMapperTest {
 
-//    @Autowired
-//    private NotificationMapper notificationMapper;
-//
-//    @Test
-//    void testSelectAllNotifications() {
-//        // given
-//        String userId = "testUser"; // 실제 user 테이블에 존재하는 userId
-//
-//        // when
-//        List<Notification> result = notificationMapper.getAllNotifications(userId);
-//
-//        // then
-//        assertNotNull(result, "알림 목록은 null이면 안 됩니다.");
-//        assertFalse(result.isEmpty(), "알림이 최소 1개 이상 있어야 합니다.");
-//    }
+    @Autowired
+    private NotificationMapper notificationMapper;
+
+    @Test
+    void testSelectAllNotifications() {
+        // given
+        String memberId = "testUser"; // 실제 user 테이블에 존재하는 userId
+
+        // when
+        List<Notification> result = notificationMapper.selectAllByMemberId(memberId);
+
+        // then
+        assertNotNull(result, "알림 목록은 null이면 안 됩니다.");
+        assertFalse(result.isEmpty(), "알림이 최소 1개 이상 있어야 합니다.");
+    }
+
+    @Test
+    void a() {
+        System.out.println("aaaa");
+    }
 }
