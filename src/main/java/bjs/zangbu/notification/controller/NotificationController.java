@@ -40,6 +40,7 @@ public class NotificationController {
             // 3. 서비스 호출 (PagedResponse<NotificationElement> 포함된 DTO 반환)
             NotificationAll response = notificationService.getAllNotifications(memberId);
 
+            // 성공 : 전체 알림 리스트/페이지네이션 정보 반환
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("전체 알림을 불러오는데 실패했습니다.");
@@ -58,10 +59,25 @@ public class NotificationController {
         // 유저 ID를 받아온다.
         String memberId = userDetails.getUsername();
 
-        if(notificationService.markAsRead(memberId, notificationId)) {
-            return ResponseEntity.status(HttpStatus.OK).body(notificationId);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("알림 읽음 처리 실패.");
+        try {
+            boolean result = notificationService.markAsRead(memberId, notificationId);
+
+            if (result) {
+                // 성공 : 읽음 처리 된 알림의 id 반환
+                return ResponseEntity.status(HttpStatus.OK).body(notificationId);
+            } else {
+                // 알림이 없거나 이미 처리된 경우
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("해당 알림을 찾을 수 없거나 이미 처리되었습니다.");
+            }
+        } catch (RuntimeException e) {
+            // 서비스 계층에서 발생한 예외 처리
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            // 그 외 알 수 없는 예외 처리
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("서버 오류가 발생했습니다.");
         }
     }
 
@@ -75,11 +91,25 @@ public class NotificationController {
         ) {
         // 유저 ID를 받아온다.
         String memberId = userDetails.getUsername();
-        MarkAllReadResult result = notificationService.markAllAsRead(memberId);
-        if(result.getProcessedCount()>0) {
-            return ResponseEntity.status(HttpStatus.OK).body(result.getProcessedCount());
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("알림 읽음 처리 실패.");
+
+        try {
+            MarkAllReadResult result = notificationService.markAllAsRead(memberId);
+
+            if (result.getProcessedCount() > 0) {
+                // 성공: 읽음 처리된 개수 반환
+                return ResponseEntity.status(HttpStatus.OK).body(result.getProcessedCount());
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("읽음 처리된 알림이 없습니다.");
+            }
+        } catch (RuntimeException e) {
+            // 서비스 계층에서 발생한 예외 처리
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            // 그 외 알 수 없는 예외 처리
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("서버 오류가 발생했습니다.");
         }
     }
 
@@ -95,10 +125,24 @@ public class NotificationController {
         // 유저 ID를 받아온다.
         String memberId = userDetails.getUsername();
 
-        if(notificationService.removeNotification(memberId, notificationId)) {
-            return ResponseEntity.status(HttpStatus.OK).body(notificationId);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("알림 삭제 실패.");
+        try {
+            boolean removed = notificationService.removeNotification(memberId, notificationId);
+
+            if (removed) {
+                // 성공 : 삭제된 알림 id 반환
+                return ResponseEntity.status(HttpStatus.OK).body(notificationId);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("삭제할 알림이 존재하지 않습니다.");
+            }
+        } catch (RuntimeException e) {
+            // 서비스 계층에서 발생한 예외 처리
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        } catch (Exception e) {
+            // 그 외 알 수 없는 예외 처리
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("알림 삭제 중 서버 오류가 발생했습니다.");
         }
     }
 }

@@ -100,28 +100,29 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
     @Override
     public String generalBuildingLeader(BuildingRegisterRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        String productUrl = "//v1/kr/public/mw/building-register/colligation";
+        String productUrl = "/v1/kr/public/mw/building-register/colligation";
         List<CodefThread> threadList = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             // 건축물대장 실명 일치 확인 파라미터
             // 1차 요청 파라미터
-            HashMap<String, Object> parameterMAp = new HashMap<>();
-            parameterMAp.put("organization", "0001"); // 기관 코드(고정)
-            parameterMAp.put("loginType", "5"); // 인증 절차(회원 간편인증 : 5 , 고정)
-            parameterMAp.put("loginTypeLevel", "1"); // 인증 유형(카카오 : 1 , 고정)
-            parameterMAp.put("userName", request.getUserName()); // 사용자 이름
-            parameterMAp.put("birthDate", request.getBirthDate()); // yymmdd
-            parameterMAp.put("phoneNo", request.getPhoneNo()); // 전화번호
-            parameterMAp.put("identity", request.getIdentity()); // 암호화된 주민 번호
-            parameterMAp.put("identityEncYn", "Y"); // 주민번호 암호화 여부
-            parameterMAp.put("telecom","0"); // 통신사 skt : 0, kt :1 , u+:2 todo : 추가 구현해야함
-            parameterMAp.put("address", request.getAddress());
-            parameterMAp.put("zipCode", request.getZipCode());
+            HashMap<String, Object> parameterMap = new HashMap<>();
+            parameterMap.put("organization", "0001"); // 기관 코드(고정)
+            parameterMap.put("loginType", "5"); // 인증 절차(회원 간편인증 : 5 , 고정)
+            parameterMap.put("loginTypeLevel", "1"); // 인증 유형(카카오 : 1 , 고정)
+            parameterMap.put("userName", request.getUserName()); // 사용자 이름
+            parameterMap.put("birthDate", request.getBirthDate()); // yymmdd
+            parameterMap.put("phoneNo", request.getPhoneNo()); // 전화번호
+            parameterMap.put("identity", request.getIdentity()); // 암호화된 주민 번호
+            parameterMap.put("identityEncYn", "Y"); // 주민번호 암호화 여부
+            parameterMap.put("telecom","0"); // 통신사 skt : 0, kt :1 , u+:2
+            // todo : 추가 구현해야함
+            parameterMap.put("address", request.getAddress());
+            parameterMap.put("zipCode", request.getZipCode());
 //      map.put("dong", req.getDong());
 //      map.put("ho", req.getHo()); Todo : 추가 구현해야함
 
-            parameterMAp.put("originDataYN", "1");
-            parameterMAp.put("secureNoTimeout", "170");
+            parameterMap.put("originDataYN", "1");
+            parameterMap.put("secureNoTimeout", "170");
 
             CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
             t.start();

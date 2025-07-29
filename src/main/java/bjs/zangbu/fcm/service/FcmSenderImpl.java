@@ -1,37 +1,40 @@
 package bjs.zangbu.fcm.service;
 
 import com.google.firebase.messaging.*;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Log4j2
 public class FcmSenderImpl implements FcmSender {
 
+    // =================== FCM 전송 구현체 ===================
+    // 단일 알림 전송
     @Override
-    public void send(String token, String title, String body) {
-        Notification notification = Notification.builder()
-                .setTitle(title)
-                .setBody(body)
-                .build();
-
+    public void send(String token, String title, String body, String url) {
+        // 알림 클릭 이벤트를 위해 Notification 대신 Data 메시지 사용
         Message message = Message.builder()
                 .setToken(token)
-                .setNotification(notification)
+                .putData("title", title)
+                .putData("body", body)
+                .putData("url", url)  // 🔗 클릭 시 이동할 주소 포함
                 .build();
 
         try {
             String response = FirebaseMessaging.getInstance().send(message);
-            System.out.println("FCM 전송 성공: " + response);
+            log.info("FCM 전송 성공: {}", response);
         } catch (Exception e) {
-            System.err.println("FCM 전송 실패: " + e.getMessage());
+            log.warn("FCM 전송 실패: {}", e.getMessage(), e);
         }
     }
 
+    // 여러 사용자에게 알림 전송
     @Override
-    public void sendToMany(List<String> tokens, String title, String body) {
+    public void sendToMany(List<String> tokens, String title, String body, String url) {
         for (String token : tokens) {
-            send(token, title, body); // 단일 전송 반복
+            send(token, title, body, url);  // 수정된 send() 호출
         }
     }
 }
