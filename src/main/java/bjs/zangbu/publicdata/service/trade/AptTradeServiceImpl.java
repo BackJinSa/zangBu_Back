@@ -18,7 +18,7 @@ public class AptTradeServiceImpl implements AptTradeService {
 
     private final RestTemplate rt;
 
-    @Value("${KI6q5jPyEQnEa9tmhllI6W8ufddtQ68gxlGFxHFspiOhfRCEF%2BfoUQ4oHLgL%2Bs61oIGO%2F1lS75LSfB%2FIBuFeSQ%3D%3D}")
+    @Value("서비스 키 값 넣는 곳, 그대로 붙여넣기")
     private String serviceKey;
 
     @Override
