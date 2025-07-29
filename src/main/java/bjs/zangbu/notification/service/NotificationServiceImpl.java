@@ -1,6 +1,7 @@
 package bjs.zangbu.notification.service;
 
 import bjs.zangbu.bookmark.mapper.BookMarkMapper;
+import bjs.zangbu.bookmark.service.BookMarkService;
 import bjs.zangbu.bookmark.vo.Bookmark;
 import bjs.zangbu.building.dto.response.BuildingResponse;
 import bjs.zangbu.building.mapper.BuildingMapper;
@@ -31,7 +32,7 @@ import static bjs.zangbu.notification.dto.response.NotificationResponse.Notifica
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationMapper notificationMapper;
-    private final BookMarkMapper bookmarkMapper;
+    private final BookMarkService bookMarkService;
     private final BuildingMapper buildingMapper;
     private final DealMapper dealMapper;
     private final ReviewMapper reviewMapper;
@@ -88,13 +89,9 @@ public class NotificationServiceImpl implements NotificationService {
 
             // 삭제된 행이 없으면 → 삭제할 게 없는 것이므로 false 반환
             return deleted > 0;
-
-        } catch (DataAccessException e) {
-            log.error("알림 삭제 실패: memberId={}, notificationId={}", memberId, notificationId, e);
-            throw new RuntimeException("알림 삭제 중 데이터베이스 오류가 발생했습니다.", e);
         } catch (Exception e) {
             log.error("알림 삭제 실패: memberId={}, notificationId={}", memberId, notificationId, e);
-            throw new RuntimeException("알림 삭제 중 알 수 없는 오류가 발생했습니다.", e);
+            throw new RuntimeException("알림 삭제 중 오류가 발생했습니다.", e);
         }
     }
 
@@ -173,7 +170,7 @@ public class NotificationServiceImpl implements NotificationService {
             notificationMapper.insertNotification(notification);
         } catch (Exception e) {
             log.error("알림 저장 실패: {}", e.getMessage());
-            return;
+            throw new RuntimeException("알림 저장 중 오류 발생", e);
         }
 
         try {
@@ -186,10 +183,26 @@ public class NotificationServiceImpl implements NotificationService {
 
             // 디바이스가 하나 이상 등록되어 있으면 푸시 알림 전송
             if (tokens != null && !tokens.isEmpty()) {
-                fcmSender.sendToMany(tokens, title, message);
+                String url = getNotificationUrl(type, building.getBuildingId());
+                fcmSender.sendToMany(tokens, title, message, url);
             }
         } catch (Exception e) {
             log.warn("FCM 전송 실패: {}", e.getMessage());
+        }
+    }
+
+    // 알림 종류에 따라 URL 주소 설정 (나중에 알림 클릭하면 이 주소로 이동할거임)
+    // ★★★★★★★★★ 나중에 프론트 라우팅 주소 정해지면 수정할 예정 ★★★★★★★★★
+    private String getNotificationUrl(Type type, Long buildingId) {
+        switch (type) {
+            case REVIEW:
+                return "https://your-site.com/review/list/" + buildingId;
+            case BUILDING:
+                return "https://your-site.com/building/" + buildingId;
+            case TRADE:
+                return "https://your-site.com/trade/info/" + buildingId;
+            default:
+                return "https://your-site.com/notifications";
         }
     }
 
@@ -205,7 +218,7 @@ public class NotificationServiceImpl implements NotificationService {
     public void detectPriceChangeForAllBookmarks() {
         // 1. [DB] 모든 bookmark 데이터 조회 (찜한 매물 리스트)
         // select bookmark_id, member_id, building_id, price
-        List<Bookmark> bookmarks = bookmarkMapper.selectAllBookmarks();
+        List<Bookmark> bookmarks = bookMarkService.selectAllBookmarks();
 
         // 2. 각 찜한 매물(bookmark)을 반복 처리
         for (Bookmark bookmark : bookmarks) {
@@ -245,7 +258,7 @@ public class NotificationServiceImpl implements NotificationService {
 
             // (6). [DB] bookmark 테이블에 저장된 가격을 최신 가격으로 업데이트
             // ★ 중복 알림 방지를 위해 반드시 최신화 필요 ★
-            bookmarkMapper.updateBookmarkPrice(bookmark.getBookMarkId(), currentPrice);
+            bookMarkService.updateBookmarkPrice(bookmark.getBookMarkId(), currentPrice);
         }
     }
 
@@ -268,7 +281,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         // 2. [DB] bookmark 테이블에서 해당 건물을 찜한 사용자 ID 목록 조회
         // select member_id
-        List<String> memberIds = bookmarkMapper.selectUserIdsByBuildingId(buildingId);
+        List<String> memberIds = bookMarkService.selectUserIdsByBuildingId(buildingId);
         if (memberIds == null || memberIds.isEmpty()) {
             log.warn("ℹ[실거래 알림] 찜한 유저 없음: buildingId = {}", buildingId);
             return; // 찜한 유저가 없다면 알림 필요 없음
@@ -322,7 +335,7 @@ public class NotificationServiceImpl implements NotificationService {
         // 이 매물을 찜한 모든 유저에게 알림을 발송해야됨
         // 1. [DB] bookmark 테이블에서 해당 건물을 찜한 사용자 ID 목록 조회
         // select member_id
-        List<String> memberIds = bookmarkMapper.selectUserIdsByBuildingId(buildingId);
+        List<String> memberIds = bookMarkService.selectUserIdsByBuildingId(buildingId);
         if (memberIds == null || memberIds.isEmpty()) {
             log.info("[리뷰 알림] 찜한 유저 없음: buildingId = {}", buildingId);
             return;

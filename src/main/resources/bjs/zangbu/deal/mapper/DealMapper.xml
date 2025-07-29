@@ -153,7 +153,7 @@
     <result property="sellerNickname" column="seller_nickname"/>
   </resultMap>
 
-  <!--    표준계약서 xml 코드 -->
+  <!--표준계약서 xml 코드 -->
   <select id="findWithType"
     parameterType="long"
     resultMap="DealWithSaleTypeMap">
@@ -168,6 +168,20 @@
     WHERE d.deal_id = #{dealId}
 
   </select>
+    <!-- 결과 매핑 -->
+    <resultMap id="DealWithSaleTypeMap"
+               type="bjs.zangbu.deal.dto.join.DealWithSaleType">
+
+        <id property="dealId" column="deal_id"/>
+        <result property="status"
+                column="status"
+                javaType="bjs.zangbu.deal.vo.DealEnum"/>
+        <result property="userId" column="user_id"/>
+        <result property="buildingId" column="building_id"/>
+        <result property="saleType"
+                column="sale_type"
+                javaType="bjs.zangbu.notification.vo.SaleType"/>
+    </resultMap>
 
   <!-- 오늘 거래된 매물들의 building_id 조회 -->
   <select id="selectTodayTradedBuildingIds" resultType="java.lang.Long">
@@ -182,53 +196,22 @@
     FROM deal
     WHERE deal_id = #{dealId}
   </select>
-<!--    건축물대장(등기부등본 추가예정)에 필요한 정보 가져오기-->
-    <resultMap id="DealDocumentInfoMap"
-               type="bjs.zangbu.deal.dto.join.DealDocumentInfo">
-        <!-- member 테이블 -->
-        <result property="identity" column="identity"/>
-        <result property="birth"    column="birth"/>
-        <result property="phone"    column="phone"/>
-        <result property="name"     column="name"/>
-        <!-- complex_list 테이블 -->
-        <result property="address"  column="address"/>
-        <result property="zonecode" column="zonecode"/>
-    </resultMap>
-
     <select id="selectDocumentInfo"
-            parameterType="long"
-            resultMap="DealDocumentInfoMap">
-        SELECT
-            m.identity,
-            m.birth,
-            m.phone,
-            m.name,
-            /* **주소 칼럼이 쪼개져 있으면 CONCAT_WS 로 합쳐준다** */
-            CONCAT_WS(' ',
-                      cl.sido,
-                      cl.sigungu,
-                      cl.eupmyeondong,
-                      cl.building_name)  AS address,
-            cl.zonecode
-        FROM deal d
-                 JOIN member       m  ON d.member_id  = m.member_id
-                 JOIN complex_list cl ON d.complex_id = cl.complex_id
-        WHERE d.deal_id = #{dealId}
-            LIMIT 1
+            resultType="bjs.zangbu.deal.dto.join.DealDocumentInfo">
+        SELECT  m.identity,
+                m.birth,
+                m.phone,
+                m.name,
+                cl.address,
+                cl.zonecode,
+--                 b.dong,
+--                 b.ho
+        FROM    deal            d
+                    JOIN  member          m  ON m.member_id   = d.member_id
+                    JOIN  complex_list    cl ON cl.complex_id = d.complex_id
+--                     JOIN building     b  ON d.building_id = b.building_id
+        WHERE   d.deal_id = #{dealId}
     </select>
 
-    <!-- 결과 매핑 -->
-  <resultMap id="DealWithSaleTypeMap"
-    type="bjs.zangbu.deal.dto.join.DealWithSaleType">
 
-    <id property="dealId" column="deal_id"/>
-    <result property="status"
-      column="status"
-      javaType="bjs.zangbu.deal.vo.DealEnum"/>
-    <result property="userId" column="user_id"/>
-    <result property="buildingId" column="building_id"/>
-    <result property="saleType"
-      column="sale_type"
-      javaType="bjs.zangbu.notification.vo.SaleType"/>
-  </resultMap>
 </mapper>

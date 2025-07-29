@@ -4,6 +4,7 @@ import bjs.zangbu.building.dto.request.BuildingRequest;
 import bjs.zangbu.codef.encryption.CodefEncryption;
 import bjs.zangbu.codef.exception.CodefException;
 import bjs.zangbu.codef.session.CodefAuthSession;
+import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.codef.api.EasyCodef;
 import io.codef.api.EasyCodefMessageConstant;
@@ -14,7 +15,19 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.Map;
 
+/**
+ * ① 단순 1‑Way 상품   (priceInformation 등)
+ * ② 2‑Way 인증 상품  (realEstateRegistrationIssuance 등)
+ *     └ 내부적으로 CodefThread 이용, 2차 인증까지 자동 처리
+ * ③ 3‑Way(보안문자)   ─> 컨트롤러 /coded/secure 엔드포인트로 연결
+ *
+ *  ⚠️TODO 표시 부분
+ *     - map.put("phoneNo", ...);  와 같이 빈 값은
+ *       실제 dto(request)에 맞춰 세팅 후 사용하세요.
+ *     - productUrl 도 CODEF 가이드‑URL 로 교체 필요
+ */
 @Service
 @RequiredArgsConstructor
 public class CodefServiceImpl implements CodefService {
@@ -122,6 +135,39 @@ public class CodefServiceImpl implements CodefService {
      * - 파라미터맵을 구성하여 증명서 발급 CODEF API 요청 후, JSON 응답을 바로 반환
      */
 
+
+    /**
+     * 건축물대장 발급 절차
+     * - 파라미터맵을 구성하여 증명서 발급 CODEF API 요청 후, JSON 응답을 바로 반환
+     */
+    @Override
+    public String callBuildingRegister(BuildingRegisterRequest request)
+            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        // codef api 주소
+        final String url = "/v1/kr/public/mw/building-register/colligation";
+        // 1차 요청 파라미터
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("organization", "0001"); // 기관 코드(고정)
+        map.put("loginType", "5"); // 인증 절차(회원 간편인증 : 5 , 고정)
+        map.put("loginTypeLevel", "1"); // 인증 유형(카카오 : 1 , 고정)
+        map.put("userName", request.getUserName()); // 사용자 이름
+        map.put("birthDate", request.getBirthDate()); // yymmdd
+        map.put("phoneNo", request.getPhoneNo()); // 전화번호
+        map.put("identity", request.getIdentity()); // 암호화된 주민 번호
+        map.put("identityEncYn", "Y"); // 주민번호 암호화 여부
+        map.put("telecom","0"); // 통신사 skt : 0, kt :1 , u+:2 todo : 추가 구현해야함
+        map.put("address", request.getAddress());
+        map.put("zipCode", request.getZipCode());
+//      map.put("dong", req.getDong());
+//      map.put("ho", req.getHo()); Todo : 추가 구현해야함
+
+        map.put("originDataYN", "1");
+        map.put("secureNoTimeout", "170");
+
+        String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
+
+        return response;
+    }
 
     /**
      * 납입증명서(세금납부 증명 등) 발급

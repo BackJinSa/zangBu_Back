@@ -1,4 +1,4 @@
-package bjs.zangbu.notification.scheduler;
+package bjs.zangbu.scheduler.controller;
 
 import bjs.zangbu.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class NotificationScheduler {
+public class NotificationSchedulerController {
 
     private final NotificationService notificationService;
 
     /**
-     * 1. 시세 변동 감지 (매 3시간마다)
+     * 시세 변동 감지 (매 3시간마다)
      */
     @Scheduled(cron = "0 0 0/3 * * *") // 매 3시간마다 실행
     public void detectPriceChanges() {
