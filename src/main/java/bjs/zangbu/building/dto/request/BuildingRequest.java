@@ -1,4 +1,5 @@
 package bjs.zangbu.building.dto.request;
+
 import bjs.zangbu.building.vo.Building;
 import bjs.zangbu.building.vo.PropertyType;
 import bjs.zangbu.building.vo.SellerType;
@@ -10,77 +11,85 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
-
+/**
+ * 건물 관련 요청 DTO를 모아둔 클래스
+ * 내부에 조회, 찜, 등록 관련 요청 DTO 포함
+ */
 public class BuildingRequest {
 
+    /**
+     * 매물 상세 조회 요청 DTO
+     */
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ViewDetailRequest {
-        // 조회할 건물 ID (필수)
+        /** 조회할 건물 ID (필수) */
         private Long buildingId;
-        // 단지 번호 (옵션)
+        /** 단지 번호 (옵션) */
         private String complexNo;
-        // 동 정보 (옵션)
+        /** 동 정보 (옵션) */
         private String dong;
-        // 호 정보 (옵션)
+        /** 호 정보 (옵션) */
         private String ho;
     }
 
+    /**
+     * 매물 찜 요청 DTO
+     */
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     public static class BookmarkRequest {
-        // 북마크할 건물 ID
+        /** 북마크할 건물 ID */
         private Long buildingId;
     }
 
+    /**
+     * 매물 등록 요청 DTO
+     * 내부에 건물 상세, 단지 상세, 이미지 정보 DTO 포함
+     */
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     public class SaleRegistrationRequest {
-        // 등록할 건물 상세 정보 DTO
+        /** 등록할 건물 상세 정보 DTO */
         private BuildingDetails building;
-        // 단지(복합단지) 상세 정보 DTO
+        /** 단지(복합단지) 상세 정보 DTO */
         private ComplexDetails complexList;
-        // 이미지 정보 DTO
+        /** 이미지 정보 DTO */
         private ImageDetails image;
 
+        /**
+         * 건물 상세 정보 DTO
+         */
         @Getter
         @NoArgsConstructor
         @AllArgsConstructor
         public static class BuildingDetails {
-            // 판매자 닉네임
-            private String sellerNickname;
-            // 매물 거래 타입 (ex: 전세, 매매 등)
-            private SaleType saleType;
-            // 가격
-            private Integer price;
-            // 보증금 (전세일 경우)
-            private Long deposit;
-            // 찜 개수
-            private Integer bookmarkCount;
+            private String sellerNickname;        // 판매자 닉네임
+            private SaleType saleType;            // 매물 거래 타입 (전세, 매매 등)
+            private Integer price;                // 가격
+            private Long deposit;                 // 보증금 (전세일 경우)
+            private Integer bookmarkCount;        // 찜 개수
 
-            // 건물명
-            private String buildingName;
-            // 판매자 유형 (개인, 중개업자 등)
-            private SellerType sellerType;
-            // 부동산 유형 (아파트, 오피스텔 등)
-            private PropertyType propertyType;
-            // 입주 가능일
-            private LocalDateTime moveDate;
-            // 간단 정보(한줄 설명)
-            private String infoOneline;
-            // 상세 건물 정보
-            private String infoBuilding;
-            // 연락처 이름
-            private String contactName;
-            // 연락처 전화번호
-            private String contactPhone;
-            // 편의시설 정보
-            private String facility;
+            private String buildingName;          // 건물명
+            private SellerType sellerType;        // 판매자 유형 (개인, 중개업자 등)
+            private PropertyType propertyType;    // 부동산 유형 (아파트, 오피스텔 등)
+            private LocalDateTime moveDate;       // 입주 가능일
+            private String infoOneline;           // 간단 정보(한줄 설명)
+            private String infoBuilding;          // 상세 건물 정보
+            private String contactName;           // 연락처 이름
+            private String contactPhone;          // 연락처 전화번호
+            private String facility;              // 편의시설 정보
 
-            // DTO -> VO 변환 메서드
+            /**
+             * DTO -> VO 변환 메서드
+             * @param request DTO 객체
+             * @param complexId 단지 ID
+             * @param memberId 회원 ID
+             * @return Building VO 객체
+             */
             public static Building toVo(BuildingDetails request, Long complexId, String memberId) {
                 return new Building(
                         null, // buildingId는 DB 생성 시 자동 할당
@@ -105,36 +114,31 @@ public class BuildingRequest {
             }
         }
 
+        /**
+         * 단지(복합단지) 상세 정보 DTO
+         */
         @Getter
         @NoArgsConstructor
         @AllArgsConstructor
         public static class ComplexDetails {
-            // 주거 유형 (예: 아파트, 연립주택 등)
-            private String resType;
-            // 단지명
-            private String complexName;
-            // 단지 번호
-            private Integer complexNo;
-            // 시도
-            private String sido;
-            // 시군구
-            private String sigungu;
-            // 시 코드
-            private String siCode;
-            // 읍면동
-            private String eupmyeondong;
-            // 거래 ID
-            private String transactionId;
-            // 주소
-            private String address;
-            // 우편번호
-            private String zonecode;
-            // 건물명
-            private String buildingName;
-            // 법정동명
-            private String bname;
+            private String resType;           // 주거 유형 (예: 아파트, 연립주택 등)
+            private String complexName;       // 단지명
+            private Integer complexNo;        // 단지 번호
+            private String sido;              // 시도
+            private String sigungu;           // 시군구
+            private String siCode;            // 시 코드
+            private String eupmyeondong;      // 읍면동
+            private String transactionId;     // 거래 ID
+            private String address;           // 주소
+            private String zonecode;          // 우편번호
+            private String buildingName;      // 건물명
+            private String bname;             // 법정동명
 
-            // DTO -> VO 변환 메서드
+            /**
+             * DTO -> VO 변환 메서드
+             * @param request DTO 객체
+             * @return ComplexList VO 객체
+             */
             public static ComplexList toVo(ComplexDetails request) {
                 return new ComplexList(
                         null, // complexId는 DB 자동 생성
@@ -154,14 +158,23 @@ public class BuildingRequest {
             }
         }
 
+        /**
+         * 이미지 정보 DTO
+         */
         @Getter
         @NoArgsConstructor
         @AllArgsConstructor
         public static class ImageDetails {
-            // 이미지 URL
-            private String imageUrl;
+            private String imageUrl;          // 이미지 URL
 
-            // DTO -> VO 변환 메서드
+            /**
+             * DTO -> VO 변환 메서드
+             * @param request DTO 객체
+             * @param complexId 단지 ID
+             * @param memberId 회원 ID
+             * @param buildingId 건물 ID
+             * @return ImageList VO 객체
+             */
             public static ImageList toVo(ImageDetails request, Long complexId, String memberId, Long buildingId) {
                 return new ImageList(
                         null, // imageId는 DB 자동 생성

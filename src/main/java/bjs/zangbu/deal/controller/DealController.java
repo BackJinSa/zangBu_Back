@@ -8,6 +8,7 @@ import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
 import bjs.zangbu.deal.service.ContractService;
 import bjs.zangbu.deal.service.DealService;
+import bjs.zangbu.deal.vo.DocumentType;
 import bjs.zangbu.documentReport.dto.response.DocumentReportResponse.DocumentReportElement;
 import bjs.zangbu.documentReport.service.DocumentReportService;
 import bjs.zangbu.member.service.MemberService;
@@ -28,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.w3c.dom.DocumentType;
+
 
 @Log4j2
 @RestController

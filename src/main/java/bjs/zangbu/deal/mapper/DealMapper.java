@@ -1,5 +1,6 @@
 package bjs.zangbu.deal.mapper;
 
+import bjs.zangbu.deal.dto.join.DealDocumentInfo;
 import bjs.zangbu.deal.dto.join.DealWithChatRoom;
 import bjs.zangbu.deal.dto.join.DealWithSaleType;
 import bjs.zangbu.deal.dto.request.DealRequest.Status;
@@ -40,6 +41,11 @@ public interface DealMapper {
    * 판매중인 list 모두 조회
    */
   List<DealWithChatRoom> getOnSaleWaitingList(String userId);
+
+/**
+ * 건축물대장 조회에 필요한 데이터
+ */
+DealDocumentInfo selectDocumentInfo(@Param("dealId") Long dealId);
 
   /**
    * 표준계약서 xml 코드
