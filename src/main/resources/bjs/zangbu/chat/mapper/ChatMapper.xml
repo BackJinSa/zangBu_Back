@@ -82,8 +82,10 @@
 
     <!-- 채팅방 생성 -->
     <insert id="insertChatRoom">
-        INSERT INTO chat_room (chat_room_id, building_id, member_id, complex_id, seller_nickname, consumer_nickname)
-        VALUES (#{chatRoomId}, #{buildingId}, #{consumerId}, #{complexId}, #{sellerNickname}, #{consumerNickname})
+        INSERT INTO chat_room ( chat_room_id, building_id, member_id, complex_id,
+                               seller_nickname, consumer_nickname, seller_visible, consumer_visible)
+        VALUES (#{chatRoomId}, #{buildingId}, #{consumerId}, #{complexId},
+                #{sellerNickname}, #{consumerNickname}, #{sellerVisible}, #{consumerVisible})
     </insert>
 
     <!-- seller가 채팅방 나갔을 경우 -->

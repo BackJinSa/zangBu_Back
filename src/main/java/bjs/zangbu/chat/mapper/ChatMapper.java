@@ -9,7 +9,7 @@ import java.util.List;
 public interface ChatMapper {
 
     //메시지 전송 시 DB에 메시지 저장
-    void insertMessage(ChatMessage chatMessage);
+    int insertMessage(ChatMessage chatMessage);
 
     //chatRoomId에 해당하는 메시지들 조회(제일 마지막 메시지부터 limit개 -> 더보기 클릭 시 limit개씩 추가 조회)
     List<ChatMessage> selectMessagesByRoomId(String chatRoomId, Long lastMessageId, int limit);
@@ -24,7 +24,7 @@ public interface ChatMapper {
     ChatRoom existsChatRoom(Long buildingId, String consumerId);
 
     //채팅방 생성
-    ChatRoom insertChatRoom(ChatRoom chatRoom);
+    void insertChatRoom(ChatRoom chatRoom);
 
     //seller가 채팅방 나갔을 경우
     void updateSellerVisible(String chatRoomId);

@@ -1,5 +1,7 @@
 package bjs.zangbu.chat.config;
 
+import bjs.zangbu.security.util.JwtProcessor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -8,8 +10,11 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-    
+
+    private final JwtProcessor jwtProcessor;
+
     //Spring은 메시지를 RabbitMQ로 넘기고, RabbitMQ가 구독자들에게 메시지를 브로드캐스트
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
@@ -26,7 +31,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         //클라이언트가 WebSocket에 연결할 수 있는 엔드포인트(주소)를 등록
-        registry.addEndpoint("/ws/chat") //접속 엔드포인트, ws://localhost:8080/ws/chat
-                .setAllowedOrigins("*"); // 모든 도메인에서 WebSocket 연결을 허용(CORS 허용), 배포할 때는 특정 도메인만 허용
+        registry.addEndpoint("/chat") //접속 엔드포인트, ws://localhost:8080/chat
+                .addInterceptors(new JwtHandshakeInterceptor(jwtProcessor))  //인터셉터 등록
+                .setAllowedOrigins("*") // 모든 도메인에서 WebSocket 연결을 허용(CORS 허용), 배포할 때는 특정 도메인만 허용
+                .withSockJS();
     }
 }
