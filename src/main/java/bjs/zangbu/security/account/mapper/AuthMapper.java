@@ -16,7 +16,7 @@ public interface AuthMapper {
     //3-2. 닉네임 중복 체크
     int countByNickname(String nickname);
     //3-3. 회원 db에 추가
-    void insertMember(Member member);
+    int insertMember(Member member);
 
     //4. 비밀번호 재설정 - 로그인 전이므로 email로
     int updatePassword(String email, String newPassword);
