@@ -182,8 +182,42 @@
     FROM deal
     WHERE deal_id = #{dealId}
   </select>
+<!--    건축물대장(등기부등본 추가예정)에 필요한 정보 가져오기-->
+    <resultMap id="DealDocumentInfoMap"
+               type="bjs.zangbu.deal.dto.join.DealDocumentInfo">
+        <!-- member 테이블 -->
+        <result property="identity" column="identity"/>
+        <result property="birth"    column="birth"/>
+        <result property="phone"    column="phone"/>
+        <result property="name"     column="name"/>
+        <!-- complex_list 테이블 -->
+        <result property="address"  column="address"/>
+        <result property="zonecode" column="zonecode"/>
+    </resultMap>
 
-  <!-- 결과 매핑 -->
+    <select id="selectDocumentInfo"
+            parameterType="long"
+            resultMap="DealDocumentInfoMap">
+        SELECT
+            m.identity,
+            m.birth,
+            m.phone,
+            m.name,
+            /* **주소 칼럼이 쪼개져 있으면 CONCAT_WS 로 합쳐준다** */
+            CONCAT_WS(' ',
+                      cl.sido,
+                      cl.sigungu,
+                      cl.eupmyeondong,
+                      cl.building_name)  AS address,
+            cl.zonecode
+        FROM deal d
+                 JOIN member       m  ON d.member_id  = m.member_id
+                 JOIN complex_list cl ON d.complex_id = cl.complex_id
+        WHERE d.deal_id = #{dealId}
+            LIMIT 1
+    </select>
+
+    <!-- 결과 매핑 -->
   <resultMap id="DealWithSaleTypeMap"
     type="bjs.zangbu.deal.dto.join.DealWithSaleType">
 
