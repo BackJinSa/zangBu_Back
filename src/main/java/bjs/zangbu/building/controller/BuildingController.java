@@ -1,9 +1,10 @@
 package bjs.zangbu.building.controller;
+
 import bjs.zangbu.building.dto.response.BuildingResponse.*;
 import bjs.zangbu.building.dto.request.BuildingRequest.*;
 import bjs.zangbu.building.service.BuildingService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.api.gax.rpc.UnauthenticatedException;
+import com.github.pagehelper.PageInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,58 +15,97 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.UnsupportedEncodingException;
 
+/**
+ * Building 관련 HTTP 요청을 처리하는 REST 컨트롤러
+ * 매물 상세 조회, 찜하기, 찜 해제, 등록, 목록 조회, 삭제 기능을 제공한다.
+ */
 @RestController
 @RequiredArgsConstructor
-// building 엔드포인트로 시작하는 요청들을 처리하는 컨트롤러
 @RequestMapping("/building")
 public class BuildingController {
-    // 서비스 호출을 위한 BuildingService 주입
+
     private final BuildingService buildingService;
 
-    // 매물 상세 조회 POST 요청 처리
+    /**
+     * 매물 상세 조회 요청 처리
+     * POST /building
+     *
+     * @param request 매물 상세 조회 요청 DTO
+     * @return 매물 상세 정보 응답 DTO와 200 OK
+     * @throws UnsupportedEncodingException 인코딩 예외
+     * @throws JsonProcessingException JSON 처리 예외
+     * @throws InterruptedException API 호출 지연 예외
+     */
     @PostMapping("")
     public ResponseEntity<?> viewDetail(@RequestBody ViewDetailRequest request)
-    // Codef API 호출 시 발생할 수 있는 예외들을 메서드에서 처리하지 않고 던짐
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        // 받은 요청 객체를 서비스로 전달하여 처리
         ViewDetailResponse response = buildingService.viewDetailService(request);
-        return ResponseEntity.ok(response); // 200 OK와 함께 응답 반환
+        return ResponseEntity.ok(response);
     }
 
-    // 매물 찜하기 POST 요청 처리
+    /**
+     * 매물 찜하기 요청 처리
+     * POST /building/bookmark
+     *
+     * @param request 찜 요청 DTO
+     * @param userDetails 인증된 사용자 정보
+     * @return 200 OK 응답 (본문 없음)
+     */
     @PostMapping("/bookmark")
     public ResponseEntity<?> bookMark(@RequestBody BookmarkRequest request, @AuthenticationPrincipal UserDetails userDetails) {
-        // 인증된 사용자 아이디 추출
         String memberId = userDetails.getUsername();
-        // 찜하기 서비스 호출
         buildingService.bookMarkService(request, memberId);
-        return ResponseEntity.ok().build(); // 200 OK 반환, 별도 응답 바디 없음
+        return ResponseEntity.ok().build();
     }
 
-    // 매물 찜 해제 DELETE 요청 처리
+    /**
+     * 매물 찜 해제 요청 처리
+     * DELETE /building/bookmark/{buildingId}
+     *
+     * @param buildingId 찜 해제할 매물 ID
+     * @param userDetails 인증된 사용자 정보
+     * @return 200 OK 응답 (본문 없음)
+     */
     @DeleteMapping("/bookmark/{buildingId}")
     public ResponseEntity<?> bookMarkDelete(@PathVariable("buildingId") Long buildingId, @AuthenticationPrincipal UserDetails userDetails) {
-        // 인증된 사용자 아이디 추출
         String memberId = userDetails.getUsername();
-        // 찜 해제 서비스 호출
         buildingService.bookMarkServiceDelete(buildingId, memberId);
-        return ResponseEntity.ok().build(); // 200 OK 반환
+        return ResponseEntity.ok().build();
     }
 
-    // 매물 등록 POST 요청 처리
+    /**
+     * 매물 등록 요청 처리
+     * POST /building/upload
+     *
+     * @param request 매물 등록 요청 DTO
+     * @param userDetails 인증된 사용자 정보
+     * @return 200 OK 응답 (본문 없음)
+     * @throws ResponseStatusException 인증 안된 경우 401 에러 반환
+     */
     @PostMapping("/upload")
     public ResponseEntity<?> saleRegistration(@RequestBody SaleRegistrationRequest request, @AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null || userDetails.getUsername().isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인을 한 사용자만 매물 등록 가능합니다.");
         }
-        // 인증된 사용자 아이디 추출
         String memberId = userDetails.getUsername();
-        // 매물 등록 서비스 호출
         buildingService.SaleRegistration(request, memberId);
-        return ResponseEntity.ok().build(); // 200 OK 반환
+        return ResponseEntity.ok().build();
     }
 
-    // 매물 목록 조회 GET 요청 처리 (필터링 및 페이징 지원)
+    /**
+     * 매물 목록 조회 요청 처리 (필터링 및 페이징 지원)
+     * GET /building/list
+     *
+     * @param buildingName 매물명 필터 (선택적)
+     * @param saleType 판매 유형 필터 (선택적)
+     * @param startPrice 가격 범위 시작 필터 (선택적)
+     * @param endPrice 가격 범위 종료 필터 (선택적)
+     * @param propertyType 부동산 종류 필터 (선택적)
+     * @param page 페이지 번호 (기본 1)
+     * @param size 페이지 크기 (기본 10)
+     * @param userDetails 인증된 사용자 정보 (찜 여부 반영용)
+     * @return 페이징된 매물 목록 DTO와 200 OK
+     */
     @GetMapping("/list")
     public ResponseEntity<?> getBuildingList(
             @RequestParam(value = "buildingName", required = false) String buildingName,
@@ -73,24 +113,27 @@ public class BuildingController {
             @RequestParam(value = "startPrice", required = false) Long startPrice,
             @RequestParam(value = "endPrice", required = false) Long endPrice,
             @RequestParam(value = "propertyType", required = false) String propertyType,
-            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        // 인증된 사용자 아이디가 있으면 사용, 없으면 null 처리
         String memberId = (userDetails != null && !userDetails.getUsername().isBlank())
                 ? userDetails.getUsername() : null;
-        // 서비스에 필터 조건과 페이징 정보 전달하여 결과 조회
-        FilteredResponse response = buildingService.getBuildingList(buildingName, saleType, startPrice, endPrice, propertyType, page, size, memberId);
-        return ResponseEntity.ok(response); // 조회 결과 반환
+
+        FilteredResponse pageInfo = buildingService.getBuildingList(buildingName, saleType, startPrice, endPrice, propertyType, page, size, memberId);
+        return ResponseEntity.ok(pageInfo);
     }
 
-    // 매물 삭제 DELETE 요청 처리
+    /**
+     * 매물 삭제 요청 처리
+     * DELETE /building/remove/{buildingId}
+     *
+     * @param buildingId 삭제할 매물 ID
+     * @return 200 OK 응답 (본문 없음)
+     */
     @DeleteMapping("/remove/{buildingId}")
     public ResponseEntity<?> removeBuilding(@PathVariable("buildingId") Long buildingId) {
-        // 매물 삭제 서비스 호출
         buildingService.removeBuilding(buildingId);
-        return ResponseEntity.ok().build(); // 200 OK 반환
+        return ResponseEntity.ok().build();
     }
 }
-
