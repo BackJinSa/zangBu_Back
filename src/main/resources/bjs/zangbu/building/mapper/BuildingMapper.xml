@@ -98,13 +98,14 @@
         SELECT price FROM building WHERE building_id = #{buildingId}
     </select>
 
-    <select id="selectFilteredBuildings" resultType="bjs.zangbu.building.dto.response.BuildingResponse$FilteredResponse$Filtered">
+    <select id="selectFilteredBuildings"
+            resultType="bjs.zangbu.building.dto.response.BuildingResponse$FilteredResponse$Filtered">
         SELECT
         b.building_id,
         b.building_name,
         b.price,
         IFNULL(r.avg_rank, 0) AS rank_average,
-        FALSE AS is_bookMarked -- 임시 기본값, 나중에 서비스에서 처리 가능
+        FALSE AS is_bookMarked
         FROM building b
         LEFT JOIN (
         SELECT building_id, AVG(rank) AS avg_rank
@@ -129,9 +130,7 @@
             </if>
         </where>
         ORDER BY b.created_at DESC
-        LIMIT #{offset}, #{size}
     </select>
-
 
     <!-- 필터 조건에 맞는 매물 총 개수 조회 -->
     <select id="countFilteredBuildings" resultType="long">
