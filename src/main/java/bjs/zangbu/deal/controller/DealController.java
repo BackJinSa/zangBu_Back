@@ -3,6 +3,7 @@ package bjs.zangbu.deal.controller;
 
 import bjs.zangbu.deal.dto.request.DealRequest.IntentRequest;
 import bjs.zangbu.deal.dto.request.DealRequest.Status;
+import bjs.zangbu.deal.dto.response.BuildingRegisterResponse;
 import bjs.zangbu.deal.dto.response.DealResponse;
 import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
@@ -162,9 +163,12 @@ public class DealController {
    */
   @GetMapping("/consumer/documents/{dealId}/{type}/download")
   public ResponseEntity<?> downloadDocument(@PathVariable Long dealId,
-      @PathVariable DocumentType type) {
-    //Todo: DocumentType -> enum 처리 및 타입 지정, 로직 처리 해야함
-    return ResponseEntity.ok().build();
+      @PathVariable DocumentType type) throws Exception {
+    // type 이 BUILDING_REGISTER 인지 등은 별도 검증
+    // todo : 예외 처리 해야됌 , type 설정 해야함
+    BuildingRegisterResponse rsp = contractService.generateRegisterPdf(dealId);
+
+    return ResponseEntity.ok(new DealResponse.Download(rsp.getResOriginalData()));
   }
 
   /**
