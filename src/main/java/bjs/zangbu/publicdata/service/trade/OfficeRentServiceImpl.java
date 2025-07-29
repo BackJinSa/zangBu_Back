@@ -17,11 +17,11 @@ import java.util.Map;
 public class OfficeRentServiceImpl implements OfficeRentService{
     private final RestTemplate rt;
 
-    @Value("${publicdata.offirent.serviceKey}")
+    @Value("서비스 키 넣는 곳")
     private String serviceKey;
 
     @Override
-    public List<OfficeRent> fetchOffiRents(String lawdCd, String dealYmd, int pageNo, int numOfRows) {
+    public List<OfficeRent> fetchOfficeRents(String lawdCd, String dealYmd, int pageNo, int numOfRows) {
         URI uri = UriComponentsBuilder
                 .fromHttpUrl("https://apis.data.go.kr/1613000/RTMSDataSvcOffiRent/getRTMSDataSvcOffiRent")
                 .queryParam("serviceKey", serviceKey)
