@@ -41,16 +41,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        var member = mapper.findByEmail(loginRequest.getEmail());
-        if (member == null) {
-            throw new IllegalArgumentException("존재하지 않는 이메일입니다.");
+        Member member = mapper.findByEmail(loginRequest.getEmail());
+
+        if (member == null || !passwordEncoder.matches(loginRequest.getPassword(), member.getPassword())) {
+            throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
         }
 
-        if (!passwordEncoder.matches(loginRequest.getPassword(), member.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
-
-        // JWT 발급
+        // 회원 찾기 성공 시 JWT 발급
         String accessToken = jwtProcessor.generateAccessToken(member.getEmail(), member.getRole().name());
         String refreshToken = jwtProcessor.generateRefreshToken(member.getEmail());
 
@@ -95,6 +92,7 @@ public class AuthServiceImpl implements AuthService {
         mapper.insertMember(member);
     }
 
+    //이메일 찾기(이름, 휴대폰 번호로)
     @Override
     public EmailAuthResponse findEmail(EmailAuthRequest request) {
         String email = mapper.findEmailByNameAndPhone(request.getName(), request.getPhone());
@@ -170,6 +168,7 @@ public class AuthServiceImpl implements AuthService {
 
         //redis에 저장된 refresh 토큰과 일치 여부 확인
         String storedRefreshToken = redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX+email);
+
         //저장된 refresh 토큰 없으면
         if(storedRefreshToken == null){
             throw new IllegalStateException("refresh 토큰이 서버에 존재하지 않습니다.");
@@ -185,7 +184,7 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("회원 정보를 찾을 수 없습니다.");
         }
 
-        //새로운 access, refresh 토큰 발급 후 반환
+        //새로운 access, refresh 토큰 발급 후 반환(refresh 토큰도 함께 갱신)
         String newAccessToken = jwtProcessor.generateAccessToken(email, member.getRole().name());
         String newRefreshToken = jwtProcessor.generateRefreshToken(email);
 

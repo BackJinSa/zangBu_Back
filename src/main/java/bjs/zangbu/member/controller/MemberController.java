@@ -8,6 +8,7 @@ import bjs.zangbu.member.mapper.MemberMapper;
 import bjs.zangbu.member.service.MemberService;
 import bjs.zangbu.security.account.vo.Member;
 import bjs.zangbu.security.util.JwtProcessor;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,13 +26,27 @@ public class MemberController {
     private final JwtProcessor jwtProcessor;
 
     //공통 부분 메서드
+    //jwt 이용해서 인증된 사용자의 member 반환
     private Member getAuthenticatedMember(String accessTokenHeader) {
-        String token = accessTokenHeader.replace("Bearer ", "").trim();
-        //이메일만 가져오기
-        String email = jwtProcessor.getEmail(token);
-        //이메일로 멤버 가져오기
+        //헤더 존재와 시작부 확인
+        if (accessTokenHeader == null || !accessTokenHeader.startsWith("Bearer ")) {
+            throw new JwtException("유효하지 않은 토큰입니다.");
+        }
+
+        //Bearer {token}에서 access token 부분만 추출
+        String accessToken = accessTokenHeader.replace("Bearer ", "").trim();
+
+        //jwt 유효성 판단
+        if (!jwtProcessor.validateToken(accessToken)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.");
+        }
+
+        //jwt에서 이메일만 추출
+        String email = jwtProcessor.getEmail(accessToken);
+        //이메일로 db에서 해당 멤버 가져오기
         Member member = memberMapper.findByEmail(email);
-        //멤버 없을 때 에러 처리
+
+        //db에 멤버 없을 때 에러 처리
         if (member == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "회원 정보를 찾을 수 없습니다.");
         }
