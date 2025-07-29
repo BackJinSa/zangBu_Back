@@ -18,7 +18,9 @@
         address,
         zonecode,
         building_name,
-        bname
+        bname,
+        dong,
+        ho
     )
     VALUES (
                #{resType},
@@ -32,7 +34,9 @@
                #{address},
                #{zonecode},
                #{buildingName},
-               #{bname}
+               #{bname},
+               #{dong},
+               #{ho}
            )
     <!--
     삽입 후 방금 생성된 complex_id 값을 가져와
