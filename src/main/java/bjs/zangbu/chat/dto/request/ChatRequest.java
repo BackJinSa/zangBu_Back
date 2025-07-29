@@ -28,8 +28,9 @@ public class ChatRequest {
     @Builder
     public static class SendMessageRequest {
         private String message;
+        private String chatRoomId;
 
-        public ChatMessage toEntity(String chatRoomId, String senderId, LocalDateTime createdAt) {
+        public ChatMessage toEntity(String senderId, LocalDateTime createdAt) {
             return ChatMessage.builder()
                     .chatRoomId(chatRoomId)
                     .senderId(senderId)
