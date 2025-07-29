@@ -43,6 +43,9 @@ public class Member {
     //알림 수신 여부
     private boolean consent;
 
+    //통신사
+    private String telecom;
+
     //security에서 로그인한 사용자 권한 표현
     // -> role 값 기준으로 권한(ROLE_USER, ROLE_ADMIN) 넘겨줌
     public Collection<? extends GrantedAuthority> getAuthorities(){
