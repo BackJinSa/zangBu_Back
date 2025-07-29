@@ -1,5 +1,6 @@
 package bjs.zangbu.codef.service;
 
+import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.UnsupportedEncodingException;
 
@@ -29,7 +30,7 @@ public interface CodefTwoFactorService {
      * @throws JsonProcessingException
      * @throws InterruptedException
      */
-    String generalBuildingLeader(Object request)
+    String generalBuildingLeader(BuildingRegisterRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 
     /**
