@@ -15,9 +15,10 @@ class FcmSenderImplTest {
         String token = "dMWnxMeAb1S5PnXZ3WHgtG:APA91bF2yk4995VIdn4NpjI0YS5hz7S6-QUpknmULvg5cYWcTNwZR2kNaUJkybYwHniR3UnMWc3rMRjgKa3gJquLihWkKlipA7jpM39YRsqpDVMFSUJtav8"; // 웹, 안드로이드, iOS 등
         String title = "[FCM 테스트]";
         String body = "이 알림이 디바이스로 수신되면 FCM 연동 성공!";
+        String url = "";
 
         // 3. 단일 테스트
-        sender.send(token, title, body);
+        sender.send(token, title, body, url);
 
         // 또는 다중 테스트 (선택)
         /*
