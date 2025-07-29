@@ -18,7 +18,7 @@ public class LawCodeServiceImpl implements LawCodeService {
 
     private final RestTemplate rt;
 
-    @Value("${publicdata.law.serviceKey}")
+    @Value("${KI6q5jPyEQnEa9tmhllI6W8ufddtQ68gxlGFxHFspiOhfRCEF%2BfoUQ4oHLgL%2Bs61oIGO%2F1lS75LSfB%2FIBuFeSQ%3D%3D}")
     private String serviceKey;
 
     @Override
