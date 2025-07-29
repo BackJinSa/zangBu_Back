@@ -1,6 +1,7 @@
 package bjs.zangbu.codef.service;
 import bjs.zangbu.codef.encryption.CodefEncryption;
 import bjs.zangbu.codef.thread.CodefThread;
+import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import io.codef.api.EasyCodef;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PostConstruct;
@@ -10,7 +11,19 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
+/**
+ * 주민등록초본, 건축물대장, 주민등록증 진위확인 등
+ * “2‑Way 인증” 계열 상품을 전담.
+ *
+ * ✔️각 메서드 내부:
+ *    - parameterMap 만들고
+ *    - CodefThread(codef, parameter, index, url) 로 spawn
+ *    - Thread.sleep(10000) 은 데모 환경에서는 필수, 운영에서는 조정 가능
+ *
+ * ✔️CodefThread 역할
+ *    - 1차 호출(Return code == CF‑03002 && continue2Way == true) → 2차 자동 호출
+ *    - 두 응답을 각각 firstResponse / secondResponse 로 보관
+ */
 @Service
 @RequiredArgsConstructor
 public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
@@ -85,28 +98,30 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
      * - codefThread 올바르게 순차 실행, 결과값만 스트링으로 묶어 반환
      */
     @Override
-    public String generalBuildingLeader(Object request)
+    public String generalBuildingLeader(BuildingRegisterRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        String productUrl = "/v1/kr/public/ck/real-estate-register/identity-matching";
+        String productUrl = "//v1/kr/public/mw/building-register/colligation";
         List<CodefThread> threadList = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             // 건축물대장 실명 일치 확인 파라미터
-            HashMap<String, Object> parameterMap = new HashMap<>();
-            parameterMap.put("organization", "0001");     // 기관코드
-            parameterMap.put("loginType", "5");           // 로그인 유형
-            parameterMap.put("userName", );               // 사용자명
-            parameterMap.put("identity", );               // 주민등록번호
-            parameterMap.put("identityEncYn", "Y");       // 주민번호 암호화 여부
-            parameterMap.put("birthDate", );              // 생년월일
-            parameterMap.put("loginTypeLevel", "1");      // 인증레벨
-            parameterMap.put("phoneNo", );                // 휴대폰번호
-            parameterMap.put("telecom", );                // 통신사 유형
-            parameterMap.put("address", );                // 소유자 주소
-            parameterMap.put("dong", );                   // 동
-            parameterMap.put("ho", );                     // 호
-            parameterMap.put("type", "0");                // 건물 구분(주택/비주택 등, 상품별 참조)
-            parameterMap.put("zipCode", );                // 우편번호
-            parameterMap.put("originDateYN", "1");        // 원본자료 포함여부
+            // 1차 요청 파라미터
+            HashMap<String, Object> parameterMAp = new HashMap<>();
+            parameterMAp.put("organization", "0001"); // 기관 코드(고정)
+            parameterMAp.put("loginType", "5"); // 인증 절차(회원 간편인증 : 5 , 고정)
+            parameterMAp.put("loginTypeLevel", "1"); // 인증 유형(카카오 : 1 , 고정)
+            parameterMAp.put("userName", request.getUserName()); // 사용자 이름
+            parameterMAp.put("birthDate", request.getBirthDate()); // yymmdd
+            parameterMAp.put("phoneNo", request.getPhoneNo()); // 전화번호
+            parameterMAp.put("identity", request.getIdentity()); // 암호화된 주민 번호
+            parameterMAp.put("identityEncYn", "Y"); // 주민번호 암호화 여부
+            parameterMAp.put("telecom","0"); // 통신사 skt : 0, kt :1 , u+:2 todo : 추가 구현해야함
+            parameterMAp.put("address", request.getAddress());
+            parameterMAp.put("zipCode", request.getZipCode());
+//      map.put("dong", req.getDong());
+//      map.put("ho", req.getHo()); Todo : 추가 구현해야함
+
+            parameterMAp.put("originDataYN", "1");
+            parameterMAp.put("secureNoTimeout", "170");
 
             CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
             t.start();

@@ -1,0 +1,40 @@
+package bjs.zangbu.deal.dto.request;
+
+import bjs.zangbu.deal.dto.join.DealDocumentInfo;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class BuildingRegisterRequest {
+    /** dealId → mapper 에서 채운다 */
+    private Long dealId;
+
+    // --- CODEF 파라미터 ---
+    private String userName;       // 사용자 이름
+    private String identity;    // RSA 암호화된 주민번호(뒷자리)
+    private String birthDate;      // YYMMDD
+    private String phoneNo;        // 휴대전화
+    private String address;        // 도로명 주소
+//    private String dong;           // 동
+//    private String ho;             // 호
+//    private String telecom;       // 통신사 todo : 추가 구현해야함 mapper 도 마찬가지
+    private String zipCode;        // 우편번호 (zonecode)
+
+    /** mapper→DTO 변환 헬퍼 */
+    public static BuildingRegisterRequest from(DealDocumentInfo info){
+        return BuildingRegisterRequest.builder()
+                .dealId(info.getDealId())
+                .userName(info.getName())
+                .identity(info.getIdentity())
+                .birthDate(info.getBirth())
+                .phoneNo(info.getPhone())
+                .address(info.getAddress())
+                .zipCode(info.getZonecode())
+                .build();
+    }
+}
