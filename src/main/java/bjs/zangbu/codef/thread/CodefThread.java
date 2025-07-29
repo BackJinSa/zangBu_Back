@@ -7,6 +7,18 @@ import lombok.Getter;
 import java.util.HashMap;
 
 
+/**
+ * CODEF API 병렬 호출용 스레드.
+ *
+ * 1) run()
+ *    ├─ 1차호출 → 응답(code) 분석
+ *    └─ 2‑Way 필요(CF‑03002 & continue2Way) 시
+ *        • jobIndex 등 저장 후
+ *        • 바로 2차호출(secondResponse 저장)
+ *
+ * 2) getFirstResponse / getSecondResponse 로 결과 취합
+ *
+ */
 @Getter
 public class CodefThread extends Thread {
     private EasyCodef codef;
