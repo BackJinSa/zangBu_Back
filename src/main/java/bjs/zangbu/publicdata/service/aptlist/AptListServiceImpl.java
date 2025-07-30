@@ -12,6 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+
+/**
+ * RestTemplate 으로 공공데이터 OpenAPI 를 호출하고
+ * 받은 JSON 을 DTO 로 변환하여 리턴
+ */
 @Service
 @RequiredArgsConstructor
 public class AptListServiceImpl implements AptListService {
@@ -21,6 +26,12 @@ public class AptListServiceImpl implements AptListService {
     @Value("서비스 키 사용하는 곳")
     private String serviceKey;
 
+    /**
+     * 공통 REST 호출 메서드
+     * @param baseUrl 호출할 엔드포인트 URL
+     * @param params  쿼리파라미터 맵
+     * @return API 응답 전체를 Map 으로 리턴
+     */
     private <T> Map<String,Object> fetch(String baseUrl, Map<String,String> params) {
         UriComponentsBuilder b = UriComponentsBuilder.fromHttpUrl(baseUrl)
                 .queryParam("serviceKey", serviceKey);
@@ -47,6 +58,7 @@ public class AptListServiceImpl implements AptListService {
         return list;
     }
 
+    // 전체 단지 조회 API 호출
     @Override
     public List<AptComplex> getTotalAptList(int pageNo, int numOfRows) {
         Map<String,String> p = Map.of(
@@ -58,6 +70,7 @@ public class AptListServiceImpl implements AptListService {
         return extractComplexList(resp);
     }
 
+    // 시도별 단지 조회
     @Override
     public List<AptComplex> getSidoAptList(String sidoCode, int pageNo, int numOfRows) {
         Map<String,String> p = Map.of(
@@ -70,6 +83,7 @@ public class AptListServiceImpl implements AptListService {
         return extractComplexList(resp);
     }
 
+    // 시군구별 단지 조회
     @Override
     public List<AptComplex> getSigunguAptList(String sigunguCode, int pageNo, int numOfRows) {
         Map<String,String> p = Map.of(
@@ -82,6 +96,7 @@ public class AptListServiceImpl implements AptListService {
         return extractComplexList(resp);
     }
 
+    // 법정동별 단지 조회
     @Override
     public List<AptComplex> getLegaldongAptList(String bjdCode, int pageNo, int numOfRows) {
         Map<String,String> p = Map.of(
@@ -94,6 +109,7 @@ public class AptListServiceImpl implements AptListService {
         return extractComplexList(resp);
     }
 
+    // 도로명 기반 단지 조회
     @Override
     public List<RoadAptComplex> getRoadnameAptList(String roadCode, int pageNo, int numOfRows) {
         Map<String,String> p = Map.of(
