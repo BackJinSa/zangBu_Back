@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface MemberService {
     //찜한 매물 리스트 조회
-    List<BookmarkBuilding> getBookmarks(String memberId);
+    BookmarkList getBookmarks(String memberId);
 
     //찜한 매물 삭제
     void deleteBookmark(String memberId, Long buildingId);
