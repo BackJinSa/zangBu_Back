@@ -10,8 +10,6 @@ import bjs.zangbu.deal.dto.join.DealWithSaleType;
 import bjs.zangbu.deal.dto.request.DealRequest.Status;
 import bjs.zangbu.deal.dto.response.DealResponse.CreateResult;
 import bjs.zangbu.deal.mapper.DealMapper;
-import bjs.zangbu.deal.service.ContractService;
-import bjs.zangbu.deal.service.ContractServiceImpl;
 import bjs.zangbu.deal.vo.DealEnum;
 import bjs.zangbu.notification.vo.SaleType;
 import java.util.Collections;
@@ -112,7 +110,7 @@ class DealControllerTest {
     SaleType type = SaleType.TRADING;    // 기본값 (매매)
 
     DealMapper stubMapper = new StubDealMapper(dealId, type);
-    ContractService service = new ContractServiceImpl(stubMapper);
+    //ContractService service = new ContractServiceImpl(stubMapper);
     DealController ctl = new DealController(null, null, service);
 
     mockMvc = MockMvcBuilders.standaloneSetup(ctl).build();
@@ -132,7 +130,7 @@ class DealControllerTest {
   void leaseContractTest() throws Exception {
     // ↙ 새로운 stub으로 월세 값 주입
     DealMapper stub = new StubDealMapper(77L, SaleType.MONTHLY);
-    ContractService svc = new ContractServiceImpl(stub);
+    //ContractService svc = new ContractServiceImpl(stub);
     DealController ctl = new DealController(null, null, svc);
     mockMvc = MockMvcBuilders.standaloneSetup(ctl).build();
 
