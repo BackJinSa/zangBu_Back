@@ -38,4 +38,11 @@ public class ManageCostController {
     ) {
         return ResponseEntity.ok(service.fetchGasCost(kaptCode, searchDate));
     }
+
+    // 호출 예시
+    //# 난방비
+    //GET http://localhost:8080/publicdata/managecost/heat?kaptCode=A13822001&searchDate=202502
+    //
+    //# 가스비
+    //GET http://localhost:8080/publicdata/managecost/gas?kaptCode=A13822001&searchDate=202502
 }
