@@ -49,4 +49,10 @@ public class PublicUseController {
     ) {
         return ResponseEntity.ok(svc.fetchCleanCost(kaptCode, searchDate));
     }
+
+    // 사용 예시
+    //GET /publicdata/commonuse/vehicle?kaptCode=A13822001&searchDate=202502
+    //GET /publicdata/commonuse/etc    ?kaptCode=A13822001&searchDate=202502
+    //GET /publicdata/commonuse/edu    ?kaptCode=A13822001&searchDate=202502
+    //GET /publicdata/commonuse/clean  ?kaptCode=A13822001&searchDate=202502
 }
