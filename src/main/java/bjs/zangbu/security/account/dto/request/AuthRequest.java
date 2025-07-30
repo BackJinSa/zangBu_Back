@@ -74,7 +74,8 @@ public class AuthRequest {
                     MemberEnum.ROLE_MEMBER,
                     request.getBirth(),
                     null,
-                    request.isConsent()
+                    request.isConsent(),
+                    null
             );
         }
     }
