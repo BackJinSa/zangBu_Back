@@ -1,8 +1,8 @@
-package bjs.zangbu.publicdata.controller.managecost;
+package bjs.zangbu.publicdata.controller.managecost.privateuse;
 
-import bjs.zangbu.publicdata.dto.managecost.GasCost;
-import bjs.zangbu.publicdata.dto.managecost.HeatCost;
-import bjs.zangbu.publicdata.service.managecost.ManageCostService;
+import bjs.zangbu.publicdata.dto.managecost.privateuse.GasCost;
+import bjs.zangbu.publicdata.dto.managecost.privateuse.HeatCost;
+import bjs.zangbu.publicdata.service.managecost.privateuse.ManageCostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

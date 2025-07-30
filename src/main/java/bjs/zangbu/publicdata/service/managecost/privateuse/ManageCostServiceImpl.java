@@ -1,7 +1,7 @@
-package bjs.zangbu.publicdata.service.managecost;
+package bjs.zangbu.publicdata.service.managecost.privateuse;
 
-import bjs.zangbu.publicdata.dto.managecost.GasCost;
-import bjs.zangbu.publicdata.dto.managecost.HeatCost;
+import bjs.zangbu.publicdata.dto.managecost.privateuse.GasCost;
+import bjs.zangbu.publicdata.dto.managecost.privateuse.HeatCost;
 import java.net.URI;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package bjs.zangbu.publicdata.dto.managecost;
+package bjs.zangbu.publicdata.dto.managecost.privateuse;
 
 import lombok.Getter;
 import lombok.Setter;
