@@ -15,7 +15,7 @@ public interface MemberMapper {
     List<BookmarkBuilding> getBookmarksByMemberId(String memberId);
 
     //3. 북마크 삭제하기
-    void deleteBookMark(String memberId, Long buildingId);
+    int deleteBookMark(String memberId, Long buildingId);
 
     //4. member id 받고 닉네임 가져오기
     String getNicknameByMemberId(String memberId);
