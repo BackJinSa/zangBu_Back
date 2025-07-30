@@ -95,7 +95,10 @@ dependencies {
     implementation "org.springframework.integration:spring-integration-stomp:5.5.20"
 
     // swagger (Springfox 사용 불가) → springdoc-openapi로 대체
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+    implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9') {
+        // Spring Boot 전체를 끌고 오지 않도록 핵심 모듈만 사용
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter'
+    }
 
     // Redis
     implementation 'org.springframework.data:spring-data-redis:3.3.0'
