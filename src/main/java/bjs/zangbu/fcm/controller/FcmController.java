@@ -3,6 +3,10 @@ package bjs.zangbu.fcm.controller;
 import bjs.zangbu.fcm.dto.request.FcmRequest.FcmTokenRequest;
 import bjs.zangbu.fcm.service.FcmService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +35,13 @@ public class FcmController {
             summary = "FCM 디바이스 토큰 등록",
             description = "현재 로그인한 사용자의 디바이스 FCM 토큰을 등록합니다."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "토큰 등록 성공",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 (등록 실패)",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
     @PostMapping("/register")
     public ResponseEntity<?> registerToken(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -54,6 +65,13 @@ public class FcmController {
             summary = "FCM 디바이스 토큰 삭제",
             description = "현재 로그인한 사용자의 모든 디바이스 FCM 토큰을 삭제합니다."
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "토큰 삭제 성공",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 (삭제 실패)",
+                    content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
     @DeleteMapping("/remove")
     public ResponseEntity<?> deleteTokens(
             @AuthenticationPrincipal UserDetails userDetails,
