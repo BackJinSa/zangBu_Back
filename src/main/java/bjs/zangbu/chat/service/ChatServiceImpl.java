@@ -2,7 +2,6 @@ package bjs.zangbu.chat.service;
 
 import bjs.zangbu.chat.dto.request.ChatRequest;
 import bjs.zangbu.chat.dto.response.ChatResponse;
-import bjs.zangbu.chat.exception.ChatException;
 import bjs.zangbu.chat.mapper.ChatMapper;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
@@ -30,6 +29,10 @@ public class ChatServiceImpl implements ChatService{
     public ChatResponse.SendMessageResponse sendMessage(String senderId, ChatRequest.SendMessageRequest request){
         LocalDateTime createdAt = LocalDateTime.now();
 
+        if (request == null) {
+            throw new NullPointerException("request(SendMessageRequest)의 값이 null입니다.");
+        }
+
         ChatMessage message = request.toEntity(senderId, createdAt);
         int result = chatMapper.insertMessage(message);
         if (result == 0) {
@@ -51,8 +54,8 @@ public class ChatServiceImpl implements ChatService{
 
     //chatRoomId 기준으로 해당 채팅방의 메시지들 가져오기
     @Override
-    public List<ChatMessage> getMessages(String chatRoomId, Long lastMessageId, int limit) {
-        return chatMapper.selectMessagesByRoomId(chatRoomId, lastMessageId, limit);
+    public List<ChatMessage> getMessages(String chatRoomId, int limit) {
+        return chatMapper.selectMessagesByRoomId(chatRoomId, limit);
     }
 
     //chatRoomId 기준으로 채팅방 상세정보 가져오기
@@ -150,9 +153,11 @@ public class ChatServiceImpl implements ChatService{
             throw new IllegalArgumentException(chatRoomId+ "를 id로 하는 채팅방이 존재하지 않습니다.");
         }
 
+        //나가려는 사용자가 판매자인지 구매자인지 확인
         boolean isSeller = userId.equals(chatMapper.selectMemberIdByNickname(userId));
         boolean isBuyer = userId.equals(chatRoom.getConsumerId());
 
+        //나가려는 사용자의 채팅방 목록에서 해당 채팅방이 보이지 않도록 DB에서 변경
         if (isSeller) {
             chatMapper.updateSellerVisible(chatRoomId);
         } else if (isBuyer) {
@@ -161,7 +166,7 @@ public class ChatServiceImpl implements ChatService{
             throw new IllegalStateException("채팅방 참여자가 아닙니다.");
         }
 
-        //일대일 채팅에 참여한 둘 모두 나간 경우에 DB에서 완전 삭제
+        //일대일 채팅에 참여한 둘 모두 나간 경우(visible = false인 경우)에 DB에서 완전 삭제
         if (!chatRoom.getSellerVisible() && !chatRoom.getConsumerVisible()) {
             //chatRoomId의 ChatMessage들 삭제
             chatMapper.deleteMessagesByRoomId(chatRoomId);

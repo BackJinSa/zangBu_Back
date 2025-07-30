@@ -7,7 +7,7 @@ import lombok.Getter;
 @Data
 @Getter
 @AllArgsConstructor
-public class BuildingRegisterResponse {
+public class EstateRegistrationResponse {
     private String resOriginalData;
-    private String resViolationStatus; //todo 가져올 데이터 정해야함
+    private String commUniqueNo; //todo : 가져올 데이터 정해야함
 }
