@@ -21,7 +21,7 @@ class DealTest {
     Long addressId = 4004L;
 
     // when
-    Deal deal = new Deal(dealId, status, chatRoomId, buildingId, userId, complexId, addressId);
+    Deal deal = new Deal(dealId, status, chatRoomId, buildingId, userId, complexId);
 
     // then
     assertEquals(dealId, deal.getDealId());
@@ -30,7 +30,6 @@ class DealTest {
     assertEquals(buildingId, deal.getBuildingId());
     assertEquals(userId, deal.getMemberId());
     assertEquals(complexId, deal.getComplexId());
-    assertEquals(addressId, deal.getAddressId());
   }
 
   @Test
