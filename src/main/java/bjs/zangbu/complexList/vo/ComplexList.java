@@ -53,4 +53,7 @@ public class ComplexList {
 
     /** 호수 정보 (예: 1202호) */
     private String ho;
+
+    /** 도로명 */
+    private String roadName;
 }
