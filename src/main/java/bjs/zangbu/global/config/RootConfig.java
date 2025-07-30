@@ -19,7 +19,10 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
 @Configuration
 @PropertySource(value = "classpath:/application.yml", factory = YamlPropertyConfig.class)
-@MapperScan(basePackages = {"bjs.zangbu.chat.mapper"})
+@MapperScan(basePackages = {
+        "bjs.zangbu.chat.mapper",
+        "bjs.zangbu.notification.mapper"
+})
 public class RootConfig {
 
   @Value("${jdbc.driver}")
