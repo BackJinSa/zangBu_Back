@@ -7,6 +7,7 @@ import bjs.zangbu.deal.dto.response.BuildingRegisterResponse;
 import bjs.zangbu.deal.dto.response.DealResponse;
 import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
+import bjs.zangbu.deal.dto.response.EstateRegistrationResponse;
 import bjs.zangbu.deal.service.ContractService;
 import bjs.zangbu.deal.service.DealService;
 import bjs.zangbu.deal.vo.DocumentType;
@@ -255,15 +256,17 @@ public class DealController {
       @ApiResponse(responseCode = "", description = "문서 다운로드 실패")
   })
   @GetMapping("/consumer/documents/{dealId}/{type}/download")
-  public ResponseEntity<?> downloadDocument(
-      @Parameter(description = "거래 ID", example = "101") @PathVariable Long dealId,
-      @Parameter(description = "문서 타입", example = "BUILDING_REGISTER") @PathVariable DocumentType type
-  ) throws Exception {
-    // type 이 BUILDING_REGISTER 인지 등은 별도 검증
-    // todo : 예외 처리 해야됌 , type 설정 해야함
-    BuildingRegisterResponse rsp = contractService.generateRegisterPdf(dealId);
-
-    return ResponseEntity.ok(new DealResponse.Download(rsp.getResOriginalData()));
+  public ResponseEntity<?> downloadDocument(@PathVariable Long dealId,
+      @PathVariable DocumentType type) throws Exception {
+    //todo: 중복 로직 정리 해야 함 , 그 후 스웨거 적용
+    if (type == DocumentType.ESTATE) {
+      EstateRegistrationResponse rsp = contractService.getEstateRegistrationPdf(dealId);
+      return ResponseEntity.ok(new DealResponse.Download(rsp.getResOriginalData()));
+    } else if (type == DocumentType.BUILDING_REGISTER) {
+      BuildingRegisterResponse rsp = contractService.generateRegisterPdf(dealId);
+      return ResponseEntity.ok(new DealResponse.Download(rsp.getResOriginalData()));
+    }
+    return null;
   }
 
   /**
