@@ -114,12 +114,11 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
             parameterMap.put("phoneNo", request.getPhoneNo()); // 전화번호
             parameterMap.put("identity", request.getIdentity()); // 암호화된 주민 번호
             parameterMap.put("identityEncYn", "Y"); // 주민번호 암호화 여부
-            parameterMap.put("telecom","0"); // 통신사 skt : 0, kt :1 , u+:2
-            // todo : 추가 구현해야함
+            parameterMap.put("telecom",request.getTelecom()); // 통신사 skt : 0, kt :1 , u+:2
             parameterMap.put("address", request.getAddress());
             parameterMap.put("zipCode", request.getZipCode());
-//      map.put("dong", req.getDong());
-//      map.put("ho", req.getHo()); Todo : 추가 구현해야함
+            parameterMap.put("dong", request.getDong());
+            parameterMap.put("ho", request.getHo());
 
             parameterMap.put("originDataYN", "1");
             parameterMap.put("secureNoTimeout", "170");
