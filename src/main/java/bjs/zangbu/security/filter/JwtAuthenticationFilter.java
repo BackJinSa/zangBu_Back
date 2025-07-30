@@ -40,6 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        //요청 헤더에서 jwt 가져오기 - Authorization: Bearer <token>
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
 
         if (bearerToken != null && bearerToken.startsWith(BEARER_PREFIX)) {
