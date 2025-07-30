@@ -10,6 +10,7 @@ package bjs.zangbu.deal.vo;
  */
 public enum DocumentType {
     BUILDING_REGISTER, // 건축물대장
+    ESTATE, //등기부등본
     REGISTRY,
     TAX_CERT,
     RIGHT_REPORT

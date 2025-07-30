@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BuildingRegisterRequest {
+    //todo : dealdocumentinfo와 같은 형식이면 둘중 하나 날리는게 나을듯
     /** dealId → mapper 에서 채운다 */
     private Long dealId;
 
@@ -20,9 +21,9 @@ public class BuildingRegisterRequest {
     private String birthDate;      // YYMMDD
     private String phoneNo;        // 휴대전화
     private String address;        // 도로명 주소
-//    private String dong;           // 동
-//    private String ho;             // 호
-//    private String telecom;       // 통신사 todo : 추가 구현해야함 mapper 도 마찬가지
+    private String dong;           // 동
+    private String ho;             // 호
+    private String telecom;       // 통신사
     private String zipCode;        // 우편번호 (zonecode)
 
     /** mapper→DTO 변환 헬퍼 */
@@ -35,6 +36,9 @@ public class BuildingRegisterRequest {
                 .phoneNo(info.getPhone())
                 .address(info.getAddress())
                 .zipCode(info.getZonecode())
+                .telecom(info.getTelecom())
+                .dong(info.getDong())
+                .ho(info.getHo())
                 .build();
     }
 }
