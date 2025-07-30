@@ -42,7 +42,7 @@ class ChatMapperTest {
 
     @Test
     void selectMessagesByRoomId() {
-        List<ChatMessage> messages = chatMapper.selectMessagesByRoomId("test-room-123", 10);
+        List<ChatMessage> messages = chatMapper.selectMessagesByRoomId("test-room-123", 1, 10);
         assertNotNull(messages);
         assertTrue(messages.size() <= 10);
     }
@@ -106,7 +106,7 @@ class ChatMapperTest {
     @Test
     void deleteMessagesByRoomId() {
         chatMapper.deleteMessagesByRoomId("test-room-123");
-        List<ChatMessage> messages = chatMapper.selectMessagesByRoomId("test-room-123", 10);
+        List<ChatMessage> messages = chatMapper.selectMessagesByRoomId("test-room-123", 1, 10);
         assertTrue(messages.isEmpty());
     }
 
