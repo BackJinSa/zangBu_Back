@@ -13,7 +13,7 @@ public interface ChatService {
     ChatResponse.SendMessageResponse sendMessage(String chatRoomId, ChatRequest.SendMessageRequest request);
 
     //chatRoomId로 해당 채팅방의 메시지들 limit개 불러오기
-    List<ChatMessage> getMessages(String chatRoomId, Long lastMessageId, int limit);
+    List<ChatMessage> getMessages(String chatRoomId, int limit);
 
     //chatRoomId로 해당 채팅방의 상세정보 가져오기
     ChatRoom getChatRoomDetail(String chatRoomId);
