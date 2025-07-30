@@ -138,7 +138,7 @@ public class AuthServiceImpl implements AuthService {
             payload.put("identity", request.getIdentity()); //주민번호
             payload.put("phone", request.getPhone()); //전화번호
 
-            // 실제 PASS API 호출 (RestTemplate, WebClient 등 사용)
+            // 실제 PASS API 호출 (RestTemplate, WebClient 등 사용)해서 응답 받음
             ResponseEntity<AuthVerify> response = passApiClient.sendVerification(payload);
 
             //응답 body가 null인 경우
@@ -147,7 +147,8 @@ public class AuthServiceImpl implements AuthService {
                 throw new IllegalStateException("PASS API에서 유효한 응답을 받지 못했습니다.");
             }
             // 성공 시 결과 반환
-            return response.getBody();  // "Y"/"N" 여부 판단은 Controller에서
+            return response.getBody();
+            // "Y"/"N" 여부 판단은 Controller에서 하고, y일때만 세션에 저장하도록 처리
 
         } catch (Exception e){
             throw new RuntimeException("PASS 본인인증 중 오류가 발생했습니다.");
