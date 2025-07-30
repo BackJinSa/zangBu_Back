@@ -20,7 +20,8 @@
         building_name,
         bname,
         dong,
-        ho
+        ho,
+        roadName
     )
     VALUES (
                #{resType},
@@ -36,7 +37,8 @@
                #{buildingName},
                #{bname},
                #{dong},
-               #{ho}
+               #{ho},
+               #{roadName}
            )
     <!--
     삽입 후 방금 생성된 complex_id 값을 가져와
