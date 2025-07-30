@@ -9,5 +9,5 @@ import lombok.Getter;
 @AllArgsConstructor
 public class BuildingRegisterResponse {
     private String resOriginalData;
-    private String resViolationStatus;
+    private String resViolationStatus; //todo 가져올 데이터 정해야함
 }
