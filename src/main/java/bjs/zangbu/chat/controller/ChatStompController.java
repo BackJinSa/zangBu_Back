@@ -4,6 +4,7 @@ import bjs.zangbu.chat.dto.request.ChatRequest;
 import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.service.ChatService;
 import bjs.zangbu.chat.vo.ChatMessage;
+import bjs.zangbu.chat.vo.ChatRoom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -39,6 +40,22 @@ public class ChatStompController {  //WebSocket 메시지 수신 컨트롤러
 
         // 받은 메시지 DB에 저장 -> 클라이언트에게 보낼 메시지 형태인 응답 DTO(SendMessageResponse)로 가공
         ChatResponse.SendMessageResponse response = chatService.sendMessage(senderId, request);
+
+        //알림 메소드 추후에 추가
+        //chatRoomId : @DestinationVariable String roomId
+        //message : request.getMessage()
+
+        //receiverId : (chatRoomId를 구독하고 있는 사용자 id)
+        ChatRoom chatRoom = chatService.getChatRoomDetail(roomId);
+        String receiverId;
+        if(senderId.equals(chatRoom.getConsumerId())) { //보낸 사람이 구매자일 경우
+            //chatRoom의 판매자 닉네임으로 판매자 id 구함
+            receiverId = chatService.getUserIdByNickname(chatRoom.getSellerNickname());
+        } else {  //보낸 사람이 판매자일 경우
+            //chatRoom의 구매자 id 구함
+            receiverId = chatRoom.getConsumerId();
+        }
+
 
         // 채팅방 구독자(/topic/chat/{roomId}를 구독하고 있는 모든 클라이언트)에게 메시지 브로드캐스트(response를 실시간 전송)
         messagingTemplate.convertAndSend("/exchange/chat.exchange/chat.room." + roomId, response);

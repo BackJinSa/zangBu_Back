@@ -83,9 +83,10 @@ public class ChatController {
     @GetMapping("/room/{roomId}")
     public ResponseEntity<List<ChatMessage>> getMessages(
             @Parameter(description = "조회할 채팅방 id") @PathVariable String roomId,
+            @Parameter(description = "현재 불러온 메시지 중 가장 마지막 메시지 id") @PathVariable long lastMessageId,
             @Parameter(description = "한 번에 보여주는 메시지 개수") @RequestParam(defaultValue = "20") int limit
     ) {
-        List<ChatMessage> messages = chatService.getMessages(roomId, limit);
+        List<ChatMessage> messages = chatService.getMessages(roomId, lastMessageId, limit);
         return ResponseEntity.status(200).body(messages);
     }
 
