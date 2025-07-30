@@ -1,65 +1,48 @@
 package bjs.zangbu.global.config;
 
-
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.*;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spi.service.contexts.SecurityContext;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
-import java.util.List;
+import org.springframework.context.annotation.Import;
 
 @Configuration
-@EnableSwagger2
+@Import({
+        // SpringDoc 핵심 자동 설정
+        org.springdoc.core.configuration.SpringDocConfiguration.class,
+        org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration.class,
+        org.springdoc.webmvc.ui.SwaggerConfig.class,
+        org.springdoc.core.properties.SwaggerUiConfigProperties.class,
+        org.springdoc.core.properties.SwaggerUiOAuthProperties.class
+})
 public class SwaggerConfig {
 
     private final String API_NAME = "zangBu";
     private final String API_VERSION = "1.0";
     private final String API_DESCRIPTION = "zangBu API 명세서";
 
-    private ApiInfo apiInfo() {
-        return new ApiInfoBuilder()
-                .title(API_NAME)
-                .description(API_DESCRIPTION)
-                .version(API_VERSION)
-                .build();
-    }
-
     @Bean
-    public Docket api() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                //jwt 인증
-                .securityContexts(List.of(this.securityContext()))
-                .securitySchemes(List.of(this.apiKey()))
-                .select()
-                .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
-                .paths(PathSelectors.any())
-                .build()
-                .apiInfo(apiInfo());
+    public OpenAPI openAPI() {
+        final String securitySchemeName = "Authorization";
+
+        return new OpenAPI()
+                .info(new Info()
+                        .title(API_NAME)
+                        .version(API_VERSION)
+                        .description(API_DESCRIPTION)
+                )
+                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
+                .components(new Components()
+                        .addSecuritySchemes(securitySchemeName,
+                                new SecurityScheme()
+                                        .name(securitySchemeName)
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                        )
+                );
     }
-
-    private ApiKey apiKey() {
-        return new ApiKey("Authorization", "Authorization", "header");
-    }
-
-    private SecurityContext securityContext() {
-        return SecurityContext.builder()
-                .securityReferences(defaultAuth())
-                .build();
-    }
-
-    private List<SecurityReference> defaultAuth() {
-        AuthorizationScope authorizationScope = new AuthorizationScope("global", "accessEverything");
-        AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
-        authorizationScopes[0] = authorizationScope;
-        return List.of(new SecurityReference("Authorization", authorizationScopes));
-    }
-
-
 }
