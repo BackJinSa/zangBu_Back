@@ -1,6 +1,7 @@
 package bjs.zangbu.codef.service;
 import bjs.zangbu.building.dto.request.BuildingRequest;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
+import bjs.zangbu.deal.dto.request.EstateRegistrationRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.UnsupportedEncodingException;
 
@@ -29,7 +30,7 @@ public interface CodefService {
      * @throws JsonProcessingException
      * @throws InterruptedException
      */
-    String realEstateRegistrationIssuance(Object request)
+    String realEstateRegistrationLeader(EstateRegistrationRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 
     // 건축물 대장 열람 및 발급
