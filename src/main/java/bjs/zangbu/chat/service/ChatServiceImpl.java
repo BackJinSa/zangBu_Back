@@ -54,8 +54,8 @@ public class ChatServiceImpl implements ChatService{
 
     //chatRoomId 기준으로 해당 채팅방의 메시지들 가져오기
     @Override
-    public List<ChatMessage> getMessages(String chatRoomId, int limit) {
-        return chatMapper.selectMessagesByRoomId(chatRoomId, limit);
+    public List<ChatMessage> getMessages(String chatRoomId, long lastMessageId, int limit) {
+        return chatMapper.selectMessagesByRoomId(chatRoomId, lastMessageId, limit);
     }
 
     //chatRoomId 기준으로 채팅방 상세정보 가져오기
@@ -175,5 +175,13 @@ public class ChatServiceImpl implements ChatService{
         }
     }
 
+    @Override
+    public String getUserIdByNickname(String userId) {
+        String nickname = chatMapper.selectMemberIdByNickname(userId);
+        if (nickname == null) {
+            throw new IllegalArgumentException(nickname+ "을 닉네임으로 하는 userId를 찾지 못했습니다.");
+        }
 
+        return nickname;
+    }
 }

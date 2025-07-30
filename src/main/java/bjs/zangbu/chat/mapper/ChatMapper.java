@@ -13,7 +13,7 @@ public interface ChatMapper {
     int insertMessage(ChatMessage chatMessage);
 
     //chatRoomId에 해당하는 메시지들 조회(제일 마지막 메시지부터 limit개 -> 더보기 클릭 시 limit개씩 추가 조회)
-    List<ChatMessage> selectMessagesByRoomId(String chatRoomId, int limit);
+    List<ChatMessage> selectMessagesByRoomId(String chatRoomId, long lastMessageId, int limit);
 
     //chatRoomId에 해당하는 채팅방 상세 조회
     ChatRoom selectChatRoomById(String chatRoomId);
