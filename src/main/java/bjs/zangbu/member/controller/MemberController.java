@@ -6,18 +6,16 @@ import bjs.zangbu.member.dto.request.MemberRequest.EditNicknameRequest;
 import bjs.zangbu.member.dto.request.MemberRequest.EditPassword;
 import bjs.zangbu.member.dto.response.MemberResponse.EditMyPage;
 import bjs.zangbu.member.dto.response.MemberResponse.BookmarkList;
-import bjs.zangbu.member.mapper.MemberMapper;
 import bjs.zangbu.member.service.MemberService;
+import bjs.zangbu.security.account.vo.CustomUser;
 import bjs.zangbu.security.account.vo.Member;
-import bjs.zangbu.security.util.JwtProcessor;
 import com.github.pagehelper.PageHelper;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
 
 @RestController
 @RequiredArgsConstructor
@@ -25,47 +23,18 @@ import org.springframework.web.server.ResponseStatusException;
 public class MemberController {
 
     private final MemberService memberService;
-    private final MemberMapper memberMapper;
-    private final JwtProcessor jwtProcessor;
-
-    //공통 부분 메서드
-    //jwt 이용해서 인증된 사용자의 member 반환
-    private Member getAuthenticatedMember(String accessTokenHeader) {
-        //헤더 존재와 시작부 확인
-        if (accessTokenHeader == null || !accessTokenHeader.startsWith("Bearer ")) {
-            throw new JwtException("유효하지 않은 토큰입니다.");
-        }
-
-        //Bearer {token}에서 access token 부분만 추출
-        String accessToken = accessTokenHeader.replace("Bearer ", "").trim();
-
-        //jwt 유효성 판단
-        if (!jwtProcessor.validateToken(accessToken)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.");
-        }
-
-        //jwt에서 이메일만 추출
-        String email = jwtProcessor.getEmail(accessToken);
-        //이메일로 db에서 해당 멤버 가져오기
-        Member member = memberMapper.findByEmail(email);
-
-        //db에 멤버 없을 때 에러 처리
-        if (member == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "회원 정보를 찾을 수 없습니다.");
-        }
-        return member;
-    }
 
     //1. 찜한 매물 리스트 조회
     @GetMapping("/favorites")
     public ResponseEntity<?> getFavorites(
-            @RequestHeader("Authorization") String accessTokenHeader,
+            @AuthenticationPrincipal CustomUser customUser,
+            //이렇게 써주면 spring security 필터가 인증 수행한 결과를 자동으로 주입
             @RequestParam(defaultValue = "1") int page,         // 요청 페이지 (1부터 시작)
             @RequestParam(defaultValue = "10") int size         // 페이지당 항목 수)
     ){
         try {
             //인증된 사용자 정보
-            Member member = getAuthenticatedMember(accessTokenHeader);
+            Member member = customUser.getMember();
 
             // PageHelper 페이지네이션 시작
             PageHelper.startPage(page, size);
@@ -84,7 +53,9 @@ public class MemberController {
 
     //2. 찜한 매물 삭제
     @PostMapping("/favorite/delete")
-    public ResponseEntity<?> deleteFavorite(@RequestParam String memberId, @RequestParam Long buildingId) {
+    public ResponseEntity<?> deleteFavorite(
+            @RequestParam String memberId,
+            @RequestParam Long buildingId) {
         try {
             memberService.deleteBookmark(memberId, buildingId);
             return ResponseEntity.ok().build(); //200
@@ -99,10 +70,10 @@ public class MemberController {
     //3. 회원정보 수정 페이지로 이동
     @GetMapping("/edit")
     public ResponseEntity<?> getEditPage(
-            @RequestHeader("Authorization") String accessTokenHeader
+            @AuthenticationPrincipal CustomUser customUser
     ) {
         try {
-            Member member = getAuthenticatedMember(accessTokenHeader);
+            Member member = customUser.getMember();
 
             EditMyPage response = memberService.getMyPageInfo(member.getEmail());
 
@@ -119,11 +90,11 @@ public class MemberController {
     //4. 비밀번호 변경
     @PostMapping("/edit/password")
     public ResponseEntity<?> changePassword(
-            @RequestHeader("Authorization") String accessTokenHeader,
+            @AuthenticationPrincipal CustomUser customUser,
             @RequestBody EditPassword request
     ) {
         try {
-            Member member = getAuthenticatedMember(accessTokenHeader);
+            Member member = customUser.getMember();
 
             memberService.editPassword(member.getMemberId(), request);
             return ResponseEntity.ok().build(); //200
@@ -143,11 +114,11 @@ public class MemberController {
     //5. 닉네임 중복 확인
     @PostMapping("/edit/nickname/check")
     public ResponseEntity<?> checkNickname(
-            @RequestHeader("Authorization") String accessTokenHeader,
+            @AuthenticationPrincipal CustomUser customUser,
             @RequestBody EditNicknameCheck request
     ) {
         try {
-            Member member = getAuthenticatedMember(accessTokenHeader);
+            Member member = customUser.getMember();
 
             String newNickname = request.getNickname();
             String currentNickname = member.getNickname();
@@ -173,11 +144,11 @@ public class MemberController {
     //6. 닉네임 변경
     @PostMapping("/edit/nickname")
     public ResponseEntity<?> changeNickname(
-            @RequestHeader("Authorization") String accessTokenHeader,
+            @AuthenticationPrincipal CustomUser customUser,
             @RequestBody EditNicknameRequest request) {
 
         try {
-            Member member = getAuthenticatedMember(accessTokenHeader);;
+            Member member = customUser.getMember();
 
             memberService.editNickname(member.getMemberId(), request);
 
@@ -193,10 +164,10 @@ public class MemberController {
     //7. 탈퇴 페이지
     @DeleteMapping("/remove")
     public ResponseEntity<?> deleteMember(
-            @RequestHeader("Authorization") String accessTokenHeader
+            @AuthenticationPrincipal CustomUser customUser
     ) {
         try {
-            Member member = getAuthenticatedMember(accessTokenHeader);
+            Member member = customUser.getMember();
 
             memberService.removeMember(member.getMemberId());
             return ResponseEntity.ok().build(); //200
@@ -211,11 +182,11 @@ public class MemberController {
     //8. 알림 수신 여부 변경
     @PostMapping("/edit/notification/consent")
     public ResponseEntity<?> updateNotificationConsent(
-            @RequestHeader("Authorization") String accessTokenHeader,
+            @AuthenticationPrincipal CustomUser customUser,
             @RequestBody EditNotificationConsentRequest request
     ){
         try {
-            Member member = getAuthenticatedMember(accessTokenHeader);
+            Member member = customUser.getMember();
 
             memberService.updateFcmConsent(member.getMemberId(), request.getConsent());
             return ResponseEntity.ok().build(); //200
@@ -231,10 +202,10 @@ public class MemberController {
     //9. 알림 수신 여부 조회
     @GetMapping("/notification/consent")
     public ResponseEntity<?> getNotificationConsent(
-            @RequestHeader("Authorization") String accessTokenHeader
+            @AuthenticationPrincipal CustomUser customUser
     ){
         try {
-            Member member = getAuthenticatedMember(accessTokenHeader);
+            Member member = customUser.getMember();
 
             boolean consent = memberService.getFcmConsent(member.getMemberId());
             //수신 여부 리턴

@@ -5,6 +5,8 @@ import bjs.zangbu.building.dto.request.BuildingRequest.*;
 import bjs.zangbu.building.service.BuildingService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,6 +44,11 @@ public class BuildingController {
      */
     @PostMapping("")
     @Operation(summary = "매물 상세보기", description = "매물에 대한 상세정보를 보는 API")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "매물 상세 조회 요청 DTO",
+            required = true,
+            content = @Content(schema = @Schema(implementation = ViewDetailRequest.class))
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "특정 매물에 대한 상세정보를 조회하는데 성공했습니다."),
             @ApiResponse(responseCode = "400", description = "특정 매물에 대한 상세정보를 조회하는데 실패했습니다."),
@@ -63,6 +70,11 @@ public class BuildingController {
      */
     @PostMapping("/bookmark")
     @Operation(summary = "매물 찜하기", description = "특정 유저가 특정 매물을 찜하는 API")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "찜하기 요청 DTO",
+            required = true,
+            content = @Content(schema = @Schema(implementation = BookmarkRequest.class))
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "매물 찜하기에 성공했습니다."),
             @ApiResponse(responseCode = "400", description = "매물 찜하기에 실패했습니다."),
@@ -107,6 +119,11 @@ public class BuildingController {
      */
     @PostMapping("/upload")
     @Operation(summary = "매물 등록", description = "특정 유저가 매물을 등록하는 API")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "매물 등록 요청 DTO",
+            required = true,
+            content = @Content(schema = @Schema(implementation = SaleRegistrationRequest.class))
+    )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "매물 등록에 성공했습니다."),
             @ApiResponse(responseCode = "400", description = "매물 등록에 실패했습니다."),

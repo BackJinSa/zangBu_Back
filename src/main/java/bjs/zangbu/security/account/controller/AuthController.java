@@ -7,17 +7,17 @@ import bjs.zangbu.security.account.dto.response.AuthResponse.AuthVerify;
 import bjs.zangbu.security.account.dto.response.AuthResponse.LoginResponse;
 
 import bjs.zangbu.security.account.service.AuthService;
-import bjs.zangbu.security.util.JwtProcessor;
+import bjs.zangbu.security.account.vo.CustomUser;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.json.HTTP;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -27,28 +27,8 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthController {
 
     private final AuthService authService;
-    private final JwtProcessor jwtProcessor;
     private final RedisTemplate<String, String> redisTemplate;
     private static final String REFRESH_TOKEN_PREFIX = "refresh:";
-
-    //공통 부분 메서드
-    //토큰 유효성 검사
-    private String validateAccessToken(String accessTokenHeader) {
-        //헤더 존재와 시작부 확인
-        if (accessTokenHeader == null || !accessTokenHeader.startsWith("Bearer ")) {
-            throw new JwtException("유효하지 않은 토큰입니다.");
-        }
-
-        //Bearer {token}에서 access token 부분만 추출
-        String accessToken = accessTokenHeader.replace("Bearer ", "").trim();
-
-        //jwt 유효성 판단
-        if (!jwtProcessor.validateToken(accessToken)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다.");
-        }
-
-        return accessToken;
-    }
 
     // 1. 로그인
     @PostMapping("/login")
@@ -81,18 +61,14 @@ public class AuthController {
         }
     }
 
-    // 2. 로그아웃
+    // 2. 로그아웃--
     @PostMapping("/logout")
     public ResponseEntity<?> logout(
-            @RequestHeader("Authorization") String accessTokenHeader,
+            @AuthenticationPrincipal CustomUser customUser,
             HttpServletResponse response
     ){
         try {
-            //토큰 빼오고
-            String accessToken = accessTokenHeader.replace("Bearer ", "").trim();
-
-            //그 토큰에서 이메일만 추출(+내부적으로 유효성 검사)
-            String email = jwtProcessor.getEmail(accessToken);
+            String email = customUser.getUsername();
 
             //redis에서 refresh 토큰 제거
             redisTemplate.delete(REFRESH_TOKEN_PREFIX + email);
@@ -118,12 +94,10 @@ public class AuthController {
     // 3. 아이디(이메일) 찾기
     @PostMapping("/email")
     public ResponseEntity<?> findEmail(
-            @RequestHeader("Authorization") String accessTokenHeader,
-            @RequestBody EmailAuthRequest request) {
+            @RequestBody EmailAuthRequest request,
+            @AuthenticationPrincipal CustomUser customUser) {
 
         try{
-            //토큰 유효성 검사
-            String accessToken = validateAccessToken(accessTokenHeader);
             EmailAuthResponse response = authService.findEmail(request);
             return ResponseEntity.ok(response); //200 성공
         } catch (IllegalArgumentException e){
@@ -135,16 +109,14 @@ public class AuthController {
         }
     }
 
-    //4. 비밀번호 재설정
+    //4. 비밀번호 재설정 --로그인하지 않은 상태
     @PostMapping("/password")
     public ResponseEntity<?> resetPassword(
-            @RequestHeader("Authorization") String accessTokenHeader,
+            @AuthenticationPrincipal CustomUser customUser,
             @RequestBody ResetPassword request,
             HttpSession session) {
 
         try{
-            //토큰 유효성 검사
-            String accessToken = validateAccessToken(accessTokenHeader);
             authService.resetPassword(request, session);
             return ResponseEntity.ok().build(); //200
         } catch (IllegalStateException | IllegalArgumentException e){
@@ -159,14 +131,11 @@ public class AuthController {
     //5. 본인인증 요청
     @PostMapping("/verify")
     public ResponseEntity<?> verifyAuthenticity(
-            @RequestHeader("Authorization") String accessTokenHeader,
+            @AuthenticationPrincipal CustomUser customUser,
             @RequestBody VerifyRequest request,
             HttpSession session) {
 
         try {
-            //토큰 유효성 검사
-            String accessToken = validateAccessToken(accessTokenHeader);
-
             //본인인증 수행
             AuthVerify result = authService.verifyAuthenticity(request);
 
@@ -227,7 +196,7 @@ public class AuthController {
     @PostMapping("/reissue")
     public ResponseEntity<?> reissue(
             @CookieValue(value = "refreshToken", required = false) String refreshToken,
-            @RequestHeader(value = "Authorization", required = false) String accessTokenHeader,
+            @AuthenticationPrincipal CustomUser customUser,
             HttpServletResponse response
             ){
         if(refreshToken == null){
