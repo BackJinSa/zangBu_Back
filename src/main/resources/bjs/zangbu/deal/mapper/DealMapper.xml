@@ -196,20 +196,43 @@
     FROM deal
     WHERE deal_id = #{dealId}
   </select>
-    <select id="selectDocumentInfo"
-            resultType="bjs.zangbu.deal.dto.join.DealDocumentInfo">
-        SELECT  m.identity,
-                m.birth,
+
+
+<!--    등기부등본 조회에 필요한 정보 가져오기 -->
+    <select id="getEstateRegistrationRequest"
+            resultType="bjs.zangbu.deal.dto.request.EstateRegistrationRequest">
+        SELECT  d.dealId,
                 m.phone,
-                m.name,
+                m.birth,
+                cl.sido,
                 cl.address,
-                cl.zonecode,
---                 b.dong,
---                 b.ho
+                cl.sigungu,
+                cl.dong,
+                cl.ho
+                cl.roadName
         FROM    deal            d
                     JOIN  member          m  ON m.member_id   = d.member_id
                     JOIN  complex_list    cl ON cl.complex_id = d.complex_id
---                     JOIN building     b  ON d.building_id = b.building_id
+                    JOIN building     b  ON d.building_id = b.building_id
+        WHERE   d.deal_id = #{dealId}
+    </select>
+<!--    건축물대장 조회에 필요한 정보 가져오기 -->
+    <select id="getDocumentInfo"
+            resultType="bjs.zangbu.deal.dto.join.DealDocumentInfo">
+        SELECT  d.dealId,
+                m.identity,
+                m.birth,
+                m.phone,
+                m.name,
+                m.telecom,
+                cl.address,
+                cl.zonecode,
+                cl.dong,
+                cl.ho
+        FROM    deal            d
+                    JOIN  member          m  ON m.member_id   = d.member_id
+                    JOIN  complex_list    cl ON cl.complex_id = d.complex_id
+                     JOIN building     b  ON d.building_id = b.building_id
         WHERE   d.deal_id = #{dealId}
     </select>
 

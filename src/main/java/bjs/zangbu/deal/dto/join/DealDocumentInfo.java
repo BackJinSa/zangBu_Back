@@ -25,7 +25,8 @@ public class DealDocumentInfo {
     private String zonecode;   // 우편번호
 
     // building (or 저장된 추가 컬럼)
-//    private String dong;
-//    private String ho;
+    private String dong;
+    private String ho;
+    private String telecom; // 통신사 정보
 
 }

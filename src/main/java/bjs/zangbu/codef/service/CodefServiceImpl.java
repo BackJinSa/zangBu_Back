@@ -2,15 +2,18 @@ package bjs.zangbu.codef.service;
 
 import bjs.zangbu.building.dto.request.BuildingRequest;
 import bjs.zangbu.codef.encryption.CodefEncryption;
+import bjs.zangbu.codef.encryption.RSAEncryption;
 import bjs.zangbu.codef.exception.CodefException;
 import bjs.zangbu.codef.session.CodefAuthSession;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
+import bjs.zangbu.deal.dto.request.EstateRegistrationRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.codef.api.EasyCodef;
 import io.codef.api.EasyCodefMessageConstant;
 import io.codef.api.EasyCodefServiceType;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
@@ -41,12 +44,19 @@ public class CodefServiceImpl implements CodefService {
     // 세션/인증 데이터를 임시 저장하는 Redis 연결 객체
     private final RedisTemplate<String, Object> redisTemplate;
 
+    //RSA 암호화
+    private final RSAEncryption rsaEncryption;
+
     // 서비스가 생성될 때 CODEF 인스턴스를 초기화
     @PostConstruct
     public void init() {
         codef = codefEncryption.getCodefInstance();
     }
-
+    //codef 결제 관련
+    @Value("${ePrepayNo}")
+    private String ePrepayNo;
+    @Value("${ePrepayPass}")
+    private String ePrepayPass;
 
     /**
      * 아파트 단지(건물) 실거래 시세정보 조회
@@ -80,31 +90,60 @@ public class CodefServiceImpl implements CodefService {
      * - 등본 발급에 필요한 정보(파라미터 map) 생성 후 CODEF API 호출
      */
     @Override
-    public String realEstateRegistrationIssuance(Object request)
+    public String realEstateRegistrationLeader(EstateRegistrationRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException  {
+        String password = request.getBirth();
+        password = password.substring(2);
+        // RSA 암호화
+        String encryptedPassword;
+        try {
+            encryptedPassword = rsaEncryption.encrypt(password);
+        } catch (Exception e) {
+            throw new RuntimeException("RSA 암호화 실패", e);
+        }
+
+        // 건물번호 로직
+        String address_tmp = request.getAddress();
+        String[] parts = address_tmp.split(" ");
+        String bN = parts[parts.length - 1];
 
         // 등기부 등본 발급 파라미터 생성 (실제 값은 request에서 추출)
         HashMap<String, Object> map = new HashMap<>();
+        //기관 코드 고정
         map.put("organization", "0002");
-        map.put("phoneNo", );            // 휴대전화번호
-        map.put("password", );           // 인증서 비밀번호/등본 발급용 비밀번호 등
-        map.put("inquiryType", "3");     // 조회 구분 (상품 별 설명 참고)
+        // 휴대전화번호
+        map.put("phoneNo", request.getPhone());
+        // 인증서 비밀번호 , todo: yydd 암호화 로직
+        map.put("password", encryptedPassword);
+        // 조회 구분 (상품 별 설명 참고) -> 고정
+        map.put("inquiryType", "3");
+        // 집합건물 아마 고정
         map.put("realtyType", "1");
-        map.put("addr_sido", );
-        map.put("addr_sigungu", );
-        map.put("addr_roadName", );
-        map.put("addr_buildingNumber", );
-        map.put("dong", );
-        map.put("ho", );
-        map.put("ePrepayNo", );
-        map.put("ePrepayPass", );
-        map.put("issueType", "1");
-        map.put("registerSummaryYN", "1");
-        map.put("tradingYN", "1");
+        map.put("addr_sido", request.getSido());
+        map.put("address", request.getAddress());
+        map.put("dong", request.getDong());
+        map.put("ho", request.getHo());
+        // 주소에서 마지막 숫자부분 파싱해야함
+        map.put("addr_buildingNumber", bN);
+        // 공동담보/전세목록 포함여부, 일단 1로 고정, 0:미포함 1:포함 (default='0')
         map.put("jointMortgageJeonseYN", "1");
+        //1로 고정, 등기사항요약 출력 여부
+        map.put("registerSummaryYN", "1");
+        // 매매목록 포함 여부 일단 1로 고정, 0:미포함 1:포함 (default='0')
+        map.put("tradingYN", "1");
+        // 결제 내역, yml에 추가했음, 나중에 바꿀수 있음  todo : 확인하기
+        map.put("ePrepayNo", ePrepayNo);
+        map.put("ePrepayPass", ePrepayPass);
+        // 발행구분 '0':발급 '1':열람 '2':고유번호조회
+        //'3': 원문데이타로 결과처리, (default : '0')
+        map.put("issueType", "0");
+        //1로 고정, 등기사항요약 출력 여부
+        map.put("registerSummaryYN","1");
+        map.put("addr_sigungu", request.getSigungu());
+        map.put("addr_roadName", request.getRoadName());
 
         // (※ 실제 이 API의 URL은 상품/가이드에 맞춰 확인 필요)
-        String url = "/v1/kr/public/lt/real-estate-board/market-price-information";
+        String url = " https://development.codef.io/v1/kr/public/ck/real-estate-register/status";
 
         // CODEF API 요청
         String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
@@ -143,6 +182,7 @@ public class CodefServiceImpl implements CodefService {
     @Override
     public String callBuildingRegister(BuildingRegisterRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        //todo : 날릴 준비
         // codef api 주소
         final String url = "/v1/kr/public/mw/building-register/colligation";
         // 1차 요청 파라미터
@@ -155,11 +195,11 @@ public class CodefServiceImpl implements CodefService {
         map.put("phoneNo", request.getPhoneNo()); // 전화번호
         map.put("identity", request.getIdentity()); // 암호화된 주민 번호
         map.put("identityEncYn", "Y"); // 주민번호 암호화 여부
-        map.put("telecom","0"); // 통신사 skt : 0, kt :1 , u+:2 todo : 추가 구현해야함
+        map.put("telecom","0"); // 통신사 skt : 0, kt :1 , u+:2
         map.put("address", request.getAddress());
         map.put("zipCode", request.getZipCode());
 //      map.put("dong", req.getDong());
-//      map.put("ho", req.getHo()); Todo : 추가 구현해야함
+//      map.put("ho", req.getHo());
 
         map.put("originDataYN", "1");
         map.put("secureNoTimeout", "170");
