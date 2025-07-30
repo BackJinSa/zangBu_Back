@@ -4,6 +4,7 @@ import bjs.zangbu.deal.dto.join.DealDocumentInfo;
 import bjs.zangbu.deal.dto.join.DealWithChatRoom;
 import bjs.zangbu.deal.dto.join.DealWithSaleType;
 import bjs.zangbu.deal.dto.request.DealRequest.Status;
+import bjs.zangbu.deal.dto.request.EstateRegistrationRequest;
 import bjs.zangbu.deal.dto.response.DealResponse.CreateResult;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
@@ -41,11 +42,14 @@ public interface DealMapper {
    * 판매중인 list 모두 조회
    */
   List<DealWithChatRoom> getOnSaleWaitingList(String userId);
-
+/**
+ * 등기부등본 조회에 필요한 데이터
+ */
+  EstateRegistrationRequest getEstateRegistrationRequest(Long dealId);
 /**
  * 건축물대장 조회에 필요한 데이터
  */
-DealDocumentInfo selectDocumentInfo(@Param("dealId") Long dealId);
+DealDocumentInfo getDocumentInfo(@Param("dealId") Long dealId);
 
   /**
    * 표준계약서 xml 코드
