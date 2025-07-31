@@ -63,7 +63,6 @@ public class SecurityConfig {
                 .cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
                     config.setAllowedOrigins(List.of( //요청 허용할 출처 리스트
-                            "http://localhost:5173",       // Vue 기본 주소
                             "https://www.zangbu.site"      // 배포한 서버 주소
                     ));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));//허용할 메서드 종류
