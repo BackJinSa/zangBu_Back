@@ -47,6 +47,6 @@ public class ChatRequest {
     public class ChatRoomListRequest {
         private int page;       //페이지
         private int size;       //한 페이지에 보여줄 채팅방 개수
-        private String type; // "BUYER" or "SELLER"
+        private String type; // "전체" or "구매" or "판매"
     }
 }
