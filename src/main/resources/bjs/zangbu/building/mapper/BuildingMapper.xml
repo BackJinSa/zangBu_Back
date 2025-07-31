@@ -199,6 +199,12 @@
         ORDER BY b.created_at DESC
             LIMIT 3
     </select>
+<!--보증금 조회-->
+    <select id="getDeposit" resultType="java.lang.Integer">
+        select b.deposit
+        from building b
+        where b.building_id = #{buildingId}
+    </select>
 
 
 </mapper>
