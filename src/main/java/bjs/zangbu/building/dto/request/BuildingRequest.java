@@ -205,6 +205,8 @@ public class BuildingRequest {
             @Schema(description = "호수", example = "502호")
             private String ho;                // 호수
 
+            @Schema(description = "도로명", example = "세종대로")
+            private String roadName; // 도로명
             /**
              * DTO → VO 변환 메서드
              * @param request ComplexDetails DTO
@@ -226,7 +228,8 @@ public class BuildingRequest {
                         request.getBuildingName(),
                         request.getBname(),
                         request.getDong(),
-                        request.getHo()
+                        request.getHo(),
+                        request.getRoadName()
                 );
             }
         }
