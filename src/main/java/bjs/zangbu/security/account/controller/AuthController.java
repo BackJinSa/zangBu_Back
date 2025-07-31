@@ -10,29 +10,51 @@ import bjs.zangbu.security.account.service.AuthService;
 import bjs.zangbu.security.account.vo.CustomUser;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+@Log4j2
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
+@Tag(name = "Auth API", description = "인증 관련 기능 API")
 public class AuthController {
 
     private final AuthService authService;
-    private final RedisTemplate<String, String> redisTemplate;
-    private static final String REFRESH_TOKEN_PREFIX = "refresh:";
 
     // 1. 로그인
+    @Operation(
+            summary = "로그인",
+            description = "로그인 성공 시 토큰을 발급하여 반환합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그인 성공했습니다." ),
+            @ApiResponse(responseCode = "400", description = "아이디 또는 비밀번호가 일치하지 않습니다"),
+            @ApiResponse(responseCode = "500", description = "서버에서 로그인을 처리하는데 오류가 발생했습니다.")
+    })
     @PostMapping("/login")
     public ResponseEntity<?> login(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "로그인 요청 DTO (이메일, 비밀번호 입력)",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = LoginRequest.class))
+            )
             @RequestBody LoginRequest request,
             HttpServletResponse response) {
         try {
@@ -61,7 +83,16 @@ public class AuthController {
         }
     }
 
-    // 2. 로그아웃--
+    // 2. 로그아웃
+    @Operation(
+            summary = "로그아웃",
+            description = "로그아웃 성공 시 토큰을 삭제합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "로그아웃에 성공했습니다."),
+            @ApiResponse(responseCode = "400", description = "로그아웃에 실패했습니다."),
+            @ApiResponse(responseCode = "500", description = "서버에서 로그아웃을 처리하는데 오류가 발생했습니다.")
+    })
     @PostMapping("/logout")
     public ResponseEntity<?> logout(
             @AuthenticationPrincipal CustomUser customUser,
@@ -70,8 +101,7 @@ public class AuthController {
         try {
             String email = customUser.getUsername();
 
-            //redis에서 refresh 토큰 제거
-            redisTemplate.delete(REFRESH_TOKEN_PREFIX + email);
+            authService.logout(email);
 
             //refresh 토큰 쿠키 삭제 - js에서 접근 못하므로, 서버에서 삭제 응답 필요
             Cookie deleteCookie = new Cookie("refreshToken", null); // null로 설정
@@ -92,8 +122,24 @@ public class AuthController {
     }
 
     // 3. 아이디(이메일) 찾기
+    @Operation(
+            summary = "이메일 찾기",
+            description = "이름과 휴대폰 번호 기반으로 이메일을 찾습니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "이메일을 찾는데 성공했습니다."),
+            @ApiResponse(responseCode = "400", description = "이메일을 찾는데 실패했습니다."),
+            @ApiResponse(responseCode = "500", description = "서버에서 이메일을 찾는데 오류가 발생했습니다.")
+    })
     @PostMapping("/email")
     public ResponseEntity<?> findEmail(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "이메일 찾기 요청 DTO (이메일, 전화번호 입력)",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = EmailAuthRequest.class)
+                    )
+            )
             @RequestBody EmailAuthRequest request,
             @AuthenticationPrincipal CustomUser customUser) {
 
@@ -110,9 +156,25 @@ public class AuthController {
     }
 
     //4. 비밀번호 재설정 --로그인하지 않은 상태
+    @Operation(
+            summary = "비밀번호 재설정",
+            description = "본인인증을 마친 후 비밀번호를 재설정할 수 있게 합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "비밀번호를 변경하는데 성공했습니다."),
+            @ApiResponse(responseCode = "400", description = "비밀번호를 변경하는데 실패했습니다."),
+            @ApiResponse(responseCode = "500", description = "서버에서 비밀번호 변경을 처리하는데 오류가 발생했습니다.")
+    })
     @PostMapping("/password")
     public ResponseEntity<?> resetPassword(
             @AuthenticationPrincipal CustomUser customUser,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "비밀번호 재설정 요청 DTO (새 비밀번호 입력)",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = ResetPassword.class)
+                    )
+            )
             @RequestBody ResetPassword request,
             HttpSession session) {
 
@@ -129,9 +191,25 @@ public class AuthController {
     }
 
     //5. 본인인증 요청
+    @Operation(
+            summary = "본인인증 요청",
+            description = "본인인증 수행 후 성공 시 세션에 인증 상태를 저장합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "본인인증에 성공하였습니다."),
+            @ApiResponse(responseCode = "400", description = "본인인증에 실패하였습니다."),
+            @ApiResponse(responseCode = "500", description = "서버에서 본인인증을 처리하는데 오류가 발생했습니다.")
+    })
     @PostMapping("/verify")
     public ResponseEntity<?> verifyAuthenticity(
             @AuthenticationPrincipal CustomUser customUser,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "본인인증 요청 DTO",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = VerifyRequest.class)
+                    )
+            )
             @RequestBody VerifyRequest request,
             HttpSession session) {
 
@@ -154,8 +232,26 @@ public class AuthController {
     }
 
     // 6. 회원가입
+    @Operation(
+            summary = "회원가입",
+            description = "이메일과 닉네임 중복 확인 후 회원가입할 수 있게 합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "회원가입에 성공하였습니다."),
+            @ApiResponse(responseCode = "400", description = "회원가입에 실패하였습니다."),
+            @ApiResponse(responseCode = "500", description = "서버에서 회원가입을 처리하는데 오류가 발생했습니다.")
+    })
     @PostMapping("/signup")
-    public ResponseEntity<?> signUp(@RequestBody SignUp request) {
+    public ResponseEntity<?> signUp(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "회원가입 요청 DTO",
+                    required = true,
+                    content = @Content(
+                            schema = @Schema(implementation = SignUp.class)
+                    )
+            )
+            @RequestBody SignUp request
+    ) {
         try {
             authService.signUp(request);
             return ResponseEntity.ok().build();
@@ -169,8 +265,20 @@ public class AuthController {
     }
 
     // 7. 이메일 중복 확인
+    @Operation(
+            summary = "이메일 중복 확인",
+            description = "입력한 이메일이 사용 중인지 여부를 확인합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "사용 가능한 이메일입니다."),
+            @ApiResponse(responseCode = "409", description = "이미 사용 중인 이메일입니다."),
+            @ApiResponse(responseCode = "500", description = "서버에서 이메일 인증을 처리하는데 오류가 발생했습니다.")
+    })
     @GetMapping("/check/email")
-    public ResponseEntity<?> checkEmail(@RequestParam String email) {
+    public ResponseEntity<?> checkEmail(
+            @Parameter(description = "이메일", example = "example@zangbu.com")
+            @RequestParam String email
+    ) {
         boolean isDuplicated = authService.isEmailDuplicated(email);
         if(isDuplicated){ //409
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -180,8 +288,20 @@ public class AuthController {
     }
 
     // 8. 닉네임 중복 확인
+    @Operation(
+            summary = "닉네임 중복 확인",
+            description = "입력한 닉네임이 사용 중인지 여부를 확인합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "사용 가능한 닉네임입니다."),
+            @ApiResponse(responseCode = "409", description = "이미 사용 중인 닉네임입니다."),
+            @ApiResponse(responseCode = "500", description = "서버에서 닉네임 인증을 처리하는데 오류가 발생했습니다.")
+    })
     @GetMapping("/check/nickname")
-    public ResponseEntity<?> checkNickname(@RequestParam String nickname) {
+    public ResponseEntity<?> checkNickname(
+            @Parameter(description = "닉네임", example = "김철수123")
+            @RequestParam String nickname
+    ) {
         boolean isDuplicated = authService.isNicknameDuplicated(nickname);
         if(isDuplicated){
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -193,6 +313,15 @@ public class AuthController {
     // 9. 토큰 재발급 요청 --access 토큰 만료 시 클라이언트가 refresh 토큰 전송
     // -> redis에 저장된 refresh 토큰과 비교해서 유효 시 새로운 access 토큰 발급
     // + refresh 토큰도 함께 재발급해서 갱신
+    @Operation(
+            summary = "토큰 재발급",
+            description = "refresh 토큰이 유효한 경우, 새로운 access 토큰을 발급합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "토큰이 재발급되었습니다"),
+            @ApiResponse(responseCode = "400", description = "refresh 토큰이 만료되었습니다"),
+            @ApiResponse(responseCode = "409", description = "토큰이 존재하지 않습니다")
+    })
     @PostMapping("/reissue")
     public ResponseEntity<?> reissue(
             @CookieValue(value = "refreshToken", required = false) String refreshToken,
