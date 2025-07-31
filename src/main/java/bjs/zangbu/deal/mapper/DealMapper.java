@@ -71,4 +71,9 @@ DealDocumentInfo getDocumentInfo(@Param("dealId") Long dealId);
    * dealId로 buildingId 조회
    */
   Long getBuildingIdByDealId(Long dealId);
-}
+  /**
+   * dealId로 complexId 조회
+   */
+  Long getComplexIdByDealId(Long dealId);
+
+  }
