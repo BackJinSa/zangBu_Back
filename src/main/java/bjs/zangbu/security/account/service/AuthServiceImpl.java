@@ -23,6 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -59,17 +60,25 @@ public class AuthServiceImpl implements AuthService {
                 TimeUnit.MILLISECONDS
         );
 
+        // Redis에 로그인 상태 저장 (만료시간 2시간)
+        redisTemplate.opsForValue().set(
+                "login:" + member.getEmail(), // key
+                "true",                       // value
+                Duration.ofHours(2)           // TTL: 2시간
+        );
+
         return new LoginResponse(accessToken, refreshToken, member.getRole());
     }
 
     //로그아웃
     @Override
-    public void logout(String accessToken) {
+    public void logout(String email) {
         try{
-            //accesstoken으로 사용자 증명
-            String email = jwtProcessor.getEmail(accessToken);
             //redis에 저장된 리프레시 토큰 삭제
             redisTemplate.delete(REFRESH_TOKEN_PREFIX + email);
+
+            //  Redis에서 로그인 상태 삭제
+            redisTemplate.delete("login:" + email);
         } catch (JwtException | IllegalArgumentException e){
             throw new JwtException("유효하지 않은 토큰입니다.");
         }
