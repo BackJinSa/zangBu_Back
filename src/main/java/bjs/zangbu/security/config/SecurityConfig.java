@@ -18,6 +18,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -55,6 +58,20 @@ public class SecurityConfig {
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, JwtUsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(authenticationErrorFilter, JwtAuthenticationFilter.class)
+
+                //cors 설정 추가
+                .cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of( //요청 허용할 출처 리스트
+                            "http://localhost:5173",       // Vue 기본 주소
+                            "https://www.zangbu.site"      // 배포한 서버 주소
+                    ));
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));//허용할 메서드 종류
+                    config.setAllowedHeaders(List.of("*")); //요청에 사용할 수 있는 헤더
+                    config.setAllowCredentials(true);  // 쿠키 포함 허용
+                    config.setMaxAge(3600L); // preflight 결과 캐싱 시간 1시간
+                    return config;
+                }))
 
                 // 보안 설정
                 .csrf(csrf -> csrf.disable())
