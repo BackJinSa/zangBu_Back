@@ -196,7 +196,12 @@
     FROM deal
     WHERE deal_id = #{dealId}
   </select>
-
+    <!-- dealId로 complexId 조회 -->
+    <select id="getComplexIdByDealId" resultType="java.lang.Long">
+        SELECT complex_id
+        FROM deal
+        WHERE deal_id = #{dealId}
+    </select>
 
 <!--    등기부등본 조회에 필요한 정보 가져오기 -->
     <select id="getEstateRegistrationRequest"
@@ -235,6 +240,7 @@
                      JOIN building     b  ON d.building_id = b.building_id
         WHERE   d.deal_id = #{dealId}
     </select>
+
 
 
 </mapper>
