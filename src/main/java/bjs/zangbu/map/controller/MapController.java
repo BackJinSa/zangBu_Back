@@ -1,6 +1,7 @@
 package bjs.zangbu.map.controller;
 
 import bjs.zangbu.map.dto.request.MapCategoryRequest;
+import bjs.zangbu.map.dto.request.MapFilterRequest;
 import bjs.zangbu.map.dto.request.MapListRequest;
 import bjs.zangbu.map.dto.request.MapSearchRequest;
 import bjs.zangbu.map.dto.response.MapCategoryResponse;
@@ -17,6 +18,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MapController {
     private final MapService mapService;
+
+    @PostMapping("")
+    public List<MapListResponse> getFilteredMapList(
+            @RequestBody MapFilterRequest req) {
+        return mapService.locateWithFilter(req);
+    }
 
     @PostMapping("/list")
     public ResponseEntity<?> list(@RequestBody List<MapListRequest> body) {
