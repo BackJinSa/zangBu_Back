@@ -13,14 +13,18 @@ import bjs.zangbu.complexList.service.ComplexListService;
 import bjs.zangbu.complexList.vo.ComplexList;
 import bjs.zangbu.imageList.service.ImageListService;
 import bjs.zangbu.imageList.vo.ImageList;
+import bjs.zangbu.ncp.service.MultipartUploaderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import static bjs.zangbu.ncp.auth.Holder.HeaderCreationHolder.BUCKET_NAME;
+
 
 /**
  * BuildingService 구현체
@@ -36,7 +40,7 @@ public class BuildingServiceImpl implements BuildingService {
     private final ComplexListService complexListService;
     private final ImageListService imageListService;
     private final BookMarkService bookMarkService;
-
+    private final MultipartUploaderService multiPartUploaderService;
     /**
      * 특정 매물 상세 정보를 조회한다.
      * - DB 존재 여부 확인
@@ -106,9 +110,26 @@ public class BuildingServiceImpl implements BuildingService {
         Building building = SaleRegistrationRequest.BuildingDetails.toVo(request.getBuilding(), complexId, memberId);
         Long buildingId = buildingMapper.createBuilding(building);
 
-        ImageList imageList = ImageDetails.toVo(request.getImage(), complexId, memberId, buildingId);
+        String fileExtension = "";
+        String imageUrl = null;
+
+        MultipartFile multipartFile = request.getImage().getImageFile();
+        fileExtension = multipartFile.getOriginalFilename().substring(multipartFile.getOriginalFilename().lastIndexOf(".") + 1);
+        try {
+            if (fileExtension.equals("jpeg")) {
+                imageUrl = multiPartUploaderService.multipartUpload(
+                        BUCKET_NAME,
+                        "/image/" + multipartFile.getOriginalFilename(),
+                        multipartFile
+                );
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("이미지 업로드에 실패했습니다.");
+        }
+        ImageList imageList = ImageDetails.toVo(imageUrl, complexId, memberId, buildingId);
         imageListService.createImageList(imageList);
     }
+
 
     /**
      * 필터 조건과 페이징 정보를 기반으로 매물 목록을 조회한다.
