@@ -1,8 +1,10 @@
 package bjs.zangbu.codef.service;
 import bjs.zangbu.addressChange.dto.request.ResRegisterCertRequest;
 import bjs.zangbu.codef.encryption.CodefEncryption;
+import bjs.zangbu.codef.encryption.RSAEncryption;
 import bjs.zangbu.codef.thread.CodefThread;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
+import bjs.zangbu.security.account.dto.request.AuthRequest;
 import io.codef.api.EasyCodef;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.annotation.PostConstruct;
@@ -36,6 +38,8 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
 
     // CODEF SDK 객체 (실제 API 연동 용)
     private EasyCodef codef;
+    //rsa암호화
+    private final RSAEncryption rsaEncryption;
 
     // 서비스 인스턴스화 시 CODEF 객체 한 번만 초기화
     @PostConstruct
@@ -161,24 +165,29 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
      * - 각종 파라미터(주소, 발급일 등) 포함해야 인증 정상 동작
      */
     @Override
-    public String residentRegistrationAuthenticityConfirmation(Object request)
-            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+    public String residentRegistrationAuthenticityConfirmation(AuthRequest.VerifyCodefRequest request)
+            throws Exception {
         String productUrl = "/v1/kr/public/mw/identity-card/check-status";
+
+        String identity = request.getIdentity();
+        String RSAEncoded = rsaEncryption.encrypt(identity);
+        String urlEncoded = URLEncoder.encode(RSAEncoded, StandardCharsets.UTF_8);
+
         List<CodefThread> threadList = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             // 주민등록증 진위확인용 파라미터
             HashMap<String, Object> parameterMap = new HashMap<>();
-            parameterMap.put("organization", "0002");
-            parameterMap.put("loginType", "6");         // 인증유형
-            parameterMap.put("loginTypeLevel", );       // 인증레벨
-            parameterMap.put("phoneNo", );              // 휴대폰번호
-            parameterMap.put("loginUserName", );        // 로그인 사용자명
-            parameterMap.put("loginBirthDate", );       // 로그인 생년월일
-            parameterMap.put("birthDate", );            // 실제 생년월일
-            parameterMap.put("loginIdentity", );        // 로그인 아이디(주민번호)
-            parameterMap.put("identity", );             // 주민등록번호
-            parameterMap.put("userName", );             // 사용자명
-            parameterMap.put("issueDate", );            // 주민등록증 발급일자
+            parameterMap.put("organization", "0002");   // 기관코드 : 고정
+            parameterMap.put("loginType", "6");         // 간편인증 : 고정
+            parameterMap.put("loginTypeLevel","1");     // 인증레벨 : 고정
+            parameterMap.put("phoneNo", request.getPhone());              // 휴대폰번호 member.phone
+            parameterMap.put("loginUserName", request.getName());        // 로그인 사용자명 member.name
+            parameterMap.put("loginBirthDate", request.getBirth());       // 로그인 생년월일 member.birth
+            parameterMap.put("birthDate", request.getBirth());            // 실제 생년월일 , member.birth
+            parameterMap.put("loginIdentity", urlEncoded);        // 로그인 아이디(주민번호) member.identity
+            parameterMap.put("identity", urlEncoded);             // 주민등록번호 member.identity url 인코딩해야함
+            parameterMap.put("userName", request.getName());             // 사용자명 member.name
+            parameterMap.put("issueDate", request.getIssueDate());            // 주민등록증 발급일자
             parameterMap.put("identityEncYn", "Y");     // 암호화 여부
 
             CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
