@@ -162,9 +162,10 @@
             b.price AS price,
             b.building_name AS buildingName,
             b.image_url AS imageUrl,
+            IFNULL(AVG(r.rank), 0) AS rank,
             CASE WHEN bm.member_id IS NOT NULL THEN TRUE ELSE FALSE END AS isBookmarked
         FROM building b
-                 LEFT JOIN building_review r ON b.building_id = r.building_id
+                 LEFT JOIN review r ON b.building_id = r.building_id
                  LEFT JOIN bookmark bm ON b.building_id = bm.building_id AND bm.member_id = #{memberId}
         GROUP BY b.building_id
         ORDER BY COUNT(r.review_id) DESC
@@ -178,10 +179,11 @@
             b.price AS price,
             b.building_name AS buildingName,
             b.image_url AS imageUrl,
+            IFNULL(AVG(r.rank), 0) AS rank,
             CASE WHEN bm.member_id IS NOT NULL THEN TRUE ELSE FALSE END AS isBookmarked
         FROM building b
-                 LEFT JOIN bookmark_count bc ON b.building_id = bc.building_id
                  LEFT JOIN bookmark bm ON b.building_id = bm.building_id AND bm.member_id = #{memberId}
+                 LEFT JOIN review r ON b.building_id = r.building_id
         ORDER BY bc.count DESC
             LIMIT 3
     </select>
@@ -193,9 +195,11 @@
             b.price AS price,
             b.building_name AS buildingName,
             b.image_url AS imageUrl,
+            IFNULL(AVG(r.rank), 0) AS rank,
             CASE WHEN bm.member_id IS NOT NULL THEN TRUE ELSE FALSE END AS isBookmarked
         FROM building b
                  LEFT JOIN bookmark bm ON b.building_id = bm.building_id AND bm.member_id = #{memberId}
+                 LEFT JOIN review r ON b.building_id = r.building_id
         ORDER BY b.created_at DESC
             LIMIT 3
     </select>
