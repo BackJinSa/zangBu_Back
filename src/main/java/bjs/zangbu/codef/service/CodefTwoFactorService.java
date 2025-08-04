@@ -1,5 +1,6 @@
 package bjs.zangbu.codef.service;
 
+import bjs.zangbu.addressChange.dto.request.ResRegisterCertRequest;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.UnsupportedEncodingException;
@@ -19,7 +20,7 @@ public interface CodefTwoFactorService {
      * @throws JsonProcessingException      JSON 파싱 오류
      * @throws InterruptedException         내부 스레드 작업 중단 오류
      */
-    String residentRegistrationCertificate(Object request)
+    String residentRegistrationCertificate(ResRegisterCertRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 
     /**
@@ -52,6 +53,7 @@ public interface CodefTwoFactorService {
      * @throws JsonProcessingException
      * @throws InterruptedException
      */
-    String localTaxProof(Object request)
-            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
+    /*임시 비활성화*/
+//    String localTaxProof(Object request)
+//            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 }
