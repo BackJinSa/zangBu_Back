@@ -1,11 +1,13 @@
 package bjs.zangbu.map.service;
 
 import bjs.zangbu.map.dto.request.MapCategoryRequest;
+import bjs.zangbu.map.dto.request.MapFilterRequest;
 import bjs.zangbu.map.dto.request.MapListRequest;
 import bjs.zangbu.map.dto.request.MapSearchRequest;
 import bjs.zangbu.map.dto.response.MapCategoryResponse;
 import bjs.zangbu.map.dto.response.MapListResponse;
 import bjs.zangbu.map.dto.response.MapSearchResponse;
+import bjs.zangbu.map.mapper.MapLocationMapper;
 import bjs.zangbu.map.util.CodefClient;
 import bjs.zangbu.map.util.KakaoMapClient;
 import bjs.zangbu.map.vo.MapLocation;
@@ -22,7 +24,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MapServiceImpl implements MapService {
-    
+    private final MapLocationMapper locationMapper;
+
     // 외부 API 호출용 클라이언트 (RestTemplate 래핑)
     private final CodefClient codefClient;
     private final KakaoMapClient kakaoClient;
@@ -61,5 +64,19 @@ public class MapServiceImpl implements MapService {
             throw new IllegalArgumentException("파라미터가 잘못되었습니다.");
         }
         return kakaoClient.searchByCategory(req);
+    }
+
+
+    @Override
+    public List<MapListResponse> locateWithFilter(MapFilterRequest req) {
+        List<MapLocation> vos = locationMapper.findLocationsByFilters(
+                req.getSaleTypes(),
+                req.getPropertyTypes(),
+                req.getPriceMin(),
+                req.getPriceMax()
+        );
+        return vos.stream()
+                .map(MapListResponse::fromVo)
+                .toList();
     }
 }
