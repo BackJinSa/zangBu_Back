@@ -62,6 +62,7 @@ public interface CodefService {
      * @throws JsonProcessingException
      * @throws InterruptedException
      */
-    String certificateOfPayment(Object request)
-            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
+    /*임시 비활성화*/
+//    String certificateOfPayment(Object request)
+//            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 }

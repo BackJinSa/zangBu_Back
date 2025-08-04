@@ -1,4 +1,5 @@
 package bjs.zangbu.codef.service;
+import bjs.zangbu.addressChange.dto.request.ResRegisterCertRequest;
 import bjs.zangbu.codef.encryption.CodefEncryption;
 import bjs.zangbu.codef.thread.CodefThread;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
@@ -8,6 +9,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,9 +49,13 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
      * - 각 스레드별로 2차 인증(FIDO/휴대폰 등)까지의 응답값만 반환
      */
     @Override
-    public String residentRegistrationCertificate(Object request)
+    public String residentRegistrationCertificate(ResRegisterCertRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         String productUrl = "/v1/kr/public/mw/resident-registration-abstract/issuance";
+
+        String identity = request.getIdentity();
+        String urlEncoded = URLEncoder.encode(identity, StandardCharsets.UTF_8);
+
         List<CodefThread> threadList = new ArrayList<>();
         // 2번을 예시로 여러 동시 요청 처리 가능 (for문 반복수 조정 시 멀티 인증 확장 가능)
         for (int i = 0; i < 2; i++) {
@@ -56,14 +63,15 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
             HashMap<String, Object> parameterMap = new HashMap<>();
             parameterMap.put("organization", "0001");      // 기관코드
             parameterMap.put("loginType", "5");            // 로그인 유형 (통합인증/휴대폰 등)
-            parameterMap.put("userName", );                // 사용자 이름
-            parameterMap.put("identity", );                // 주민등록번호
-            parameterMap.put("birthDate", );               // 생년월일
-            parameterMap.put("identityEncYn", "Y");        // 주민번호 암호화 여부
-            parameterMap.put("loginTypeLevel", );          // 인증 레벨
-            parameterMap.put("phoneNo", );                 // 휴대폰 번호
-            parameterMap.put("addrSido", );                // 주소(시/도)
-            parameterMap.put("addrSiGunGu", );             // 주소(시군구)
+            parameterMap.put("identityEncYn","Y"); // 주민번호 암호화 여부
+            parameterMap.put("birthDate", request.getBirth());               // 생년월일
+            parameterMap.put("identity", urlEncoded);                // 주민등록번호
+            parameterMap.put("timeout", "170");
+            parameterMap.put("userName",request.getName());                // 사용자 이름
+            parameterMap.put("loginTypeLevel", "1");          // 인증 레벨
+            parameterMap.put("phoneNo", request.getPhone());                 // 휴대폰 번호
+//            parameterMap.put("addrSido", );                // 주소(시/도)
+//            parameterMap.put("addrSiGunGu", );             // 주소(시군구)
             parameterMap.put("personalInfoChangeYN", "0"); // 개인정보 변경이력 포함 여부
             parameterMap.put("pastAddrChangeYN", "1");     // 과거 주소 포함 여부
             parameterMap.put("nameRelationYN", "0");       // 친족관계 포함 여부
@@ -71,6 +79,7 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
             parameterMap.put("overseasKoreansIDYN", "0");  // 해외교포 여부
             parameterMap.put("isIdentityViewYn", "0");     // 주민등록번호 표기 여부
             parameterMap.put("originDataYN", "0");         // 원본 데이터 표기 여부
+            parameterMap.put("telecom", request.getTelecom());
 
             // 스레드별로 CODEF API 호출(병렬 실행)
             CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
@@ -101,6 +110,10 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
     public String generalBuildingLeader(BuildingRegisterRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         String productUrl = "/v1/kr/public/mw/building-register/colligation";
+
+        String orgIdentity = request.getIdentity();
+        String urlEncoded = URLEncoder.encode(orgIdentity, StandardCharsets.UTF_8);
+
         List<CodefThread> threadList = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             // 건축물대장 실명 일치 확인 파라미터
@@ -112,7 +125,7 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
             parameterMap.put("userName", request.getUserName()); // 사용자 이름
             parameterMap.put("birthDate", request.getBirthDate()); // yymmdd
             parameterMap.put("phoneNo", request.getPhoneNo()); // 전화번호
-            parameterMap.put("identity", request.getIdentity()); // 암호화된 주민 번호
+            parameterMap.put("identity", urlEncoded); // 암호화된 주민 번호
             parameterMap.put("identityEncYn", "Y"); // 주민번호 암호화 여부
             parameterMap.put("telecom",request.getTelecom()); // 통신사 skt : 0, kt :1 , u+:2
             parameterMap.put("address", request.getAddress());
@@ -191,41 +204,42 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
      * 지방세 납부증명서 발급
      * - 필수 파라미터로 CODEF 지방세 납세증명 API 호출
      */
-    @Override
-    public String localTaxProof(Object request)
-            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        String productUrl = "/v1/kr/public/mw/localtax-payment-certificate/inquiry";
-        List<CodefThread> threadList = new ArrayList<>();
-        for (int i = 0; i < 2; i++) {
-            // 지방세 납부증명서 API 파라미터
-            HashMap<String, Object> parameterMap = new HashMap<>();
-            parameterMap.put("organization", "0001");
-            parameterMap.put("loginType", "6");         // 인증유형
-            parameterMap.put("userName", );             // 사용자 성명
-            parameterMap.put("identity", );             // 주민번호 등
-            parameterMap.put("identityEncYn", "Y");     // 암호화 여부
-            parameterMap.put("birthDate", );            // 생년월일
-            parameterMap.put("loginTypeLevel", );       // 인증레벨
-            parameterMap.put("phoneNo", );              // 휴대폰번호
-            parameterMap.put("address", );              // 주소(일부 인증상품 필요)
-            parameterMap.put("phoneNo1", );             // 추가 휴대폰번호
-
-            CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
-            t.start();
-            threadList.add(t);
-            Thread.sleep(10000);
-        }
-
-        StringBuilder sb = new StringBuilder();
-        for (CodefThread t : threadList) {
-            t.join();
-            if (t.getSecondResponse() != null) {
-                sb.append(t.getSecondResponse());
-            } else if (t.getFirstResponse() != null) {
-                sb.append(t.getFirstResponse());
-            }
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
+    /*임시 비활성화*/
+//    @Override
+//    public String localTaxProof(Object request)
+//            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+//        String productUrl = "/v1/kr/public/mw/localtax-payment-certificate/inquiry";
+//        List<CodefThread> threadList = new ArrayList<>();
+//        for (int i = 0; i < 2; i++) {
+//            // 지방세 납부증명서 API 파라미터
+//            HashMap<String, Object> parameterMap = new HashMap<>();
+//            parameterMap.put("organization", "0001");
+//            parameterMap.put("loginType", "6");         // 인증유형
+//            parameterMap.put("userName", );             // 사용자 성명
+//            parameterMap.put("identity", );             // 주민번호 등
+//            parameterMap.put("identityEncYn", "Y");     // 암호화 여부
+//            parameterMap.put("birthDate", );            // 생년월일
+//            parameterMap.put("loginTypeLevel", );       // 인증레벨
+//            parameterMap.put("phoneNo", );              // 휴대폰번호
+//            parameterMap.put("address", );              // 주소(일부 인증상품 필요)
+//            parameterMap.put("phoneNo1", );             // 추가 휴대폰번호
+//
+//            CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
+//            t.start();
+//            threadList.add(t);
+//            Thread.sleep(10000);
+//        }
+//
+//        StringBuilder sb = new StringBuilder();
+//        for (CodefThread t : threadList) {
+//            t.join();
+//            if (t.getSecondResponse() != null) {
+//                sb.append(t.getSecondResponse());
+//            } else if (t.getFirstResponse() != null) {
+//                sb.append(t.getFirstResponse());
+//            }
+//            sb.append("\n");
+//        }
+//        return sb.toString();
+//    }
 }
