@@ -160,8 +160,8 @@ public class CodefServiceImpl implements CodefService {
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         HashMap<String, Object> map = new HashMap<>();
         map.put("organization", "0002");
-        map.put("uniqueNo", );  // 고유번호(부동산번호 등)
-        map.put("identity", );  // 주민번호/사업자번호 등
+        map.put("uniqueNo", "");  // 고유번호(부동산번호 등)
+        map.put("identity", "");  // 주민번호/사업자번호 등
 
         String url = "/v1/kr/public/ck/real-estate-register/identity-matching";
 
