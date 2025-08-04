@@ -235,7 +235,7 @@ public class AuthController {
     // todo : 임시로 주소명 설정 , 추후 바꾸든가 하는게 좋음
     @PostMapping("/verify/authentication")
     public String verifyAuthentication(@RequestBody AuthRequest.VerifyCodefRequest request) {
-
+        return null; //todo: 로직 설계해야함
     }
     // 6. 회원가입
     @Operation(
