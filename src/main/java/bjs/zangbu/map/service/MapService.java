@@ -1,6 +1,7 @@
 package bjs.zangbu.map.service;
 
 import bjs.zangbu.map.dto.request.MapCategoryRequest;
+import bjs.zangbu.map.dto.request.MapFilterRequest;
 import bjs.zangbu.map.dto.request.MapListRequest;
 import bjs.zangbu.map.dto.request.MapSearchRequest;
 import bjs.zangbu.map.dto.response.MapCategoryResponse;
@@ -22,8 +23,11 @@ public interface MapService {
      * @param requests 클라이언트로부터 전달된 주소·건물명 DTO 리스트
      * @return 위도·경도 정보가 포함된 MapListResponse DTO 리스트
      */
-
     List<MapListResponse> locate(List<MapListRequest> requests);
     List<MapSearchResponse> search(MapSearchRequest req);
     List<MapCategoryResponse> category(MapCategoryRequest req);
+
+
+    List<MapListResponse> locateWithFilter(MapFilterRequest req);
+
 }

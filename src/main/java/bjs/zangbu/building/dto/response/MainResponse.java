@@ -61,5 +61,7 @@ public class MainResponse {
         private String imageUrl;
         /** 사용자가 찜했는지 여부 */
         private Boolean isBookmarked;
+        /** 평균 별점 */
+        private float rank;
     }
 }
