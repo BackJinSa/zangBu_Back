@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="bjs.zangbu.addressChange.mapper.AddressChangeMapper">
+        <select id="getRegisterCertRequest" resultType="bjs.zangbu.addressChange.dto.request.ResRegisterCertRequest">
+        select m.birth,
+               m.identity,
+               m.phone,
+               m.name,
+               m.telecom
+        from member m
+        where m.id = #{memberId}
+    </select>
+    <insert id="insert"
+            parameterType="bjs.zangbu.addressChange.vo.AddressChange"
+            useGeneratedKeys="true"
+            keyProperty="addressChangeId">
+        INSERT INTO address_change
+            (member_id, res_number, res_user_addr, res_move_in_date)
+        VALUES
+            (#{memberId,jdbcType=VARCHAR},
+             #{resNumber,jdbcType=VARCHAR},
+             #{resUserAddr,jdbcType=VARCHAR},
+             #{resMoveInDate,jdbcType=TIMESTAMP})
+    </insert>
+    <select id="existsByMemberAddrDate" resultType="int">
+        SELECT COUNT(1)
+        FROM address_change
+        WHERE member_id = #{memberId,jdbcType=VARCHAR}
+          AND res_user_addr = #{resUserAddr,jdbcType=VARCHAR}
+          AND res_move_in_date = #{resMoveInDate,jdbcType=TIMESTAMP}
+    </select>
+</mapper>

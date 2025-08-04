@@ -213,29 +213,30 @@ public class CodefServiceImpl implements CodefService {
      * 납입증명서(세금납부 증명 등) 발급
      * - 파라미터맵을 구성하여 증명서 발급 CODEF API 요청 후, JSON 응답을 바로 반환
      */
-    @Override
-    public String certificateOfPayment(Object request)
-            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("organization", "0001");
-        map.put("loginType", "6");
-        map.put("userName", );           // 사용자명
-        map.put("loginIdentity", );      // 로그인용 주민등록번호 등
-        map.put("loginBirthDate", );     // 생년월일
-        map.put("identityEncYn", );      // 주민번호 암호화 여부
-        map.put("loginTypeLevel", );     // 회원구분/인증단계
-        map.put("phoneNo", );            // 휴대폰 번호
-        map.put("isIdentityViewYN", );   // 실명확인 출력여부
-        map.put("isAddrViewYn", "0");    // 주소 출력여부
-        map.put("startDate", );          // 발급 대상 시작일
-        map.put("endDate", );            // 발급 대상 종료일
-
-        String url = "/v1/kr/public/nt/proof-issue/payment-proof";
-
-        String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
-
-        return response;
-    }
+    /*임시 비활성화*/
+//    @Override
+//    public String certificateOfPayment(Object request)
+//            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+//        HashMap<String, Object> map = new HashMap<>();
+//        map.put("organization", "0001");
+//        map.put("loginType", "6");
+//        map.put("userName", );           // 사용자명
+//        map.put("loginIdentity", );      // 로그인용 주민등록번호 등
+//        map.put("loginBirthDate", );     // 생년월일
+//        map.put("identityEncYn", );      // 주민번호 암호화 여부
+//        map.put("loginTypeLevel", );     // 회원구분/인증단계
+//        map.put("phoneNo", );            // 휴대폰 번호
+//        map.put("isIdentityViewYN", );   // 실명확인 출력여부
+//        map.put("isAddrViewYn", "0");    // 주소 출력여부
+//        map.put("startDate", );          // 발급 대상 시작일
+//        map.put("endDate", );            // 발급 대상 종료일
+//
+//        String url = "/v1/kr/public/nt/proof-issue/payment-proof";
+//
+//        String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
+//
+//        return response;
+//    }
 
     /**
      * 3차 인증(보안문자 입력) 처리
