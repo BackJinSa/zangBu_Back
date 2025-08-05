@@ -19,7 +19,7 @@ public interface BuildingService {
      * @throws JsonProcessingException JSON 처리 예외
      * @throws InterruptedException API 호출 지연 예외
      */
-    ViewDetailResponse viewDetailService(ViewDetailRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
+    ViewDetailResponse viewDetailFilterService(ViewDetailRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 
     /**
      * 매물 찜하기 서비스 (찜 추가)
@@ -66,4 +66,6 @@ public interface BuildingService {
      * @param buildingId 삭제할 매물 ID
      */
     void removeBuilding(Long buildingId);
+
+    ViewDetailResponse viewDetailService(Long buildingId) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 }

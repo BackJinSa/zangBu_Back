@@ -130,4 +130,5 @@ public interface BuildingMapper {
 
 
     Integer getDeposit(Long buildingId);
+
 }

@@ -32,9 +32,6 @@ public class BuildingRequest {
         /** 조회할 건물 ID (필수) */
         @Schema(description = "조회할 건물 ID", example = "10001", required = true)
         private Long buildingId;
-        /** 단지 번호 (옵션) */
-        @Schema(description = "단지 번호 (옵션)", example = "A-1188")
-        private String complexNo;
         /** 동 정보 (옵션) */
         @Schema(description = "동 정보 (옵션)", example = "102동")
         private String dong;
