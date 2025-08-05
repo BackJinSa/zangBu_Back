@@ -67,6 +67,7 @@ public class MapServiceImpl implements MapService {
     }
 
 
+    // /map 필터 기능
     @Override
     public List<MapListResponse> locateWithFilter(MapFilterRequest req) {
         List<MapLocation> vos = locationMapper.findLocationsByFilters(
