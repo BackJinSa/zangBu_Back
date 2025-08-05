@@ -1,5 +1,6 @@
 package bjs.zangbu.security.account.controller;
 
+import bjs.zangbu.security.account.dto.request.AuthRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.*;
 import bjs.zangbu.security.account.dto.response.AuthResponse.TokenResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.EmailAuthResponse;
@@ -230,7 +231,12 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버에서 본인인증을 처리하는데 오류가 발생했습니다.");
         }
     }
-
+    //5-1 본인인증 codef 진위인증 사용
+    // todo : 임시로 주소명 설정 , 추후 바꾸든가 하는게 좋음
+    @PostMapping("/verify/authentication")
+    public String verifyAuthentication(@RequestBody AuthRequest.VerifyCodefRequest request) {
+        return null; //todo: 로직 설계해야함
+    }
     // 6. 회원가입
     @Operation(
             summary = "회원가입",
