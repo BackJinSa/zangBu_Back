@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -31,9 +32,6 @@ public class BuildingRequest {
         /** 조회할 건물 ID (필수) */
         @Schema(description = "조회할 건물 ID", example = "10001", required = true)
         private Long buildingId;
-        /** 단지 번호 (옵션) */
-        @Schema(description = "단지 번호 (옵션)", example = "A-1188")
-        private String complexNo;
         /** 동 정보 (옵션) */
         @Schema(description = "동 정보 (옵션)", example = "102동")
         private String dong;
@@ -242,24 +240,24 @@ public class BuildingRequest {
         @AllArgsConstructor
         @Schema(description = "대표 이미지 정보 DTO")
         public static class ImageDetails {
-            @Schema(description = "이미지 URL", example = "https://my-image-storage.com/example.jpg")
-            private String imageUrl;          // 이미지 URL
+            @Schema(description = "업로드할 이미지 파일", format = "binary")
+            private MultipartFile imageFile;
 
             /**
              * DTO → VO 변환 메서드
-             * @param request ImageDetails DTO
+             * @param imageUrl ImageDetails DTO
              * @param complexId 단지 ID
              * @param memberId 회원 ID
              * @param buildingId 건물 ID
              * @return ImageList VO 객체
              */
-            public static ImageList toVo(ImageDetails request, Long complexId, String memberId, Long buildingId) {
+            public static ImageList toVo(String imageUrl, Long complexId, String memberId, Long buildingId) {
                 return new ImageList(
                         null,           // imageId는 DB에서 자동 생성
                         buildingId,     // 연결된 건물 ID
                         memberId,       // 등록자 ID
                         complexId,      // 연결된 단지 ID
-                        request.getImageUrl() // 이미지 경로(URL)
+                        imageUrl // 이미지 경로(URL)
                 );
             }
         }

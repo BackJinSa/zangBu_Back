@@ -2,6 +2,8 @@ package bjs.zangbu.codef.encryption;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import javax.crypto.Cipher;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
@@ -9,10 +11,11 @@ import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
+@Component
 public class RSAEncryption {
     private static final String ALGORITHM = "RSA";
 
-    @Value("${public_key}")
+    @Value("${codef.public_key}")
     private String publicKeyString;
 
     private PublicKey publicKey;

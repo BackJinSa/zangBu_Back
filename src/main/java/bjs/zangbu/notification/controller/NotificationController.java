@@ -4,6 +4,14 @@ import bjs.zangbu.notification.dto.response.NotificationResponse.MarkAllReadResu
 import bjs.zangbu.notification.dto.response.NotificationResponse.NotificationAll;
 import bjs.zangbu.notification.service.NotificationService;
 import com.github.pagehelper.PageHelper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -16,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/notification")
+@Tag(name = "Notification API", description = "FCM 및 트리거 기반 알림 관련 기능을 제공합니다.")
+@SecurityRequirement(name = "Authorization") // Swagger JWT 인증 적용
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -24,6 +34,16 @@ public class NotificationController {
     * 전체 알림 조회
     *
     * ------------------------------------------------- */
+    @Operation(
+            summary = "전체 알림 조회",
+            description = "현재 로그인한 사용자의 전체 알림 목록을 페이지 단위로 조회합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "알림 목록 조회 성공",
+                    content = @Content(schema = @Schema(implementation = NotificationAll.class))),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
     @GetMapping("/all")
     public ResponseEntity<?> getAllNotifications(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -51,6 +71,16 @@ public class NotificationController {
      * 하나의 알림 읽음 처리
      *
      * ------------------------------------------------- */
+    @Operation(
+            summary = "알림 읽음 처리",
+            description = "특정 알림 1개를 읽음 처리합니다. 이미 읽음 처리된 경우 실패 응답을 반환합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "읽음 처리 성공 (알림 ID 반환)",
+                    content = @Content(schema = @Schema(implementation = Long.class))),
+            @ApiResponse(responseCode = "400", description = "알림 없음 or 이미 읽음 처리됨"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
     @PatchMapping("/read/{notificationId}")
     public ResponseEntity<?> notificationRead(
             @AuthenticationPrincipal UserDetails userDetails,
@@ -85,6 +115,16 @@ public class NotificationController {
      * 알림 전체 읽음 처리
      *
      * ------------------------------------------------- */
+    @Operation(
+            summary = "전체 알림 읽음 처리",
+            description = "현재 로그인한 사용자의 모든 안 읽은 알림을 읽음 처리합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "읽음 처리 성공 (읽은 알림 개수 반환)",
+                    content = @Content(schema = @Schema(implementation = Integer.class))),
+            @ApiResponse(responseCode = "400", description = "읽음 처리된 알림 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
     @PatchMapping("/read/all")
     public ResponseEntity<?> notificationAllRead(
         @AuthenticationPrincipal UserDetails userDetails
@@ -117,7 +157,17 @@ public class NotificationController {
      * 알림 삭제
      *
      * ------------------------------------------------- */
-    @PatchMapping("/remove/{notificationId}")
+    @Operation(
+            summary = "알림 삭제",
+            description = "특정 알림을 삭제합니다. 이미 삭제되었거나 존재하지 않는 경우 실패 응답을 반환합니다."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "알림 삭제 성공 (알림 ID 반환)",
+                    content = @Content(schema = @Schema(implementation = Long.class))),
+            @ApiResponse(responseCode = "400", description = "삭제할 알림이 없음"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    @DeleteMapping("/remove/{notificationId}")
     public ResponseEntity<?> removeNotification(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long notificationId

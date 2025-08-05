@@ -16,7 +16,10 @@ public class FcmServiceImpl implements FcmService {
     // 디바이스 토큰 등록
     @Override
     public void registerToken(String memberId, String token) {
-        fcmMapper.insertFcmToken(memberId, token);
+        boolean exists = fcmMapper.existsByMemberIdAndToken(memberId, token);
+        if (!exists) {
+            fcmMapper.insertFcmToken(memberId, token);
+        }
     }
 
     // 디바이스 토큰 모두 삭제
