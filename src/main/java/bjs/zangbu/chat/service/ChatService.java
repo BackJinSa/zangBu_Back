@@ -32,4 +32,7 @@ public interface ChatService {
 
     //닉네임으로 id 구하기
     String getUserIdByNickname(String userId);
+
+    //채팅방 읽음 처리
+    void markAsRead(String roomId, String userId);
 }

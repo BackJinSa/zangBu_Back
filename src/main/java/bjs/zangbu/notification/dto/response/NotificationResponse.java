@@ -3,6 +3,7 @@ package bjs.zangbu.notification.dto.response;
 import bjs.zangbu.notification.vo.Notification;
 import bjs.zangbu.notification.vo.Type;
 import com.github.pagehelper.PageInfo;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,10 +24,19 @@ public class NotificationResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class NotificationAll {
+        @Schema(description = "요청 페이지 번호 (1부터 시작)", example = "1")
         private int pageNum;
+
+        @Schema(description = "페이지당 알림 개수", example = "10")
         private int pageSize;
+
+        @Schema(description = "전체 알림 개수", example = "42")
         private long totalElements;
+
+        @Schema(description = "전체 페이지 수", example = "5")
         private int totalPages;
+
+        @Schema(description = "알림 목록")
         private List<NotificationElement> notifications;
 
         // PageInfo<Notification> → DTO로 변환
@@ -55,14 +65,31 @@ public class NotificationResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class NotificationElement {
+        @Schema(description = "알림 식별자", example = "13")
         private Long notificationId;      // 알림 식별 id ex) 13
+
+        @Schema(description = "알림 제목", example = "시세 변동 알림")
         private String title;             // 알림 제목 ex) "찜한 매물 거래가 업데이트"
-        private String message;           // 알림 메시지 ex) "서초동 아파트 실거래가가 업데이트되었습니다."
+
+        @Schema(description = "알림 메시지", example = "역삼동 아파트의 실거래가가 업데이트되었습니다.")
+        private String message;          // 알림 메시지 ex) "서초동 아파트 실거래가가 업데이트되었습니다."
+
+        @Schema(description = "알림 읽음 여부", example = "false")
         private boolean isRead;           // 알림 읽음 여부 ex) false
+
+        @Schema(description = "알림 유형", example = "TRADE")
         private String type;              // 알림 유형 ex) "TRADE"
+
+        @Schema(description = "생성 시간(상대 표현)", example = "1시간 전")
         private String createdAt;         // 알림 등록 시간 ex) "1시간 전"
+
+        @Schema(description = "가격 라벨", example = "전세 5억")
         private String priceLabel;        // 알림 등록한 찜한 매물의 가격 ex) "전세 5억"
+
+        @Schema(description = "주소", example = "강남구 역삼동")
         private String address;           // 알림 등록한 찜한 매물의 주소 ex) "강남구 역삼동"
+
+        @Schema(description = "리뷰 평점", example = "3")
         private int rank;                 // 알림 등록한 찜한 매물의 리뷰 평점 ex) 2
 
         // VO → DTO 변환 (프론트에 보내줄 필요한 데이터만 추출해서 담아줌)
@@ -155,6 +182,7 @@ public class NotificationResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MarkAllReadResult {
+        @Schema(description = "읽음 처리된 알림 개수", example = "5")
         private int processedCount;
     }
 

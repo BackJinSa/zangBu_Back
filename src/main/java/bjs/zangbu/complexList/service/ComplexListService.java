@@ -14,4 +14,6 @@ public interface ComplexListService {
      * @return 등록 후 생성된 단지 ID
      */
     Long createComplexList(ComplexList complexList);
+
+    Long getComplexNoByBuildingId(long buildingId);
 }
