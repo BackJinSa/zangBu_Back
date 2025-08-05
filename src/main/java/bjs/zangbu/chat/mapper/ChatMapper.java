@@ -47,4 +47,7 @@ public interface ChatMapper {
     
     //아이디로 닉네임 가져오기
     String selectMemberIdByNickname(String nickname);
+
+    //메시지 읽음 처리
+    int markMessagesAsRead(String chatRoomId, String userId);
 }
