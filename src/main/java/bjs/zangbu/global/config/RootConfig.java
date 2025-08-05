@@ -20,12 +20,19 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 
 @Configuration
 @PropertySource(value = "classpath:/application.yml", factory = YamlPropertyConfig.class)
+<<<<<<< HEAD
+@MapperScan(basePackages = {
+        "bjs.zangbu.chat.mapper",
+        "bjs.zangbu.notification.mapper"
+})
+=======
 @MapperScan(basePackages = {"bjs.zangbu.chat.mapper"})
 /* 컨트롤러를 제외하고 전역 스캔: 서비스/컴포넌트/클라이언트 등 등록 */
 @ComponentScan(
         basePackages = "bjs.zangbu",
         excludeFilters = @ComponentScan.Filter(org.springframework.stereotype.Controller.class)
 )
+>>>>>>> b1dd0805ca005a1ffda5a0cc0c2a0763fd6b0643
 public class RootConfig {
 
   @Value("${jdbc.driver}")
