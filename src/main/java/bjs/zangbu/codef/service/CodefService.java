@@ -1,5 +1,6 @@
 package bjs.zangbu.codef.service;
 import bjs.zangbu.building.dto.request.BuildingRequest;
+import bjs.zangbu.codef.dto.request.CodefRequest;
 import bjs.zangbu.codef.dto.request.CodefRequest.AddressRequest;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import bjs.zangbu.deal.dto.request.EstateRegistrationRequest;

@@ -247,6 +247,7 @@ public class CodefServiceImpl implements CodefService {
         }
     }
 
+
     /**
      * 시/군/동 주소로 건물 목록을 조회합니다.
      *
@@ -256,6 +257,7 @@ public class CodefServiceImpl implements CodefService {
      * @throws JsonProcessingException JSON 처리 중 발생하는 예외
      * @throws InterruptedException API 호출 지연 시 발생하는 예외
      */
+
     @Override
     public String justListInquiry(AddressRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
@@ -289,4 +291,5 @@ public class CodefServiceImpl implements CodefService {
         String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
         return response;
     }
+
 }

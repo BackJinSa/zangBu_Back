@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="bjs.zangbu.review.mapper.ReviewMapper">
 
-    <select id="selectByBuilding" resultType="bjs.zangbu.review.dto.ReviewListResponse">
+    <select id="selectByBuilding" resultType="bjs.zangbu.review.dto.response.ReviewListResponse">
         SELECT
             review_id         AS reviewId,
             reviewer_nickname AS reviewerNickname,
@@ -33,7 +33,7 @@
 
     <!-- 리뷰 상세보기 기능 쿼리 -->
     <select id="selectById"
-            resultType="bjs.zangbu.review.dto.ReviewDetailResponse">
+            resultType="bjs.zangbu.review.dto.response.ReviewDetailResponse">
         SELECT
             review_id          AS reviewId,
             building_id        AS buildingId,
