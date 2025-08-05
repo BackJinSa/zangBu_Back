@@ -3,7 +3,6 @@ package bjs.zangbu.deal.service;
 import bjs.zangbu.codef.converter.CodefConverter;
 import bjs.zangbu.codef.service.CodefService;
 import bjs.zangbu.codef.service.CodefTwoFactorService;
-import bjs.zangbu.deal.S3.S3Uploader;
 import bjs.zangbu.deal.dto.join.DealDocumentInfo;
 import bjs.zangbu.deal.dto.join.DealWithSaleType;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
@@ -33,7 +32,7 @@ public class ContractServiceImpl implements ContractService {
     private final DealMapper dealMapper;
     private final CodefService codefService;
     private final CodefTwoFactorService codefTwoFactorService;
-    private final S3Uploader s3Uploader;
+
 
     @Override
     @Transactional(readOnly = true)
@@ -77,7 +76,8 @@ public class ContractServiceImpl implements ContractService {
         byte[] pdfBytes = PdfUtil.decodePdfBytes(base64.getResOriginalData());
         /* 6) S3 업로드 */
         String key  = "building-register-" + dealId + ".pdf";
-        String url  = s3Uploader.uploadPdf(pdfBytes, key);   // ← public URL or presigned URL
+//        String url  = s3Uploader.uploadPdf(pdfBytes, key);   // ← public URL or presigned URL
+        String url  = null; //todo : ncp 로직 설계 해야 함
 
         //추가 로직 ★ 분석 리포트 데이터 저장
         EstateRegisterData data = CodefConverter.parseDataToDto(
@@ -104,8 +104,8 @@ public class ContractServiceImpl implements ContractService {
 
         /* S3 업로드~~ 임시 로직*/
         String key  = "building-register-" + dealId + ".pdf";
-        String url  = s3Uploader.uploadPdf(pdfBytes, key);   // ← public URL or presigned URL
-
+//        String url  = s3Uploader.uploadPdf(pdfBytes, key);   // ← public URL or presigned URL
+        String url  =null; //todo : ncp 로직 설계 해야 함
 
 
         return new BuildingRegisterResponse(url, base64.getResViolationStatus());

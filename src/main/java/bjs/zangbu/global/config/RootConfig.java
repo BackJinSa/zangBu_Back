@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -20,6 +21,11 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 @Configuration
 @PropertySource(value = "classpath:/application.yml", factory = YamlPropertyConfig.class)
 @MapperScan(basePackages = {"bjs.zangbu.chat.mapper"})
+/* 컨트롤러를 제외하고 전역 스캔: 서비스/컴포넌트/클라이언트 등 등록 */
+@ComponentScan(
+        basePackages = "bjs.zangbu",
+        excludeFilters = @ComponentScan.Filter(org.springframework.stereotype.Controller.class)
+)
 public class RootConfig {
 
   @Value("${jdbc.driver}")
