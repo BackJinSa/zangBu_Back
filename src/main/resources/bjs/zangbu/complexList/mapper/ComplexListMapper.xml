@@ -53,4 +53,11 @@
         SELECT LAST_INSERT_ID()
     </selectKey>
 </insert>
+    <!-- 단지 정보 삽입 쿼리 -->
+    <select id="getComplexNoByBuildingId" resultType="java.lang.Long">
+        SELECT cl.complex_no
+        FROM complex_list cl
+                 JOIN building b ON cl.complex_id = b.complex_id
+        WHERE b.building_id = #{buildingId}
+    </select>
 </mapper>

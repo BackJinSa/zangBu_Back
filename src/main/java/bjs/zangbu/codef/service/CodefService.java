@@ -21,7 +21,7 @@ public interface CodefService {
      * @throws JsonProcessingException      JSON 파싱/변환 오류
      * @throws InterruptedException         스레드 중단 등 내부 오류
      */
-    String priceInformation(BuildingRequest.ViewDetailRequest request)
+    String FilterpriceInformation(BuildingRequest.ViewDetailRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 
     /**
@@ -70,4 +70,7 @@ public interface CodefService {
 
     String justListInquiry(AddressRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
+
+    String priceInformation(Long buildingId) throws
+            UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 }
