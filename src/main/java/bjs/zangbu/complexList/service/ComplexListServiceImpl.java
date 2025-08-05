@@ -25,4 +25,9 @@ public class ComplexListServiceImpl implements ComplexListService {
     public Long createComplexList(ComplexList complexList) {
         return complexListMapper.createComplexList(complexList);
     }
+
+    @Override
+    public Long getComplexNoByBuildingId(long buildingId) {
+        return complexListMapper.getComplexNoByBuildingId(buildingId);
+    }
 }
