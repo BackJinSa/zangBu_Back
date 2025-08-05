@@ -17,4 +17,6 @@ public interface ComplexListMapper {
      * @return 삽입 후 생성된 단지 ID
      */
     Long createComplexList(ComplexList complexList);
+
+    Long  getComplexNoByBuildingId(long buildingId);
 }
