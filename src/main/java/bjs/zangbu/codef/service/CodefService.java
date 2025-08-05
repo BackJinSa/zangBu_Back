@@ -1,5 +1,7 @@
 package bjs.zangbu.codef.service;
 import bjs.zangbu.building.dto.request.BuildingRequest;
+import bjs.zangbu.codef.dto.request.CodefRequest;
+import bjs.zangbu.codef.dto.request.CodefRequest.AddressRequest;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import bjs.zangbu.deal.dto.request.EstateRegistrationRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -65,4 +67,7 @@ public interface CodefService {
     /*임시 비활성화*/
 //    String certificateOfPayment(Object request)
 //            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
+
+    String justListInquiry(AddressRequest request)
+            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 }

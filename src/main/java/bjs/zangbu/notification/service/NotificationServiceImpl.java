@@ -18,6 +18,7 @@ import com.github.pagehelper.PageInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -39,6 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final FcmMapper fcmMapper;
     private final FcmSender fcmSender;
     private final MemberMapper memberMapper;
+    private final RedisTemplate<String, String> redisTemplate;
 
     // ====================== API 전용 ======================
     // [API] 전체 알림 조회(DB select)
@@ -95,7 +97,54 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
-    // ====================== 알림 저장/전송 ===========================
+    // ======================== 채팅 알림 전송 ==============================
+
+    /**
+     * 채팅 알림 전송 메서드
+     * ───────────────────────────────
+     * 채팅 메시지를 수신한 사용자가 현재 해당 채팅방을 보고 있지 않을 때,
+     * FCM(Firebase Cloud Messaging)을 통해 푸시 알림을 보낸다.
+     *
+     * * Redis에 저장된 현재 접속 중인 채팅방 정보(activeRoom)를 기반으로
+     *   실시간으로 알림을 보낼지 여부를 결정한 후,
+     *   이 메서드는 "정말 알림을 보내야 할 때"만 호출한다.
+     *
+     * * 채팅 알림은 DB에 저장하지 않는다.
+     *
+     * @param memberId 알림을 받을 사용자 ID (채팅 수신자)
+     * @param roomId 채팅방 ID (알림 클릭 시 이동할 경로에 사용)
+     * @param message 채팅 내용 (알림 본문으로 사용됨)
+     */
+    public void sendChatNotification(String memberId, String roomId, String message) {
+        try {
+            // 1. FCM 수신 동의 여부 확인
+            boolean consent = memberMapper.selectFcmConsentByMemberId(memberId);
+            if (!consent) return;
+
+            // 2. 사용자 로그인 여부 확인 (Redis: "login:{memberId}" → "true" 여부)
+            boolean isLoggedIn = "true".equals(
+                    redisTemplate.opsForValue().get("login:" + memberId)
+            );
+
+            // 3. FCM 알림 본문 내용 결정 (로그인 상태에 따라 다르게 전송)
+            String body = isLoggedIn ? message : "새로운 채팅 메시지가 도착했습니다.";
+
+            // 4. 해당 사용자의 모든 디바이스 토큰 조회
+            List<String> tokens = fcmMapper.selectTokensByMemberId(memberId);
+            if (tokens == null || tokens.isEmpty()) return;
+
+            // 5. 알림 클릭 시 이동할 URL (프론트 라우팅 주소와 맞춰야 함)
+            String url = "https://your-site.com/chat/" + roomId;
+
+            // 6. FCM 푸시 알림 전송
+            fcmSender.sendToMany(tokens, "새 메시지", body, url);
+
+        } catch (Exception e) {
+            log.warn("채팅 알림 전송 실패: memberId={}, roomId={}, error={}", memberId, roomId, e.getMessage());
+        }
+    }
+
+    // ====================== 찜매물 알림 저장/전송 ===========================
 
     /**
      * 중복 알림 여부를 확인한 뒤,

@@ -184,4 +184,19 @@ public class ChatServiceImpl implements ChatService{
 
         return nickname;
     }
+
+    @Override
+    public void markAsRead(String chatRoomId, String userId) {
+        ChatRoom room = chatMapper.selectChatRoomById(chatRoomId);
+        if (room == null) {
+            throw new IllegalArgumentException(chatRoomId+ "을 id로 하는 채팅방을 찾지 못했습니다.");
+        }
+
+        if (!userId.equals(room.getSellerId()) && !userId.equals(room.getConsumerId())) {
+            throw new IllegalStateException("채팅방 참여자가 아닙니다.");
+        }
+
+        // 현재 사용자가 보낸 메시지가 아닌 것만 읽음 처리
+        chatMapper.markMessagesAsRead(chatRoomId, userId);
+    }
 }
