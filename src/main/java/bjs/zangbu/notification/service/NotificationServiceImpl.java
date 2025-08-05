@@ -40,7 +40,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final FcmMapper fcmMapper;
     private final FcmSender fcmSender;
     private final MemberMapper memberMapper;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     // ====================== API 전용 ======================
     // [API] 전체 알림 조회(DB select)
