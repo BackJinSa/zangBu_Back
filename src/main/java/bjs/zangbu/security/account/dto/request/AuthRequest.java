@@ -142,4 +142,24 @@ public class AuthRequest {
         private String email;      // 이메일 -> 비밀번호 재설정 시 요청에만 사용
     }
 
+    //codef 진위확인
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(name = "VerifyCodefRequest", description = "Codef 주민등록 진위인증 요청 DTO")
+    public static class VerifyCodefRequest {
+        @Schema(description = "이름", example = "김철수")
+        private String name;       // 이름
+        @Schema(description = "주민번호", example = "401234")
+        private String birth;   // 주민등록번호 앞6자리
+        @Schema(description = "주민번호", example = "4012345")
+        private String identity;   // 주민등록번호 뒷 7자리
+        @Schema(description = "휴대폰 번호", example = "01012345678")
+        private String phone;      // 휴대폰 번호
+        @Schema(description = "통신사", example = "0 or 1 or 2")
+        private String telecom;
+        @Schema(description = "주민등록 발급일자 ", example = "yyyymmdd")
+        private String issueDate;
+    }
+
 }

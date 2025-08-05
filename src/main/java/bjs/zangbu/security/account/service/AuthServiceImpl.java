@@ -1,6 +1,9 @@
 package bjs.zangbu.security.account.service;
 
+import bjs.zangbu.codef.encryption.RSAEncryption;
+import bjs.zangbu.codef.service.CodefTwoFactorService;
 import bjs.zangbu.security.account.client.PassApiClient;
+import bjs.zangbu.security.account.dto.request.AuthRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.EmailAuthRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.LoginRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.SignUp;
@@ -23,6 +26,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,11 +36,14 @@ import java.util.concurrent.TimeUnit;
 @Log4j2
 @Service
 @RequiredArgsConstructor
+
 public class AuthServiceImpl implements AuthService {
     final PasswordEncoder passwordEncoder;
     final AuthMapper mapper;
     private final PassApiClient passApiClient; // PASS와 통신하는 클라이언트
     final JwtProcessor jwtProcessor;
+    private final CodefTwoFactorService codefTwoFactorService;
+    private final RSAEncryption rsaEncryption;
 
     private final RedisTemplate<String, String> redisTemplate;
     private static final String REFRESH_TOKEN_PREFIX = "refresh:"; //prefix
@@ -83,11 +91,18 @@ public class AuthServiceImpl implements AuthService {
             throw new JwtException("유효하지 않은 토큰입니다.");
         }
     }
-
+    //
+    @Override
+    public String codefAuthentication(AuthRequest.VerifyCodefRequest request) throws Exception {
+        String rawResponse = codefTwoFactorService.
+                residentRegistrationAuthenticityConfirmation(request);
+        String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
+        return null; //todo : 로직 설계 해야 함
+    }
     //회원가입
     @Override
     @Transactional
-    public void signUp(SignUp signUpRequest) {
+    public void signUp(SignUp signUpRequest) throws Exception {
         if (isEmailDuplicated(signUpRequest.getEmail())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
@@ -99,7 +114,11 @@ public class AuthServiceImpl implements AuthService {
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(signUpRequest.getPassword());
         signUpRequest.setPassword(encodedPassword);
+        //todo : identity 암호화
+        String identity = signUpRequest.getIdentity();
+        String RSAEncoded = rsaEncryption.encrypt(identity);
 
+        signUpRequest.setIdentity(RSAEncoded);
         Member member = SignUp.toVo(signUpRequest, encodedPassword);
 
         int result = mapper.insertMember(member);

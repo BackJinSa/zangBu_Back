@@ -71,7 +71,7 @@ class NotificationMapperTest {
                 SaleType.TRADING,
                 100000,
                 "서울시 강남구",
-                5,
+                0,
                 "testUser",
                 1L
         );

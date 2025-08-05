@@ -167,7 +167,7 @@ public class NotificationController {
             @ApiResponse(responseCode = "400", description = "삭제할 알림이 없음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @PatchMapping("/remove/{notificationId}")
+    @DeleteMapping("/remove/{notificationId}")
     public ResponseEntity<?> removeNotification(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable Long notificationId
