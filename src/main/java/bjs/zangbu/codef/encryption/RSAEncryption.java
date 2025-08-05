@@ -15,7 +15,7 @@ import java.util.Base64;
 public class RSAEncryption {
     private static final String ALGORITHM = "RSA";
 
-    @Value("${public_key}")
+    @Value("${codef.public_key}")
     private String publicKeyString;
 
     private PublicKey publicKey;

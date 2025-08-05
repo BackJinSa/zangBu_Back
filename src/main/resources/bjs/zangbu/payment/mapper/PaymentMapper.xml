@@ -22,7 +22,7 @@
 
 
     <update id="confirmPayment"
-            parameterType="bjs.zangbu.payment.dto.PaymentConfirmRequest">
+            parameterType="bjs.zangbu.payment.dto.request.PaymentConfirmRequest">
         UPDATE payment
         SET membership_date = NOW()  <!-- 승인 시각 갱신 -->
         WHERE order_id = #{orderId}
