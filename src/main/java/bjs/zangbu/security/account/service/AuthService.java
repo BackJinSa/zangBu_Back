@@ -1,5 +1,6 @@
 package bjs.zangbu.security.account.service;
 
+import bjs.zangbu.security.account.dto.request.AuthRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.EmailAuthRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.ResetPassword;
 import bjs.zangbu.security.account.dto.request.AuthRequest.VerifyRequest;
@@ -19,9 +20,10 @@ public interface AuthService {
 
     //로그아웃
     void logout(String accessToken);
-
+    // codef 주민등록 진위확인
+    String codefAuthentication(AuthRequest.VerifyCodefRequest request) throws Exception;
     //회원가입
-    void signUp(SignUp signUpRequest);
+    void signUp(SignUp signUpRequest) throws Exception;
 
     //이메일 찾기
     EmailAuthResponse findEmail(EmailAuthRequest request);
