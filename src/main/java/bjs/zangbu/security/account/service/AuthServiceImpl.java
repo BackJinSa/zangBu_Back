@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
     private final CodefTwoFactorService codefTwoFactorService;
     private final RSAEncryption rsaEncryption;
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     private static final String REFRESH_TOKEN_PREFIX = "refresh:"; //prefix
 
     @Override
@@ -222,8 +222,8 @@ public class AuthServiceImpl implements AuthService {
         //refresh 토큰 비교할 때 필요한 email 추출
         String email = jwtProcessor.getEmail(refreshToken);
 
-        //redis에 저장된 refresh 토큰과 일치 여부 확인
-        String storedRefreshToken = redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX+email);
+        //redis에 저장된 refresh 토큰과 일치 여부 확인 todo: object로 타입변환했으니까 로그 찍어봐야할듯 0805
+        String storedRefreshToken = (String) redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX+email);
 
         //저장된 refresh 토큰 없으면
         if(storedRefreshToken == null){

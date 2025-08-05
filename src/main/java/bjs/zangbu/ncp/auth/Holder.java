@@ -1,6 +1,8 @@
 package bjs.zangbu.ncp.auth;
 
-import com.google.api.client.util.Value;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -8,8 +10,8 @@ import org.springframework.stereotype.Component;
 /**
  * NCP 관련 설정값을 읽어 static 변수로 할당하는 컴포넌트
  */
-@AllArgsConstructor
 @Component
+@NoArgsConstructor
 public class Holder {
 
   @Value("${ncp.hmacAlgorithm}")
