@@ -108,4 +108,22 @@ public class ChatController {
         return ResponseEntity.status(204).build();
     }
 
+    //채팅 메시지 읽음 처리
+    @Operation(summary = "채팅 메시지 읽음 처리", description = "채팅방 입장 시 메시지들 읽음 처리를 합니다..")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "채팅 메시지 읽음 처리 성공"),
+            @ApiResponse(responseCode = "400", description = "유효하지 않은 사용자 or 채팅방 ID"),
+            @ApiResponse(responseCode = "404", description = "채팅방이 존재하지 않음"),
+            @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+    })
+    @PutMapping("/room/{roomId}/read")
+    public ResponseEntity<Void> markAsRead(
+            @Parameter(description = "채팅방 ID") @PathVariable String roomId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+
+        chatService.markAsRead(roomId, userId);
+        return ResponseEntity.noContent().build(); // 204
+    }
+
 }

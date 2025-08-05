@@ -23,8 +23,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.enableStompBrokerRelay("/topic")
                 .setRelayHost("localhost")   //중계할 RabbitMQ 브로커의 호스트(보통 로컬 개발환경에서는 localhost)
                 .setRelayPort(61613)         //STOMP 프로토콜을 사용하는 RabbitMQ 포트 (기본 STOMP 포트는 61613)
-                .setClientLogin("guest")     //RabbitMQ 로그인 아이디 (기본값은 guest)
-                .setClientPasscode("guest"); //RabbitMQ 로그인 비밀번호 (기본값은 guest)
+                .setClientLogin("zangbumq")     //RabbitMQ 로그인 아이디
+                .setClientPasscode("Zangzangbumq@0821"); //RabbitMQ 로그인 비밀번호
 
         config.setApplicationDestinationPrefixes("/app");  // 클라이언트가 메시지 보낼 prefix
     }

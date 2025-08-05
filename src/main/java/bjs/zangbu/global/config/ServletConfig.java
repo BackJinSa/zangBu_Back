@@ -13,7 +13,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ComponentScan(basePackages = {
         "bjs.zangbu.exception",
         "bjs.zangbu.controller",
-        "org.springdoc"
+        "org.springdoc",
+        "bjs.zangbu.addressChange.controller",
+        "bjs.zangbu.building.controller",
+        "bjs.zangbu.chat.controller",
+        "bjs.zangbu.codef.controller",
+        "bjs.zangbu.deal.controller",
+        "bjs.zangbu.fcm.controller",
+        "bjs.zangbu.map.controller",
+        "bjs.zangbu.member.controller",
+        "bjs.zangbu.notification.controller",
+        "bjs.zangbu.payment.controller",
+        "bjs.zangbu.publicdata.controller",
+        "bjs.zangbu.review.controller",
+        "bjs.zangbu.scheduler.controller",
 })
 public class ServletConfig implements WebMvcConfigurer {
 
