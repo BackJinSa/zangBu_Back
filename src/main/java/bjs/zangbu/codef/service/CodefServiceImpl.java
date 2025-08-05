@@ -1,6 +1,8 @@
 package bjs.zangbu.codef.service;
 
 import bjs.zangbu.building.dto.request.BuildingRequest;
+import bjs.zangbu.codef.dto.request.CodefRequest;
+import bjs.zangbu.codef.dto.request.CodefRequest.AddressRequest;
 import bjs.zangbu.codef.encryption.CodefEncryption;
 import bjs.zangbu.codef.encryption.RSAEncryption;
 import bjs.zangbu.codef.exception.CodefException;
@@ -271,5 +273,19 @@ public class CodefServiceImpl implements CodefService {
             // 서버 처리 오류 발생 시 커스텀 예외로 전환 (전역 Advice에서 JSON 응답 처리)
             throw new CodefException.CodefServiceException(EasyCodefMessageConstant.SERVER_PROCESSING_ERROR, e.getMessage());
         }
+    }
+
+    @Override
+    public String justListInquiry(AddressRequest request)
+            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+        String url = "/v1/kr/public/lt/real-estate-board/estate-list";
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("organization", "0011");
+        map.put("addrSido", request.getAddrSido());
+        map.put("addrSigun", request.getAddrSigun());
+        map.put("addrDong", request.getAddrDong());
+
+        String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
+        return response;
     }
 }

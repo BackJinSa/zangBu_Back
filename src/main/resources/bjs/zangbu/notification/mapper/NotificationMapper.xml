@@ -49,7 +49,7 @@
 
     <!-- ======================= 트리거 전용 ====================== -->
 
-    <!-- 시세 변동 알림 등록 -->
+    <!-- 알림 등록 -->
 
     <insert id="insertNotification" parameterType="bjs.zangbu.notification.vo.Notification">
         INSERT INTO notification (

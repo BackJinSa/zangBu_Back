@@ -24,4 +24,14 @@
         FROM fcm_tokens
         WHERE member_id = #{memberId}
     </select>
+
+    <!-- 디바이스 토큰 중복 여부 확인 -->
+    <select id="existsByMemberIdAndToken" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM fcm_tokens
+            WHERE member_id = #{memberId}
+              AND token = #{token}
+        )
+    </select>
 </mapper>

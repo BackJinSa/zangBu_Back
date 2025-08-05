@@ -6,6 +6,9 @@ import java.util.List;
 
 public interface FcmMapper {
 
+    // 디바이스 토큰 중복 여부 확인
+    boolean existsByMemberIdAndToken(String memberId, String token);
+
     // 디바이스 토큰 등록
     int insertFcmToken(String memberId, String token);
 

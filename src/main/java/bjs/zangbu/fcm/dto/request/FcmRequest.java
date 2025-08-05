@@ -1,6 +1,6 @@
 package bjs.zangbu.fcm.dto.request;
 
-import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,8 +12,10 @@ public class FcmRequest {
      */
     @Getter
     @NoArgsConstructor
-    @AllArgsConstructor
+    @Schema(description = "FCM 디바이스 토큰 요청")
     public static class FcmTokenRequest {
+
+        @Schema(description = "FCM 디바이스 토큰 값", example = "d7q3Lk82xH...Xyz")
         private String token; // 삭제 시 null 가능
     }
 }
