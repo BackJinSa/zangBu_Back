@@ -2,7 +2,11 @@ package bjs.zangbu.security.config;
 
 import bjs.zangbu.security.filter.AuthenticationErrorFilter;
 import bjs.zangbu.security.filter.JwtAuthenticationFilter;
+import bjs.zangbu.security.filter.AuthenticationErrorFilter;
+import bjs.zangbu.security.filter.JwtAuthenticationFilter;
 import bjs.zangbu.security.filter.JwtUsernamePasswordAuthenticationFilter;
+import bjs.zangbu.security.handler.LoginFailureHandler;
+import bjs.zangbu.security.handler.LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.mybatis.spring.annotation.MapperScan;
@@ -31,9 +35,10 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
-    private final JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationErrorFilter authenticationErrorFilter;
+    private final LoginSuccessHandler loginSuccessHandler;
+    private final LoginFailureHandler loginFailureHandler;
 
     //비밀번호 암호화에 사용하는 인코더
     @Bean
@@ -52,6 +57,15 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        AuthenticationManager authenticationManager = authenticationManager(http);
+
+        JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter =
+                new JwtUsernamePasswordAuthenticationFilter(
+                        authenticationManager,
+                        loginSuccessHandler,
+                        loginFailureHandler
+                );
+
         http
                 // JWT 필터들 순서에 맞게 등록
                 .addFilterBefore(jwtUsernamePasswordAuthenticationFilter,
