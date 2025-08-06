@@ -1,10 +1,8 @@
 package bjs.zangbu.ncp.auth;
 
+import javax.annotation.PostConstruct;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import jakarta.annotation.PostConstruct;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**

@@ -2,7 +2,6 @@ package bjs.zangbu.deal.dto.response;
 
 import bjs.zangbu.deal.dto.join.DealWithChatRoom;
 import com.github.pagehelper.PageInfo;
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,7 +12,7 @@ import lombok.NoArgsConstructor;
 /**
  * 거래 대기 매물 목록 응답 DTO 모음
  */
-@Schema(description = "거래 대기 매물 목록 응답 DTO 모음")
+// @Schema(description = "거래 대기 매물 목록 응답 DTO 모음")
 public class DealWaitingListResponse {
 
   // /deal/waiting Response Element
@@ -26,59 +25,59 @@ public class DealWaitingListResponse {
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-  @Schema(description = "거래 대기 매물 개별 요소 응답 DTO")
+//   @Schema(description = "거래 대기 매물 개별 요소 응답 DTO")
   public static class WaitingListElement {
 
     /**
      * 건물 ID
      */
-    @Schema(description = "건물 ID", example = "101")
+//     @Schema(description = "건물 ID", example = "101")
     private Long buildingId;
 
     /**
      * 매물 가격 (매매가 또는 월세가 등)
      */
-    @Schema(description = "가격", example = "120000")
+//     @Schema(description = "가격", example = "120000")
     private int price;
 
     /**
      * 건물 이름
      */
-    @Schema(description = "건물 이름", example = "신촌 스위트아파트")
+//     @Schema(description = "건물 이름", example = "신촌 스위트아파트")
     private String buildingName;
 
     /**
      * 주택 유형: 아파트, 오피스텔 등
      */
-    @Schema(description = "부동산 유형", example = "APARTMENT", allowableValues = {
-        "APARTMENT", "OFFICETEL", "VILLA", "HOUSE"
-    })
+//     @Schema(description = "부동산 유형", example = "APARTMENT", allowableValues = {
+//        "APARTMENT","OFFICETEL","VILLA","HOUSE"
+//  })
     private String houseType;
 
     /**
      * 거래 유형: 매매, 전세, 월세
      */
-    @Schema(description = "거래 유형", example = "CHARTER", allowableValues = {
-        "MONTHLY", "CHARTER", "TRADING"
-    })
+//     @Schema(description = "거래 유형", example = "CHARTER", allowableValues = {
+//        "MONTHLY","CHARTER","TRADING"
+//})
     private String saleType;
 
     /**
      * 매물 대표 이미지 URL
      */
-    @Schema(description = "매물 이미지 링크", example = "https://cdn.zangbu.com/images/101.jpg")
+//     @Schema(description = "매물 이미지 링크", example = "https://cdn.zangbu.com/images/101.jpg")
     private String imageUrl;
 
     /**
      * 매물 주소
      */
-    @Schema(description = "매물 주소", example = "서울 마포구 신촌로 123")
+//     @Schema(description = "매물 주소", example = "서울 마포구 신촌로 123")
     private String address;
 
     /**
      * 거래 상태: 구매중 또는 판매중
      */
-    @Schema(description = "거래 상태", example = "구매중", allowableValues = {"구매중", "판매중"})
+//     @Schema(description = "거래 상태", example = "구매중", allowableValues = {"구매중", "판매중"})
     private String dealStatus;
 
     /**
@@ -127,9 +126,9 @@ public class DealWaitingListResponse {
     }
   }
 
-  // /deal/waiting Response
-  // /deal/waitinglist/purchase Response
-  // /deal/waitinglist/onsale Response
+// /deal/waiting Response
+// /deal/waitinglist/purchase Response
+// /deal/waitinglist/onsale Response
 
   /**
    * 거래 대기 매물 목록 전체 응답 DTO
@@ -137,37 +136,37 @@ public class DealWaitingListResponse {
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-  @Schema(description = "거래 대기 매물 목록 응답 DTO (페이징 포함)")
+//   @Schema(description = "거래 대기 매물 목록 응답 DTO (페이징 포함)")
   public static class WaitingList {
 
     /**
      * 현재 페이지 번호 (1부터 시작)
      */
-    @Schema(description = "현재 페이지 번호", example = "1")
+//     @Schema(description = "현재 페이지 번호", example = "1")
     private int pageNum;
 
     /**
      * 페이지당 항목 수
      */
-    @Schema(description = "페이지당 항목 수", example = "10")
+//     @Schema(description = "페이지당 항목 수", example = "10")
     private int pageSize;
 
     /**
      * 전체 항목 수
      */
-    @Schema(description = "전체 항목 수", example = "45")
+//     @Schema(description = "전체 항목 수", example = "45")
     private long total;
 
     /**
      * 전체 페이지 수
      */
-    @Schema(description = "전체 페이지 수", example = "5")
+//     @Schema(description = "전체 페이지 수", example = "5")
     private int pages;
 
     /**
      * 거래 대기 매물 리스트
      */
-    @Schema(description = "대기 중인 매물 목록")
+//     @Schema(description = "대기 중인 매물 목록")
     private List<WaitingListElement> deals;
 
     /**
