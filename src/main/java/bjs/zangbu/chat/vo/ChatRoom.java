@@ -1,14 +1,12 @@
 package bjs.zangbu.chat.vo;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class ChatRoom {
     private String chatRoomId;          //채팅방 id(UUID)
     private Long buildingId;            //매물 식별 id

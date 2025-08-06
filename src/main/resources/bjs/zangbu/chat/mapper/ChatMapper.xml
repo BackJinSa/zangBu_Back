@@ -53,18 +53,18 @@
         <!-- 채팅방 목록에서 필터링 하기 위해서 -->
         <choose>
             <!-- 전체: 구매자이거나 판매자인 경우 -->
-            <when test="type == 'ALL'">
+            <when test="type eq 'ALL'">
                 (cr.member_id = #{userId} AND cr.consumer_visible = TRUE)
                 OR
                 (b.member_id = #{userId} AND cr.seller_visible = TRUE)
                 </when>
             <!-- 구매자(BUYER)인 경우 ChatRoom 테이블에서 id-->
-            <when test="type == 'BUYER'">
+            <when test="type eq 'BUYER'">
                 cr.member_id = #{userId}
                 AND cr.consumer_visible = TRUE
             </when>
             <!-- 판매자(SELLER)인 경우 building 테이블에서 id-->
-            <when test="type == 'SELLER'">
+            <when test="type eq 'SELLER'">
                 b.member_id = #{userId}
                 AND cr.seller_visible = TRUE
             </when>

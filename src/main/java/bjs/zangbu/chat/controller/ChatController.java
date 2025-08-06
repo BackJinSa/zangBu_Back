@@ -2,10 +2,14 @@ package bjs.zangbu.chat.controller;
 
 import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.service.ChatService;
+import bjs.zangbu.chat.service.ChatServiceImpl;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Log4j2
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/chat")
@@ -50,7 +55,7 @@ public class ChatController {
 //       @ApiResponse(responseCode = "500", description = "서버 내부 오류")
 //  })
 
-  @GetMapping("/list")
+  @GetMapping(value=  "/list",  produces = "application/json;charset=UTF-8")
   public ResponseEntity<List<ChatResponse.ChatRoomListResponse>> getChatRoomList(
 //    @Parameter(description = "전체 or 구매 or 판매")
       @RequestParam String type,
@@ -58,9 +63,11 @@ public class ChatController {
       @RequestParam int page,
 //    @Parameter(description = "한 페이지 당 표시할 개수")
       @RequestParam int size) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    String userId = authentication.getName();
+    log.info("ChatController - getChatRoomList");
 
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    //String userId = authentication.getName();  //TODO: 테스트하느라 주석처리함
+    String userId = "user-001";
     List<ChatResponse.ChatRoomListResponse> roomList = chatService.getChatRoomList(userId, type,
         page, size);
     return ResponseEntity.status(200).body(roomList);
@@ -133,12 +140,13 @@ public class ChatController {
 //       @ApiResponse(responseCode = "500", description = "서버 내부 오류")
 //  })
 
-  @PutMapping("/room/{roomId}/read")
+  @PutMapping(value = "/room/{roomId}/read",  produces = "application/json;charset=UTF-8")
   public ResponseEntity<Void> markAsRead(
 //    @Parameter(description = "채팅방 ID")
       @PathVariable String roomId) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    String userId = authentication.getName();
+//    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//    String userId = authentication.getName();
+    String userId = "user-001";
 
     chatService.markAsRead(roomId, userId);
     return ResponseEntity.noContent().build(); // 204

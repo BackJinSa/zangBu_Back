@@ -110,6 +110,9 @@ public class SecurityConfig {
             .requestMatchers(new AntPathRequestMatcher("/security/member"))
             .hasAnyRole("ADMIN", "MEMBER")
 
+                // 테스트용: /chat/** 전체 허용
+                .requestMatchers(new AntPathRequestMatcher("/chat/**")).permitAll()
+
             // 그 외 요청은 인증 필요
             .anyRequest().authenticated()
         );

@@ -3,6 +3,7 @@ package bjs.zangbu.chat.mapper;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -19,7 +20,10 @@ public interface ChatMapper {
     ChatRoom selectChatRoomById(String chatRoomId);
 
     //userId에 해당하는 채팅방 목록 조회
-    List<ChatRoom> selectChatRoomList(String userId, String type, int offset, int size);
+    List<ChatRoom> selectChatRoomList(@Param("userId") String userId,
+                                      @Param("type") String type,
+                                      @Param("offset") int offset,
+                                      @Param("size") int size);
 
     //채팅방 유무 확인(하나의 매물 + 구매자 당 하나의 채팅방이므로 중복 생성 방지용)
     ChatRoom existsChatRoom(Long buildingId, String consumerId);
@@ -43,7 +47,8 @@ public interface ChatMapper {
     ChatMessage selectLastMessageByRoomId(String chatRoomId);
 
     //채팅방의 안 읽은 메시지 수 조회
-    int countUnreadMessages(String chatRoomId, String userId);
+    int countUnreadMessages(@Param("chatRoomId") String chatRoomId,
+                            @Param("userId") String userId);
     
     //아이디로 닉네임 가져오기
     String selectMemberIdByNickname(String nickname);

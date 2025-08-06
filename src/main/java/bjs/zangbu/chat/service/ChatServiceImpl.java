@@ -7,6 +7,9 @@ import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
 import bjs.zangbu.member.mapper.MemberMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +20,7 @@ import java.util.UUID;
 
 import static bjs.zangbu.global.formatter.LocalDateFormatter.CreatedAt.formattingCreatedAt;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService{
@@ -71,7 +75,12 @@ public class ChatServiceImpl implements ChatService{
     //사용자(userId)가 참여하고 있는 채팅방 목록 가져오기
     @Override
     public List<ChatResponse.ChatRoomListResponse> getChatRoomList(String userId, String type, int page, int size) {
+        
         int offset = (page - 1) * size;
+        if (offset < 0) offset = 0;
+
+        log.info("[getChatRoomList] userId={}, type={}, page={}, size={}, offset={}",
+                userId, type, page, size, offset);
 
         //채팅방 목록 조회
         List<ChatRoom> chatRooms = chatMapper.selectChatRoomList(userId, type, offset, size);
@@ -81,12 +90,13 @@ public class ChatServiceImpl implements ChatService{
 
         for (ChatRoom room : chatRooms) {
             String chatRoomId = room.getChatRoomId();
-
+            log.info("for문 안쪽: " + room);
             //채팅방의 안 읽은 메시지 수 조회
             int unreadCount = chatMapper.countUnreadMessages(chatRoomId, userId);
 
             //마지막 메시지 조회
             ChatMessage lastMessage = chatMapper.selectLastMessageByRoomId(chatRoomId);
+            log.info("ChatServiceImpl - lastMessage : " + lastMessage.getMessage());
 
             //대화 상대방 닉네임 조회
             String otherNickname = userId.equals(room.getConsumerId())
@@ -99,7 +109,8 @@ public class ChatServiceImpl implements ChatService{
                     .lastMessage(lastMessage != null ? lastMessage.getMessage() : null)
                     .lastMessageTime(lastMessage != null ? formattingCreatedAt(lastMessage.getCreatedAt()) : null)
                     .otherUserNickname(otherNickname)
-                    .status(room.getStatus())
+                    //.status(room.getStatus()) //TODO: 나중에 수정
+                    .status("status test")
                     .sellerType(room.getSellerType())
                     .hasNext(chatRooms.size() == size) // 페이지 사이즈와 같으면 다음 있음
                     .unreadCount(unreadCount)
