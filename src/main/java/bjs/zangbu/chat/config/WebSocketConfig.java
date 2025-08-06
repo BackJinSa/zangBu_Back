@@ -7,6 +7,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -15,16 +16,27 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final JwtProcessor jwtProcessor;
 
+    //application.yml에서 불러옴
+    @Value("${rabbitmq.stomp.username}")
+    private String username;
+    @Value("${rabbitmq.stomp.password}")
+    private String password;
+    @Value("${rabbitmq.stomp.host}")
+    private String host;
+    @Value("${rabbitmq.stomp.port}")
+    private int port;
+
     //Spring은 메시지를 RabbitMQ로 넘기고, RabbitMQ가 구독자들에게 메시지를 브로드캐스트
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
+
         //클라이언트가 /topic으로 시작하는 경로를 구독하면 Spring 서버는 메시지를 자체 메모리가 아니라
         //RabbitMQ로 중계(relay)하도록 설정
         config.enableStompBrokerRelay("/topic")
-                .setRelayHost("localhost")   //중계할 RabbitMQ 브로커의 호스트(보통 로컬 개발환경에서는 localhost)
-                .setRelayPort(61613)         //STOMP 프로토콜을 사용하는 RabbitMQ 포트 (기본 STOMP 포트는 61613)
-                .setClientLogin("zangbumq")     //RabbitMQ 로그인 아이디
-                .setClientPasscode("Zangzangbumq@0821"); //RabbitMQ 로그인 비밀번호
+                .setRelayHost(host)   //중계할 RabbitMQ 브로커의 호스트(보통 로컬 개발환경에서는 localhost)
+                .setRelayPort(port)         //STOMP 프로토콜을 사용하는 RabbitMQ 포트 (기본 STOMP 포트는 61613)
+                .setClientLogin(username)     //RabbitMQ 로그인 아이디
+                .setClientPasscode(password); //RabbitMQ 로그인 비밀번호
 
         config.setApplicationDestinationPrefixes("/app");  // 클라이언트가 메시지 보낼 prefix
     }
