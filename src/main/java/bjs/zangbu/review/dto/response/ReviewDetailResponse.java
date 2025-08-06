@@ -11,6 +11,7 @@ public class ReviewDetailResponse {
     private Long addressId;
     private String reviewerNickname;
     private Integer rank;
+    private String title;
     private String content;
     private String createdAt;
 }

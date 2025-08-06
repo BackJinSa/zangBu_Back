@@ -11,6 +11,7 @@ public class ReviewCreateResponse {
     private String reviewerNickname;
     private String floor;
     private Integer rank;
+    private String title;
     private String content;
     private String createdAt;  // "YYYY-MM-DD HH:mm:ss"
 }
