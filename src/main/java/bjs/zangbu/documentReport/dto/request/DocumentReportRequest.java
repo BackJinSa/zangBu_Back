@@ -1,7 +1,6 @@
 package bjs.zangbu.documentReport.dto.request;
 
 import bjs.zangbu.documentReport.vo.DocumentReport;
-import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,97 +18,97 @@ public class DocumentReportRequest {
   @Getter
   @AllArgsConstructor
   @NoArgsConstructor
-  @Schema(name = "DocumentReportRequestElement", description = "분석 리포트 단건 저장 요청 DTO")
+//   @Schema(name = "DocumentReportRequestElement", description = "분석 리포트 단건 저장 요청 DTO")
   public static class DocumentReportRequestElement {
 
     /**
      * 분석 리포트 ID (수정 시 사용)
      */
-    @Schema(description = "분석 리포트 ID", example = "1")
+//     @Schema(description = "분석 리포트 ID", example = "1")
     Long reportId;
 
     /**
      * 매물 ID
      */
-    @Schema(description = "매물 ID", example = "101")
+//     @Schema(description = "매물 ID", example = "101")
     Long buildingId;
 
     /**
      * 단지 ID
      */
-    @Schema(description = "단지 ID", example = "201")
+//     @Schema(description = "단지 ID", example = "201")
     Long complexId;
 
     /**
      * 부동산 고유 식별 번호
      */
-    @Schema(description = "부동단 고유 식별 번호", example = "A123456789")
+//     @Schema(description = "부동단 고유 식별 번호", example = "A123456789")
     String commUniqueNo;
 
     /**
      * 거래 금액 (단위: 만원)
      */
-    @Schema(description = "거래 금액(만원)", example = "50000")
+//     @Schema(description = "거래 금액(만원)", example = "50000")
     int dealAmount;
 
     /**
      * 보증금 (단위: 만원)
      */
-    @Schema(description = "보증 금액(만원)", example = "10000")
+//     @Schema(description = "보증 금액(만원)", example = "10000")
     int deposit;
 
     /**
      * 월세 (단위: 만원)
      */
-    @Schema(description = "월세 금액(만원)", example = "50")
+//     @Schema(description = "월세 금액(만원)", example = "50")
     int monthlyRent;
 
     /**
      * 선순위 채권액 (단위: 만원)
      */
-    @Schema(description = "선순위 채권액", example = "20000")
+//     @Schema(description = "선순위 채권액", example = "20000")
     int priorityDept;
 
     /**
      * 내 보증금 (단위: 만원)
      */
-    @Schema(description = "내 보증금", example = "10000")
+//     @Schema(description = "내 보증금", example = "10000")
     int depositPrice;
 
     /**
      * 최종 낙찰가 (단위: 만원)
      */
-    @Schema(description = "최종 낙찰가", example = "60000")
+//     @Schema(description = "최종 낙찰가", example = "60000")
     int finalAuctionPrice;
 
     /**
      * 여유 보증금 (단위: 만원)
      */
-    @Schema(description = "여유 보증금", example = "8000")
+//     @Schema(description = "여유 보증금", example = "8000")
     int remainingDeposit;
 
     /**
      * 소유자 주민번호 (RSA 암호화)
      */
-    @Schema(description = "소유자 주민번호", example = "RSA(1234567)")
+//     @Schema(description = "소유자 주민번호", example = "RSA(1234567)")
     String resUserNum;
 
     /**
      * 신탁 여부
      */
-    @Schema(description = "신탁 여부", example = "false")
+//     @Schema(description = "신탁 여부", example = "false")
     boolean isTrustee;
 
     /**
      * 신탁 내용 설명
      */
-    @Schema(description = "신탁 내용 텍스트", example = "신탁 미설정")
+//     @Schema(description = "신탁 내용 텍스트", example = "신탁 미설정")
     String trustType;
 
     /**
      * 리포트 생성 일시 (yyyy-MM-dd'T'HH:mm:ss)
      */
-    @Schema(description = "보고서 생성 시간", example = "2025-07-29T14:30:00")
+//     @Schema(description = "보고서 생성 시간", example = "2025-07-29T14:30:00")
     LocalDateTime createdAt;
 
     /**

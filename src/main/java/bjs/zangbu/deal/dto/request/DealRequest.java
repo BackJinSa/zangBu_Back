@@ -1,6 +1,5 @@
 package bjs.zangbu.deal.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,13 +17,13 @@ public class DealRequest {
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-  @Schema(name = "IntentRequest", description = "분석 리포트 결제 의도 요청 DTO")
+//   @Schema(name = "IntentRequest", description = "분석 리포트 결제 의도 요청 DTO")
   public static class IntentRequest {
 
     /**
      * 건물 ID
      */
-    @Schema(description = "건물 ID", example = "101")
+//     @Schema(description = "건물 ID", example = "101")
     private Long buildingId; // building 식별 id
   }
 
@@ -36,21 +35,21 @@ public class DealRequest {
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-  @Schema(name = "Status", description = "거래 상태 변경 요청 DTO")
+//   @Schema(name = "Status", description = "거래 상태 변경 요청 DTO")
   public static class Status {
 
     /**
      * 거래 ID
      */
-    @Schema(description = "거래 ID", example = "2001")
+//     @Schema(description = "거래 ID", example = "2001")
     private Long dealId;   // building 식별 id
 
     /**
      * 변경할 거래 상태 (DealEnum 상수 값 중 하나)
      */
-    @Schema(description = "변경할 거래 상태", example = "CLOSE_DEAL", allowableValues = {
-        "BEFORE_TRANSACTION", "BEFORE_OWNER", "BEFORE_CONSUMER", "MIDDLE_DEAL", "CLOSE_DEAL"
-    })
+//     @Schema(description = "변경할 거래 상태", example = "CLOSE_DEAL", allowableValues = {
+//        "BEFORE_TRANSACTION","BEFORE_OWNER","BEFORE_CONSUMER","MIDDLE_DEAL","CLOSE_DEAL"
+//  })
     private String status; // 상태
   }
 

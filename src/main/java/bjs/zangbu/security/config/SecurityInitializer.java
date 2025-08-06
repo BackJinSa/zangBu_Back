@@ -1,8 +1,7 @@
 package bjs.zangbu.security.config;
 
-import jakarta.servlet.ServletContext;
+import javax.servlet.ServletContext;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
-import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.multipart.support.MultipartFilter;
 
 public class SecurityInitializer extends AbstractSecurityWebApplicationInitializer {
@@ -13,9 +12,9 @@ public class SecurityInitializer extends AbstractSecurityWebApplicationInitializ
 //        return encodingFilter;
 //    }
 
-    @Override
-    protected void beforeSpringSecurityFilterChain(ServletContext servletContext) {
-        insertFilters(servletContext,  new MultipartFilter());
-    }
+  @Override
+  protected void beforeSpringSecurityFilterChain(ServletContext servletContext) {
+    insertFilters(servletContext, new MultipartFilter());
+  }
 
 }
