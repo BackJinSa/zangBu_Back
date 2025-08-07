@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class CodefEncryption {
 
-  @Value("${client_id}")
+  @Value("${codef.client_id}")
   private String clientId;
-  @Value("${client_secret}")
+  @Value("${codef.client_secret}")
   private String clientSecret;
-  @Value("${public_key}")
+  @Value("${codef.public_key}")
   private String publicKey;
   private EasyCodef codef;
 
