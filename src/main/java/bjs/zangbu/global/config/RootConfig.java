@@ -1,5 +1,6 @@
 package bjs.zangbu.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInterceptor;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -21,25 +22,25 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 @Configuration
 @PropertySource(value = "classpath:/application.yml", factory = YamlPropertyConfig.class)
 @MapperScan(basePackages = {
-        "bjs.zangbu.addressChange.mapper",
-        "bjs.zangbu.bookmark.mapper",
-        "bjs.zangbu.building.mapper",
-        "bjs.zangbu.chat.mapper",
-        "bjs.zangbu.complexList.mapper",
-        "bjs.zangbu.deal.mapper",
-        "bjs.zangbu.documentReport.mapper",
-        "bjs.zangbu.fcm.mapper",
-        "bjs.zangbu.imageList.mapper",
-        "bjs.zangbu.map.mapper",
-        "bjs.zangbu.member.mapper",
-        "bjs.zangbu.notification.mapper",
-        "bjs.zangbu.payment.mapper",
-        "bjs.zangbu.review.mapper",
+    "bjs.zangbu.addressChange.mapper",
+    "bjs.zangbu.bookmark.mapper",
+    "bjs.zangbu.building.mapper",
+    "bjs.zangbu.chat.mapper",
+    "bjs.zangbu.complexList.mapper",
+    "bjs.zangbu.deal.mapper",
+    "bjs.zangbu.documentReport.mapper",
+    "bjs.zangbu.fcm.mapper",
+    "bjs.zangbu.imageList.mapper",
+    "bjs.zangbu.map.mapper",
+    "bjs.zangbu.member.mapper",
+    "bjs.zangbu.notification.mapper",
+    "bjs.zangbu.payment.mapper",
+    "bjs.zangbu.review.mapper",
 })
 /* 컨트롤러를 제외하고 전역 스캔: 서비스/컴포넌트/클라이언트 등 등록 */
 @ComponentScan(
-        basePackages = "bjs.zangbu",
-        excludeFilters = @ComponentScan.Filter(org.springframework.stereotype.Controller.class)
+    basePackages = "bjs.zangbu",
+    excludeFilters = @ComponentScan.Filter(org.springframework.stereotype.Controller.class)
 )
 public class RootConfig {
 
@@ -99,4 +100,8 @@ public class RootConfig {
 
   }
 
+  @Bean
+  public ObjectMapper objectMapper() {
+    return new ObjectMapper();
+  }
 }
