@@ -85,9 +85,29 @@
         FROM building
         WHERE building_id = #{buildingId}
     </select>
+    <resultMap id="BuildingResultMap" type="bjs.zangbu.building.vo.Building">
+        <result column="building_id" property="buildingId" />
+        <result column="member_id" property="memberId" />
+        <result column="complex_id" property="complexId" />
+        <result column="seller_nickname" property="sellerNickname" />
+        <result column="sale_type" property="saleType" javaType="bjs.zangbu.notification.vo.SaleType" />
+        <result column="price" property="price" />
+        <result column="deposit" property="deposit" />
+        <result column="bookmark_count" property="bookmarkCount" />
+        <result column="created_at" property="createdAt" javaType="java.time.LocalDateTime" />
+        <result column="building_name" property="buildingName" />
+        <result column="seller_type" property="sellerType" javaType="bjs.zangbu.building.vo.SellerType" />
+        <result column="property_type" property="propertyType" javaType="bjs.zangbu.building.vo.PropertyType" />
+        <result column="move_date" property="moveDate" javaType="java.time.LocalDateTime" />
+        <result column="info_oneline" property="infoOneline" />
+        <result column="info_building" property="infoBuilding" />
+        <result column="contact_name" property="contactName" />
+        <result column="contact_phone" property="contactPhone" />
+        <result column="facility" property="facility" />
+    </resultMap>
 
     <!-- building_id로 매물 정보 조회 -->
-    <select id="getBuildingById" resultType="bjs.zangbu.building.vo.Building">
+    <select id="getBuildingById" resultMap="BuildingResultMap">
         SELECT *
         FROM building
         WHERE building_id = #{buildingId}

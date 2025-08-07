@@ -1,11 +1,16 @@
 package bjs.zangbu.chat.service;
 
+import bjs.zangbu.building.mapper.BuildingMapper;
+import bjs.zangbu.building.vo.Building;
 import bjs.zangbu.chat.dto.request.ChatRequest;
 import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.mapper.ChatMapper;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
 import bjs.zangbu.member.mapper.MemberMapper;
+import bjs.zangbu.building.service.BuildingService; // building 정보 조회를 위한 서비스(가정)
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
@@ -27,6 +32,7 @@ public class ChatServiceImpl implements ChatService{
 
     private final ChatMapper chatMapper;
     private final MemberMapper memberMapper;
+    private final BuildingMapper buildingMapper;
 
     //메시지 전송
     @Override
@@ -58,8 +64,11 @@ public class ChatServiceImpl implements ChatService{
 
     //chatRoomId 기준으로 해당 채팅방의 메시지들 가져오기
     @Override
-    public List<ChatMessage> getMessages(String chatRoomId, long lastMessageId, int limit) {
-        return chatMapper.selectMessagesByRoomId(chatRoomId, lastMessageId, limit);
+    public List<ChatMessage> getMessages(String chatRoomId, Long lastMessageId, int limit) {
+        log.info("ChatServiceImpl");
+        List<ChatMessage> messages =  chatMapper.selectMessagesByRoomId(chatRoomId, lastMessageId, limit);
+
+        return messages;
     }
 
     //chatRoomId 기준으로 채팅방 상세정보 가져오기
@@ -127,30 +136,58 @@ public class ChatServiceImpl implements ChatService{
 
     //채팅방 생성
     @Override
-    public ChatRoom createChatRoom(ChatRoom chatRoom) {
-        Long buildingId = chatRoom.getBuildingId();
-        String consumerId = chatRoom.getConsumerId();
+    @Transactional
+    public ChatRoom createChatRoom(Long buildingId, String consumerId) {
+        ChatRoom existingChatRoom = chatMapper.existsChatRoom(buildingId, consumerId);
 
-        ChatRoom existsedChatRoom = chatMapper.existsChatRoom(buildingId, consumerId);
+        log.info("ChatServiceImpl - createChatRoom");
+        //채팅방 이미 존재하는지 확인
+        if (existingChatRoom != null) {
+            log.info("ChatServiceImpl - createChatRoom: 이미 존재: " + existingChatRoom.getChatRoomId());
+            return existingChatRoom;
+        }
 
-        if (existsedChatRoom == null) { //buildingId, consumerId으로 채팅방이 없을 때만 채팅방 생성
+        log.info("ChatServiceImpl - createChatRoom : 채팅방 존재xx : buildingId는 " + buildingId);
+
+        Building building = null;
+        try {
+            building = buildingMapper.getBuildingById(buildingId);
+            log.info("building 조회 성공: {}", building);
+        } catch (Exception e) {
+            log.error("building 조회 중 예외 발생", e);  // 🔥 예외 로그 여기서 확인
+            throw e;
+        }
+
+        if (building == null) {
+            log.info("building이 null");
+            throw new IllegalArgumentException("존재하지 않는 매물입니다.");
+        }
+        // 구매자, 판매자 닉네임 조회
+        String consumerNickname = memberMapper.getNicknameByMemberId(consumerId);
+        String sellerNickname = memberMapper.getNicknameByMemberId(building.getMemberId());
+        log.info("ChatServiceImpl - createChatRoom: 구매자닉네임: " + consumerNickname + ", 판매자: " + sellerNickname);
+
+        // 모든 정보가 확인되었을 때만 채팅방 생성
+        if (consumerNickname != null && sellerNickname != null) {
             String uuid = UUID.randomUUID().toString();
-            chatRoom = ChatRoom.builder()
+            log.info("uuid: " + uuid);
+            ChatRoom newChatRoom = ChatRoom.builder()
                     .chatRoomId(uuid)
-                    .buildingId(chatRoom.getBuildingId())
-                    .consumerId(chatRoom.getConsumerId())
-                    .complexId(chatRoom.getComplexId())
-                    .sellerNickname(chatRoom.getSellerNickname())
-                    .consumerNickname(chatRoom.getConsumerNickname())
+                    .buildingId(buildingId)
+                    .buildingName(building.getBuildingName())
+                    .consumerId(consumerId)
+                    .complexId(building.getComplexId())
+                    .sellerNickname(sellerNickname)
+                    .consumerNickname(consumerNickname)
+                    .sellerId(building.getMemberId())
                     .sellerVisible(true)    // 초기값 true
                     .consumerVisible(true)  // 초기값 true
                     .build();
 
-            chatMapper.insertChatRoom(chatRoom);
-            return chatRoom;
+            chatMapper.insertChatRoom(newChatRoom);
+            return newChatRoom;
         } else {
-            //존재하는 경우에 어떻게 처리할지 나중에 적절히 코드 변경
-            return existsedChatRoom;
+            throw new IllegalStateException("사용자 정보를 찾을 수 없어 채팅방을 생성할 수 없습니다.");
         }
     }
 
@@ -165,20 +202,26 @@ public class ChatServiceImpl implements ChatService{
         }
 
         //나가려는 사용자가 판매자인지 구매자인지 확인
-        boolean isSeller = userId.equals(chatMapper.selectMemberIdByNickname(userId));
+        boolean isSeller = userId.equals(chatRoom.getSellerId());
         boolean isBuyer = userId.equals(chatRoom.getConsumerId());
+
+        boolean otherPartyAlreadyLeft = false;
 
         //나가려는 사용자의 채팅방 목록에서 해당 채팅방이 보이지 않도록 DB에서 변경
         if (isSeller) {
             chatMapper.updateSellerVisible(chatRoomId);
+            // 내가 나가기 전, 상대방(구매자)이 이미 나가 있었는지 확인
+            otherPartyAlreadyLeft = !chatRoom.getConsumerVisible();
         } else if (isBuyer) {
             chatMapper.updateConsumerVisible(chatRoomId);
+            // 내가 나가기 전, 상대방(판매자)이 이미 나가 있었는지 확인
+            otherPartyAlreadyLeft = !chatRoom.getSellerVisible();
         } else {
             throw new IllegalStateException("채팅방 참여자가 아닙니다.");
         }
 
-        //일대일 채팅에 참여한 둘 모두 나간 경우(visible = false인 경우)에 DB에서 완전 삭제
-        if (!chatRoom.getSellerVisible() && !chatRoom.getConsumerVisible()) {
+        // 상대방이 이미 나간 상태에서 내가 나간 것이라면, 이제 둘 다 나갔으므로 채팅방을 완전히 삭제
+        if (otherPartyAlreadyLeft) {
             //chatRoomId의 ChatMessage들 삭제
             chatMapper.deleteMessagesByRoomId(chatRoomId);
             //chatRoomId의 ChatRoom 삭제
@@ -187,13 +230,13 @@ public class ChatServiceImpl implements ChatService{
     }
 
     @Override
-    public String getUserIdByNickname(String userId) {
-        String nickname = chatMapper.selectMemberIdByNickname(userId);
-        if (nickname == null) {
-            throw new IllegalArgumentException(nickname+ "을 닉네임으로 하는 userId를 찾지 못했습니다.");
+    public String getUserIdByNickname(String nickname) {
+        String memberId = chatMapper.selectMemberIdByNickname(nickname);
+        if (memberId == null) {
+            throw new IllegalArgumentException(nickname + "을(를) 닉네임으로 하는 사용자를 찾지 못했습니다.");
         }
 
-        return nickname;
+        return memberId;
     }
 
     @Override
@@ -207,6 +250,7 @@ public class ChatServiceImpl implements ChatService{
             throw new IllegalStateException("채팅방 참여자가 아닙니다.");
         }
 
+        log.info("ChatServiceImpl - markAsRead");
         // 현재 사용자가 보낸 메시지가 아닌 것만 읽음 처리
         chatMapper.markMessagesAsRead(chatRoomId, userId);
     }

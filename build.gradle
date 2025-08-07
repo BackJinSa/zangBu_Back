@@ -116,6 +116,9 @@ dependencies {
 
     // Apache Commons Codec
     implementation 'commons-codec:commons-codec:1.15'
+
+    //JSON localdatetime 직렬화 문제로 추가함
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 }
 
 test {

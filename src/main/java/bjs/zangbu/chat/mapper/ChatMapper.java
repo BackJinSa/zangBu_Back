@@ -14,7 +14,9 @@ public interface ChatMapper {
     int insertMessage(ChatMessage chatMessage);
 
     //chatRoomId에 해당하는 메시지들 조회(제일 마지막 메시지부터 limit개 -> 더보기 클릭 시 limit개씩 추가 조회)
-    List<ChatMessage> selectMessagesByRoomId(String chatRoomId, long lastMessageId, int limit);
+    List<ChatMessage> selectMessagesByRoomId(@Param("chatRoomId") String chatRoomId,
+                                             @Param("lastMessageId") Long lastMessageId,
+                                             @Param("limit") int limit);
 
     //chatRoomId에 해당하는 채팅방 상세 조회
     ChatRoom selectChatRoomById(String chatRoomId);
@@ -26,7 +28,8 @@ public interface ChatMapper {
                                       @Param("size") int size);
 
     //채팅방 유무 확인(하나의 매물 + 구매자 당 하나의 채팅방이므로 중복 생성 방지용)
-    ChatRoom existsChatRoom(Long buildingId, String consumerId);
+    ChatRoom existsChatRoom(@Param("buildingId") Long buildingId,
+                            @Param("consumerId") String consumerId);
 
     //채팅방 생성
     void insertChatRoom(ChatRoom chatRoom);
@@ -50,9 +53,10 @@ public interface ChatMapper {
     int countUnreadMessages(@Param("chatRoomId") String chatRoomId,
                             @Param("userId") String userId);
     
-    //아이디로 닉네임 가져오기
+    //닉네임으로 아이디 가져오기
     String selectMemberIdByNickname(String nickname);
 
     //메시지 읽음 처리
-    int markMessagesAsRead(String chatRoomId, String userId);
+    int markMessagesAsRead(@Param("chatRoomId") String chatRoomId,
+                           @Param("userId") String userId);
 }

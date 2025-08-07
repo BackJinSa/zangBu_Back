@@ -4,6 +4,7 @@ import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.service.ChatService;
 import bjs.zangbu.chat.service.ChatServiceImpl;
 import bjs.zangbu.chat.vo.ChatMessage;
+import bjs.zangbu.chat.dto.request.ChatRequest;
 import bjs.zangbu.chat.vo.ChatRoom;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +42,14 @@ public class ChatController {
 //       @ApiResponse(responseCode = "500", description = "서버 내부 오류")
 //})
 
-  @PostMapping("/room")
-  public ResponseEntity<ChatRoom> createChatRoom(@RequestBody ChatRoom chatRoom) {
-    ChatRoom room = chatService.createChatRoom(chatRoom);
+  @PostMapping(value = "/room/{buildingId}", produces = "application/json;charset=UTF-8")
+  public ResponseEntity<ChatRoom> createChatRoom(@PathVariable Long buildingId) {
+//    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//    String consumerId = authentication.getName();  //TODO: 테스트용, 나중에 주석 취소
+    String consumerId = "user-001";
+
+    log.info("ChatController - createChatRoom");
+    ChatRoom room = chatService.createChatRoom(buildingId, consumerId);
     return ResponseEntity.status(HttpStatus.CREATED).body(room);
   }
 
@@ -98,17 +104,18 @@ public class ChatController {
 //       @ApiResponse(responseCode = "500", description = "서버 내부 오류")
 //  })
 
-  @GetMapping("/room/{roomId}")
+  @GetMapping(value = "/room/{roomId}", produces = "application/json")
   public ResponseEntity<List<ChatMessage>> getMessages(
 //    @Parameter(description = "조회할 채팅방 id")
       @PathVariable String roomId,
 //    @Parameter(description = "현재 불러온 메시지 중 가장 마지막 메시지 id")
-      @PathVariable long lastMessageId,
+      @RequestParam(required = false) Long lastMessageId,
 //    @Parameter(description = "한 번에 보여주는 메시지 개수")
       @RequestParam(defaultValue = "20") int limit
   ) {
     List<ChatMessage> messages = chatService.getMessages(roomId, lastMessageId, limit);
-    return ResponseEntity.status(200).body(messages);
+
+    return ResponseEntity.ok(messages);
   }
 
 // 채팅방 나가기
@@ -124,8 +131,9 @@ public class ChatController {
   public ResponseEntity<Void> leaveChatRoom(
 //    @Parameter(description = "나갈 채팅방 id")
       @PathVariable String roomId) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    String userId = authentication.getName();
+//    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//    String userId = authentication.getName();
+    String userId = "user-010";
 
     chatService.leaveChatRoom(roomId, userId);
     return ResponseEntity.status(204).build();
@@ -140,13 +148,14 @@ public class ChatController {
 //       @ApiResponse(responseCode = "500", description = "서버 내부 오류")
 //  })
 
-  @PutMapping(value = "/room/{roomId}/read",  produces = "application/json;charset=UTF-8")
+  @PutMapping(value = "/room/{roomId}/read")
   public ResponseEntity<Void> markAsRead(
 //    @Parameter(description = "채팅방 ID")
       @PathVariable String roomId) {
 //    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //    String userId = authentication.getName();
     String userId = "user-001";
+    log.info("ChatController - markAsRead");
 
     chatService.markAsRead(roomId, userId);
     return ResponseEntity.noContent().build(); // 204
