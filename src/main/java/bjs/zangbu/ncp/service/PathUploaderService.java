@@ -3,7 +3,7 @@ package bjs.zangbu.ncp.service;
 /**
  * 로컬 파일 업로드, 조회, 목록 조회
  */
-public interface ObjectStorageService {
+public interface PathUploaderService {
 
   /**
    * 로컬 파일을 Object Storage 에 업로드함.

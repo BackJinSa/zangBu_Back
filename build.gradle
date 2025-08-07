@@ -49,6 +49,9 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
     implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
     implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.20.0'
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
+
 
     // Lombok
     compileOnly 'org.projectlombok:lombok:1.18.30'
@@ -76,8 +79,13 @@ dependencies {
     implementation 'org.yaml:snakeyaml:1.30'
 
     // Test
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
+//    testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
+//    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+    testImplementation 'org.springframework:spring-test:5.3.33'
+
 
     // codef
     implementation 'io.codef.api:easycodef-java:1.0.6'
