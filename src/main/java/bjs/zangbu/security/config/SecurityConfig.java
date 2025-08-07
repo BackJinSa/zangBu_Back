@@ -89,8 +89,12 @@ public class SecurityConfig {
 
         // 권한 설정
         .authorizeHttpRequests(auth -> auth
+            // 기본 및 테스트 URL
+            .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/index.html")).permitAll()
+
             // Swagger 관련 경로 허용 (Springfox 기준)
-            .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html/**")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/v2/api-docs")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
@@ -99,10 +103,6 @@ public class SecurityConfig {
             // 정적 리소스 허용 (필요시)
             .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
-
-            // 기본 및 테스트 URL
-            .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/index.html")).permitAll()
 
             // 보안 API 경로 설정
             .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()

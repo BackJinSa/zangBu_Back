@@ -1,5 +1,7 @@
 package bjs.zangbu.deal.dto.request;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,14 +19,11 @@ public class DealRequest {
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-//   @Schema(name = "IntentRequest", description = "분석 리포트 결제 의도 요청 DTO")
+  @ApiModel(description = "분석 리포트 결제 의도 요청 DTO")
   public static class IntentRequest {
 
-    /**
-     * 건물 ID
-     */
-//     @Schema(description = "건물 ID", example = "101")
-    private Long buildingId; // building 식별 id
+    @ApiModelProperty(value = "건물 ID", example = "101")
+    private Long buildingId;
   }
 
   //  /deal/status Request
@@ -35,22 +34,14 @@ public class DealRequest {
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-//   @Schema(name = "Status", description = "거래 상태 변경 요청 DTO")
+  @ApiModel(description = "거래 상태 변경 요청 DTO")
   public static class Status {
 
-    /**
-     * 거래 ID
-     */
-//     @Schema(description = "거래 ID", example = "2001")
-    private Long dealId;   // building 식별 id
+    @ApiModelProperty(value = "거래 ID", example = "2001")
+    private Long dealId;
 
-    /**
-     * 변경할 거래 상태 (DealEnum 상수 값 중 하나)
-     */
-//     @Schema(description = "변경할 거래 상태", example = "CLOSE_DEAL", allowableValues = {
-//        "BEFORE_TRANSACTION","BEFORE_OWNER","BEFORE_CONSUMER","MIDDLE_DEAL","CLOSE_DEAL"
-//  })
-    private String status; // 상태
+    @ApiModelProperty(value = "변경할 거래 상태", example = "CLOSE_DEAL", allowableValues = "BEFORE_TRANSACTION,BEFORE_OWNER,BEFORE_CONSUMER,MIDDLE_DEAL,CLOSE_DEAL")
+    private String status;
   }
 
 }
