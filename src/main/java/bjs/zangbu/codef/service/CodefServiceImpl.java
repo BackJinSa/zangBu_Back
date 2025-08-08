@@ -51,9 +51,9 @@ public class CodefServiceImpl implements CodefService {
   }
 
   //codef 결제 관련
-  @Value("${ePrepayNo}")
+  @Value("${codef.ePrepayNo}")
   private String ePrepayNo;
-  @Value("${ePrepayPass}")
+  @Value("${codef.ePrePayPass}")
   private String ePrepayPass;
 
   /**
