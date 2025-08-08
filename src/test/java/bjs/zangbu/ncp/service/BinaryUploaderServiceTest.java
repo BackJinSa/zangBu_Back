@@ -1,14 +1,12 @@
 package bjs.zangbu.ncp.service;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import bjs.zangbu.global.config.RootConfig;
-import bjs.zangbu.ncp.auth.Holder;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Properties;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +14,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+/**
+ * {@link BinaryUploaderService}의 PDF 바이너리 업로드 기능을 검증하는 단위 테스트 클래스
+ *
+ * <p>
+ * - 유효한 PDF → 정상 업로드<br> - 유효하지 않은 PDF → 예외 발생
+ * </p>
+ */
 @Log4j2
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = RootConfig.class)
@@ -23,33 +28,46 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 class BinaryUploaderServiceTest {
 
   @Autowired
-  private BinaryUploaderService uploaderService;
+  BinaryUploaderService binaryUploaderService;
 
-  @BeforeAll
-  static void initStaticNcpConfig() throws IOException {
-    Properties props = new Properties();
-    try (InputStream input = Files.newInputStream(
-        Paths.get("src/test/resources/application.yml"))) {
-      props.load(input);
-    }
+  final String bucketName = "bjs-bucket";
 
-    // static 필드 직접 할당
-    Holder.HeaderCreationHolder.ENDPOINT = props.getProperty("ncp.endpoint");
-    Holder.HeaderCreationHolder.ACCESS_KEY = props.getProperty("ncp.accessKey");
-    Holder.HeaderCreationHolder.SECRET_KEY = props.getProperty("ncp.secretKey");
-    Holder.HeaderCreationHolder.REGION_NAME = props.getProperty("ncp.regionName");
+  /**
+   * 유효한 PDF 시그니처가 포함된 바이트 배열을 업로드했을 때 public URL이 반환되는지 테스트
+   */
+  @Test
+  @DisplayName("유효한 PDF 바이너리 업로드 - public URL 반환")
+  void putPdfObject_validPdf_shouldReturnPublicUrl() throws Exception {
+    // given
+    byte[] validPdfBytes = new byte[]{
+        0x25, 0x50, 0x44, 0x46, 0x2D  // %PDF-
+    };
+    String objectName = "test-folder/binary-upload-valid.pdf";
+
+    // when
+    String url = binaryUploaderService.putPdfObject(bucketName, objectName, validPdfBytes);
+
+    // then
+    assertNotNull(url, "업로드된 URL은 null이 아니어야 함");
+    assertTrue(url.contains(bucketName), "URL에 버킷 이름이 포함되어야 함");
+    assertTrue(url.contains(objectName), "URL에 오브젝트 이름이 포함되어야 함");
   }
 
+  /**
+   * 유효하지 않은 바이트 배열을 업로드할 경우 IllegalArgumentException이 발생하는지 테스트
+   */
   @Test
-  void putPdfObject() throws Exception {
+  @DisplayName("잘못된 PDF 바이너리 업로드 - IllegalArgumentException 발생")
+  void putPdfObject_invalidPdf_shouldThrowIllegalArgumentException() {
+    // given
+    byte[] invalidBytes = "this is not a pdf".getBytes();
+    String objectName = "test-folder/binary-upload-invalid.pdf";
 
-    byte[] pdfBytes = Files.readAllBytes(Paths.get("src/test/resources/test.pdf"));
+    // when & then
+    Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+      binaryUploaderService.putPdfObject(bucketName, objectName, invalidBytes);
+    });
 
-    String bucketName = "bjs-bucket"; // 실제 버킷 이름으로 변경
-    String objectName = "test-folder/uploaded-test.pdf"; // 저장될 경로와 파일명
-
-    uploaderService.putPdfObject(bucketName, objectName, pdfBytes);
-
-    log.info("✔ 업로드 완료: {}", objectName);
+    assertTrue(exception.getMessage().toLowerCase().contains("pdf"), "예외 메시지에 'pdf'가 포함되어야 함");
   }
 }

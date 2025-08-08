@@ -7,6 +7,7 @@ import bjs.zangbu.codef.thread.CodefThread;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.codef.api.EasyCodef;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -15,6 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import javax.annotation.PostConstruct;
+
+import io.codef.api.EasyCodefServiceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -51,56 +54,58 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
    */
   @Override
   public String residentRegistrationCertificate(ResRegisterCertRequest request)
-      throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+          throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
     String productUrl = "/v1/kr/public/mw/resident-registration-abstract/issuance";
 
-    String identity = request.getIdentity();
-    String urlEncoded = URLEncoder.encode(identity, StandardCharsets.UTF_8);
+    // 1. 1차 인증 파라미터 맵 생성
+    HashMap<String, Object> parameterMap = new HashMap<>();
+    parameterMap.put("organization", "0001");
+    parameterMap.put("loginType", "5");
+    parameterMap.put("identityEncYn", "Y");
+    parameterMap.put("birthDate", request.getBirth());
+    parameterMap.put("identity", URLEncoder.encode(request.getIdentity(), StandardCharsets.UTF_8));
+    parameterMap.put("timeout", "170"); // 2차 인증 대기 시간
+    parameterMap.put("userName", request.getName());
+    parameterMap.put("loginTypeLevel", "1");
+    parameterMap.put("phoneNo", request.getPhone());
+    parameterMap.put("personalInfoChangeYN", "0");
+    parameterMap.put("pastAddrChangeYN", "1");
+    parameterMap.put("nameRelationYN", "0");
+    parameterMap.put("militaryServiceYN", "0");
+    parameterMap.put("overseasKoreansIDYN", "0");
+    parameterMap.put("isIdentityViewYn", "0");
+    parameterMap.put("originDataYN", "0");
+    parameterMap.put("telecom", request.getTelecom());
 
-    List<CodefThread> threadList = new ArrayList<>();
-    // 2번을 예시로 여러 동시 요청 처리 가능 (for문 반복수 조정 시 멀티 인증 확장 가능)
-    for (int i = 0; i < 2; i++) {
-      // 주민등록초본 API 파라미터 셋팅
-      HashMap<String, Object> parameterMap = new HashMap<>();
-      parameterMap.put("organization", "0001");      // 기관코드
-      parameterMap.put("loginType", "5");            // 로그인 유형 (통합인증/휴대폰 등)
-      parameterMap.put("identityEncYn", "Y"); // 주민번호 암호화 여부
-      parameterMap.put("birthDate", request.getBirth());               // 생년월일
-      parameterMap.put("identity", urlEncoded);                // 주민등록번호
-      parameterMap.put("timeout", "170");
-      parameterMap.put("userName", request.getName());                // 사용자 이름
-      parameterMap.put("loginTypeLevel", "1");          // 인증 레벨
-      parameterMap.put("phoneNo", request.getPhone());                 // 휴대폰 번호
-//            parameterMap.put("addrSido", );                // 주소(시/도)
-//            parameterMap.put("addrSiGunGu", );             // 주소(시군구)
-      parameterMap.put("personalInfoChangeYN", "0"); // 개인정보 변경이력 포함 여부
-      parameterMap.put("pastAddrChangeYN", "1");     // 과거 주소 포함 여부
-      parameterMap.put("nameRelationYN", "0");       // 친족관계 포함 여부
-      parameterMap.put("militaryServiceYN", "0");    // 병역사항 포함 여부
-      parameterMap.put("overseasKoreansIDYN", "0");  // 해외교포 여부
-      parameterMap.put("isIdentityViewYn", "0");     // 주민등록번호 표기 여부
-      parameterMap.put("originDataYN", "0");         // 원본 데이터 표기 여부
-      parameterMap.put("telecom", request.getTelecom());
+    // 2. 1차 인증 요청
+    String firstResponse = codef.requestProduct(productUrl, EasyCodefServiceType.DEMO, parameterMap);
+    HashMap<String, Object> responseMap = new ObjectMapper().readValue(firstResponse, HashMap.class);
+    HashMap<String, Object> resultMap = (HashMap<String, Object>) responseMap.get("result");
+    String code = (String) resultMap.get("code");
 
-      // 스레드별로 CODEF API 호출(병렬 실행)
-      CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
+    // 3. 2차 인증이 필요한 경우 (CF-03002)
+    if ("CF-03002".equals(code)) {
+      System.out.println("주민등록초본 1차 인증 완료. 2차 인증을 위해 대기합니다...");
+      HashMap<String, Object> dataMap = (HashMap<String, Object>) responseMap.get("data");
+
+      // 2차 인증 파라미터 맵 생성
+      HashMap<String, Object> twoWayParams = new HashMap<>();
+      twoWayParams.put("jobIndex", dataMap.get("jobIndex"));
+      twoWayParams.put("threadIndex", dataMap.get("threadIndex"));
+      twoWayParams.put("jti", dataMap.get("jti"));
+      twoWayParams.put("twoWayTimestamp", ((Number) dataMap.get("twoWayTimestamp")).longValue());
+      twoWayParams.put("timeout", parameterMap.get("timeout")); // 2차 인증 대기 시간
+
+      // 4. 2차 인증 스레드 시작
+      CodefThread t = new CodefThread(codef, twoWayParams, productUrl);
       t.start();
-      threadList.add(t);
-      Thread.sleep(10000); // (각 스레드 간 간격, 실전에서는 필요시 조정)
+      t.join(); // 스레드 종료까지 대기
+
+      return t.getSecondResponse();
     }
 
-    // 모든 스레드의 인증 결과 JSON 반환(2차 응답 있으면 2차, 없으면 1차)
-    StringBuilder sb = new StringBuilder();
-    for (CodefThread t : threadList) {
-      t.join();
-      if (t.getSecondResponse() != null) {
-        sb.append(t.getSecondResponse());
-      } else if (t.getFirstResponse() != null) {
-        sb.append(t.getFirstResponse());
-      }
-      sb.append("\n");
-    }
-    return sb.toString();
+    // 2차 인증이 필요 없으면 바로 결과 반환
+    return firstResponse;
   }
 
   /**
@@ -108,99 +113,126 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
    */
   @Override
   public String generalBuildingLeader(BuildingRegisterRequest request)
-      throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+          throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
     String productUrl = "/v1/kr/public/mw/building-register/colligation";
 
-    String orgIdentity = request.getIdentity();
-    String urlEncoded = URLEncoder.encode(orgIdentity, StandardCharsets.UTF_8);
+    // 1. 1차 인증 파라미터 맵 생성
+    HashMap<String, Object> parameterMap = new HashMap<>();
+    parameterMap.put("organization", "0001");
+    parameterMap.put("loginType", "5");
+    parameterMap.put("loginTypeLevel", "1");
+    parameterMap.put("userName", request.getUserName());
+    parameterMap.put("birthDate", request.getBirthDate());
+    parameterMap.put("phoneNo", request.getPhoneNo());
+    parameterMap.put("inquiryType", "1");
+    parameterMap.put("identity", request.getIdentity());
+    parameterMap.put("identityEncYn", "Y");
+    parameterMap.put("telecom", request.getTelecom());
+    parameterMap.put("address", request.getAddress());
+    parameterMap.put("type","0");
+    parameterMap.put("zipCode", request.getZipCode());
+    parameterMap.put("dong", request.getDong());
+    parameterMap.put("ho", request.getHo());
+    parameterMap.put("originDataYN", "1");
+    parameterMap.put("secureNoTimeout", "170");
 
-    List<CodefThread> threadList = new ArrayList<>();
-    for (int i = 0; i < 2; i++) {
-      // 건축물대장 실명 일치 확인 파라미터
-      // 1차 요청 파라미터
-      HashMap<String, Object> parameterMap = new HashMap<>();
-      parameterMap.put("organization", "0001"); // 기관 코드(고정)
-      parameterMap.put("loginType", "5"); // 인증 절차(회원 간편인증 : 5 , 고정)
-      parameterMap.put("loginTypeLevel", "1"); // 인증 유형(카카오 : 1 , 고정)
-      parameterMap.put("userName", request.getUserName()); // 사용자 이름
-      parameterMap.put("birthDate", request.getBirthDate()); // yymmdd
-      parameterMap.put("phoneNo", request.getPhoneNo()); // 전화번호
-      parameterMap.put("identity", urlEncoded); // 암호화된 주민 번호
-      parameterMap.put("identityEncYn", "Y"); // 주민번호 암호화 여부
-      parameterMap.put("telecom", request.getTelecom()); // 통신사 skt : 0, kt :1 , u+:2
-      parameterMap.put("address", request.getAddress());
-      parameterMap.put("zipCode", request.getZipCode());
-      parameterMap.put("dong", request.getDong());
-      parameterMap.put("ho", request.getHo());
+    // 2. 1차 인증 요청
+    String firstResponse = codef.requestProduct(productUrl, EasyCodefServiceType.DEMO, parameterMap);
+    HashMap<String, Object> responseMap = new ObjectMapper().readValue(firstResponse, HashMap.class);
+    HashMap<String, Object> resultMap = (HashMap<String, Object>) responseMap.get("result");
+    String code = (String) resultMap.get("code");
 
-      parameterMap.put("originDataYN", "1");
-      parameterMap.put("secureNoTimeout", "170");
+    // 3. 2차 인증이 필요한 경우 (CF-03002)
+    if ("CF-03002".equals(code)) {
+      System.out.println("건축물대장 1차 인증 완료. 2차 인증을 위해 1분간 대기합니다...");
+      Thread.sleep(60000);
 
-      CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
+      HashMap<String, Object> dataMap = (HashMap<String, Object>) responseMap.get("data");
+
+      // ⭐ twoWayInfo 파라미터 맵을 생성하고 2차 인증 정보를 담습니다.
+      HashMap<String, Object> twoWayInfoParams = new HashMap<>();
+      twoWayInfoParams.put("jobIndex", dataMap.get("jobIndex"));
+      twoWayInfoParams.put("threadIndex", dataMap.get("threadIndex"));
+      twoWayInfoParams.put("jti", dataMap.get("jti"));
+      twoWayInfoParams.put("twoWayTimestamp", ((Number) dataMap.get("twoWayTimestamp")).longValue());
+
+      // ⭐ 1차 파라미터 맵에 `twoWayInfo` 객체를 추가합니다.
+      parameterMap.put("twoWayInfo", twoWayInfoParams);
+
+      // ⭐ 2차 인증 요청에 필요한 파라미터만 담은 맵을 생성합니다.
+      HashMap<String, Object> secondRequestParams = new HashMap<>(parameterMap);
+      secondRequestParams.put("twoWayInfo", twoWayInfoParams);
+
+      // ⭐ is2Way 파라미터도 추가
+      secondRequestParams.put("is2Way", true);
+      secondRequestParams.put("simpleAuth", "1");
+
+      System.out.println("2차 인증 요청 파라미터 = " + secondRequestParams);
+
+      // 4. 2차 인증 스레드 시작
+      CodefThread t = new CodefThread(codef, secondRequestParams, productUrl);
       t.start();
-      threadList.add(t);
-      Thread.sleep(10000);
+      t.join(); // 스레드 종료까지 대기
+
+      return t.getSecondResponse();
     }
 
-    StringBuilder sb = new StringBuilder();
-    for (CodefThread t : threadList) {
-      t.join();
-      if (t.getSecondResponse() != null) {
-        sb.append(t.getSecondResponse());
-      } else if (t.getFirstResponse() != null) {
-        sb.append(t.getFirstResponse());
-      }
-      sb.append("\n");
-    }
-    return sb.toString();
+    // 2차 인증이 필요 없으면 바로 결과 반환
+    return firstResponse;
   }
-
   /**
    * 주민등록증 진위확인 (2차 인증 상품) - 실명인증/진위확인 CODEF API 요청 - 각종 파라미터(주소, 발급일 등) 포함해야 인증 정상 동작
    */
   @Override
   public String residentRegistrationAuthenticityConfirmation(AuthRequest.VerifyCodefRequest request)
-      throws Exception {
+          throws Exception {
     String productUrl = "/v1/kr/public/mw/identity-card/check-status";
 
-    String identity = request.getIdentity();
-    String RSAEncoded = rsaEncryption.encrypt(identity);
-    String urlEncoded = URLEncoder.encode(RSAEncoded, StandardCharsets.UTF_8);
+    // 1. 1차 인증 파라미터 맵 생성
+    HashMap<String, Object> parameterMap = new HashMap<>();
+    parameterMap.put("organization", "0002");
+    parameterMap.put("loginType", "6");
+    parameterMap.put("loginTypeLevel", "1");
+    parameterMap.put("phoneNo", request.getPhone());
+    parameterMap.put("loginUserName", request.getName());
+    parameterMap.put("loginBirthDate", request.getBirth());
+    parameterMap.put("birthDate", request.getBirth());
+    parameterMap.put("loginIdentity", URLEncoder.encode(rsaEncryption.encrypt(request.getIdentity()), StandardCharsets.UTF_8));
+    parameterMap.put("identity", URLEncoder.encode(rsaEncryption.encrypt(request.getIdentity()), StandardCharsets.UTF_8));
+    parameterMap.put("userName", request.getName());
+    parameterMap.put("issueDate", request.getIssueDate());
+    parameterMap.put("identityEncYn", "Y");
+    parameterMap.put("timeout", "170"); // 2차 인증 대기 시간
 
-    List<CodefThread> threadList = new ArrayList<>();
-    for (int i = 0; i < 2; i++) {
-      // 주민등록증 진위확인용 파라미터
-      HashMap<String, Object> parameterMap = new HashMap<>();
-      parameterMap.put("organization", "0002");   // 기관코드 : 고정
-      parameterMap.put("loginType", "6");         // 간편인증 : 고정
-      parameterMap.put("loginTypeLevel", "1");     // 인증레벨 : 고정
-      parameterMap.put("phoneNo", request.getPhone());              // 휴대폰번호 member.phone
-      parameterMap.put("loginUserName", request.getName());        // 로그인 사용자명 member.name
-      parameterMap.put("loginBirthDate", request.getBirth());       // 로그인 생년월일 member.birth
-      parameterMap.put("birthDate", request.getBirth());            // 실제 생년월일 , member.birth
-      parameterMap.put("loginIdentity", urlEncoded);        // 로그인 아이디(주민번호) member.identity
-      parameterMap.put("identity", urlEncoded);             // 주민등록번호 member.identity url 인코딩해야함
-      parameterMap.put("userName", request.getName());             // 사용자명 member.name
-      parameterMap.put("issueDate", request.getIssueDate());            // 주민등록증 발급일자
-      parameterMap.put("identityEncYn", "Y");     // 암호화 여부
+    // 2. 1차 인증 요청
+    String firstResponse = codef.requestProduct(productUrl, EasyCodefServiceType.DEMO, parameterMap);
+    HashMap<String, Object> responseMap = new ObjectMapper().readValue(firstResponse, HashMap.class);
+    HashMap<String, Object> resultMap = (HashMap<String, Object>) responseMap.get("result");
+    String code = (String) resultMap.get("code");
 
-      CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
+    // 3. 2차 인증이 필요한 경우 (CF-03002)
+    if ("CF-03002".equals(code)) {
+      System.out.println("주민등록증 진위확인 1차 인증 완료. 2차 인증을 위해 대기합니다...");
+      HashMap<String, Object> dataMap = (HashMap<String, Object>) responseMap.get("data");
+
+      // 2차 인증 파라미터 맵 생성
+      HashMap<String, Object> twoWayParams = new HashMap<>();
+      twoWayParams.put("jobIndex", dataMap.get("jobIndex"));
+      twoWayParams.put("threadIndex", dataMap.get("threadIndex"));
+      twoWayParams.put("jti", dataMap.get("jti"));
+      twoWayParams.put("twoWayTimestamp", ((Number) dataMap.get("twoWayTimestamp")).longValue());
+      twoWayParams.put("timeout", parameterMap.get("timeout"));
+
+      // 4. 2차 인증 스레드 시작
+      CodefThread t = new CodefThread(codef, twoWayParams, productUrl);
       t.start();
-      threadList.add(t);
-      Thread.sleep(10000);
+      t.join(); // 스레드 종료까지 대기
+
+      return t.getSecondResponse();
     }
 
-    StringBuilder sb = new StringBuilder();
-    for (CodefThread t : threadList) {
-      t.join();
-      if (t.getSecondResponse() != null) {
-        sb.append(t.getSecondResponse());
-      } else if (t.getFirstResponse() != null) {
-        sb.append(t.getFirstResponse());
-      }
-      sb.append("\n");
-    }
-    return sb.toString();
+    // 2차 인증이 필요 없으면 바로 결과 반환
+    return firstResponse;
   }
 
   /**
