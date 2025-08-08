@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import bjs.zangbu.global.config.RootConfig;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.DisplayName;
@@ -95,5 +98,25 @@ class Base64UploaderServiceTest {
     });
 
     assertTrue(e.getMessage().toLowerCase().contains("pdf"), "예외 메시지에 'pdf'가 포함되어야 함");
+  }
+
+  @Test
+  @DisplayName("resources/testbase64.txt 업로드 - public URL 반환")
+  void uploadBase64Pdf_fromFile_shouldReturnPublicUrl() throws Exception {
+    // given
+    Path path = Paths.get("src/test/resources/testbase64.txt");
+    String raw = Files.readString(path);
+
+    String objectName = "test-folder/testbase64.pdf";
+
+    // when
+    String url = base64UploaderService.uploadBase64Pdf(raw, bucketName, objectName);
+
+    // then
+    assertNotNull(url, "URL이 null이면 안 됨");
+    assertTrue(url.contains(bucketName), "URL에 버킷 이름이 포함되어야 함");
+    assertTrue(url.contains(objectName), "URL에 오브젝트 키가 포함되어야 함");
+
+    log.info("건축물대장 업로드 URL: {}", url);
   }
 }
