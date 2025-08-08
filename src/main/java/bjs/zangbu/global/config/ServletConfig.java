@@ -15,6 +15,7 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
     "bjs.zangbu.exception",
     "bjs.zangbu.controller",
     "org.springdoc",
+    "bjs.zangbu.global.controller",
     "bjs.zangbu.addressChange.controller",
     "bjs.zangbu.building.controller",
     "bjs.zangbu.chat.controller",

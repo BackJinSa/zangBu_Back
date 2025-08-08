@@ -1,34 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration>
+<Configuration status="WARN">
 
-    <!-- Appender, Layout 설정 -->
-    <Appenders>
-        <Console name="console" target="SYSTEM_OUT">
-            <PatternLayout pattern=" %-5level %c(%M:%L) - %m%n"/>
-        </Console>
-    </Appenders>
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %c{1} - %msg%n"/>
+    </Console>
+  </Appenders>
 
-    <!-- Logger 설정 -->
-    <Loggers>
-        <Root level="INFO">
-            <AppenderRef ref="console"/>
-        </Root>
-        <Logger name="org.scoula" level="INFO" additivity="false">
-            <AppenderRef ref="console"/>
-        </Logger>
+  <Loggers>
+    <!-- Root logger: 기본 로그는 INFO 이상만 출력 -->
+    <Root level="INFO">
+      <AppenderRef ref="Console"/>
+    </Root>
 
-        <Logger name="org.springframework" level="INFO" additivity="false">
-            <AppenderRef ref="console"/>
-        </Logger>
+    <Logger name="bjs.zangbu" level="INFO" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
 
-        <Logger name="jdbc" level="WARN" additivity="false">
-            <AppenderRef ref="console"/>
-        </Logger>
+    <!-- Spring framework 로그를 WARN 이상으로 제한 -->
+    <Logger name="org.springframework" level="WARN" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
 
-        <Logger name="jdbc.sqlonly" level="INFO" additivity="false">
-            <AppenderRef ref="console"/>
-        </Logger>
+    <!-- HikariCP 커넥션 로그를 WARN 이상으로 제한 -->
+    <Logger name="com.zaxxer.hikari" level="WARN" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
 
-    </Loggers>
+    <!-- Swagger 로깅 줄이기 -->
+    <Logger name="springfox.documentation" level="ERROR" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+
+    <!-- Tomcat JSP 관련 경고 제거 -->
+    <Logger name="org.apache.jasper" level="ERROR" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+
+    <!-- MyBatis 또는 SQL 로그는 필요 시만 INFO -->
+    <Logger name="jdbc" level="WARN" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Logger name="jdbc.sqlonly" level="INFO" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+  </Loggers>
 
 </Configuration>
