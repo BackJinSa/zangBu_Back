@@ -29,14 +29,14 @@ public class CodefTwoFactorServiceImplTest {
     public void generalBuildingLeader_shouldReturnValidResponse_whenGivenValidRequest() throws Exception {
         BuildingRegisterRequest request = BuildingRegisterRequest.builder()
                 .userName("백현빈")
-                .identity("실제 주민등록번호를 암호화한 값")
+                .identity("FY1GqIOaqzlBwjl/+BJD6fnRm/TtlrR+BzT+VgVqFkBUrSEsVKByQSboZ987sAnoCisosPVyuyPENt6pgd24CFpW6NqQx84bj21QnBbZ+fEnRJ1DC7DtR7twOFMyEhucDcl5eGKFi7SZapjH9w2gL0rsY78aG1G+mBDyjwzelj7YzVV7KzLTSEUzOBmsH+kcX0Snqg5ByTPS8BNvwfC4ypwyF+0JHY8k7q4mSsjEILao2XwwEu7GCTUPzK8AUVev8ZmWPIJSm2+xntGOJDPGfyoZ/8kxR9Cl8aIYVr47ExUpF4YSkPsrloWpqxthy2JiVjGGi41eBSqcVAyIdZgzwg==")
                 .birthDate("011020")
-                .phoneNo("01012345678")
-                .address("서울특별시 강남구 테헤란로")
+                .phoneNo("01075117975")
+                .address("서울특별시 동대문구 왕산로 23길 89")
                 .dong("101동")
-                .ho("1004호")
-                .telecom("0")
-                .zipCode("06130")
+                .ho("402호")
+                .telecom("2")
+                .zipCode("02575")
                 .build();
         String result = codefTwoFactorService.generalBuildingLeader(request);
         assertNotNull(result, "API 응답은 null이 아니어야 합니다.");
