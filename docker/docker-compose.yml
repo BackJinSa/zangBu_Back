@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  nginx:
+    build: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - tomcat
+    restart: always
+    networks:
+      - zangbu-net
+
+  redis:
+    image: redis:7.4.5-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    restart: always
+    networks:
+      - zangbu-net
+
+  rabbitmq:
+    image: rabbitmq:3.10-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=zangbumq
+      - RABBITMQ_DEFAULT_PASS=Zangzangbumq@0821
+    restart: always
+    networks:
+      - zangbu-net
+
+  tomcat:
+    build: tomcat
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - rabbitmq
+    restart: always
+    networks:
+      - zangbu-net
+
+volumes:
+  redis-data:
+
+networks:
+  zangbu-net:
+    driver: bridge

@@ -3,7 +3,6 @@ package bjs.zangbu.deal.service;
 import bjs.zangbu.codef.converter.CodefConverter;
 import bjs.zangbu.codef.service.CodefService;
 import bjs.zangbu.codef.service.CodefTwoFactorService;
-import bjs.zangbu.deal.S3.S3Uploader;
 import bjs.zangbu.deal.dto.join.DealDocumentInfo;
 import bjs.zangbu.deal.dto.join.DealWithSaleType;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
@@ -13,6 +12,7 @@ import bjs.zangbu.deal.dto.response.EstateRegistrationResponse;
 import bjs.zangbu.deal.mapper.DealMapper;
 import bjs.zangbu.deal.util.PdfUtil;
 import bjs.zangbu.deal.vo.DocumentType;
+import bjs.zangbu.documentReport.dto.request.EstateRegisterData;
 import bjs.zangbu.notification.vo.SaleType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class ContractServiceImpl implements ContractService {
     private final DealMapper dealMapper;
     private final CodefService codefService;
     private final CodefTwoFactorService codefTwoFactorService;
-    private final S3Uploader s3Uploader;
+
 
     @Override
     @Transactional(readOnly = true)
@@ -67,18 +67,23 @@ public class ContractServiceImpl implements ContractService {
         EstateRegistrationRequest request = dealMapper.getEstateRegistrationRequest(dealId);
         // codef에서 응답 가져오기
         String rawResponse = codefService.realEstateRegistrationLeader(request);;
-        // url 디코딩으로 최종 json 만듦
+        // url 디코딩으로 최종 json 만듦 todo: 추가 자료 들고오기
         String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
-        // 필요한 데이터만 파싱하여 저장
-        EstateRegistrationResponse dto = CodefConverter.parseDataToDto(decodedJson, EstateRegistrationResponse.class);
-
+        // pdf base64 파싱로 직
+        EstateRegistrationResponse base64 = CodefConverter.parseDataToDto(
+                decodedJson, EstateRegistrationResponse.class);
         // PDF 바이트 추출
-        byte[] pdfBytes = PdfUtil.decodePdfBytes(dto.getResOriginalData());
+        byte[] pdfBytes = PdfUtil.decodePdfBytes(base64.getResOriginalData());
         /* 6) S3 업로드 */
         String key  = "building-register-" + dealId + ".pdf";
-        String url  = s3Uploader.uploadPdf(pdfBytes, key);   // ← public URL or presigned URL
+//        String url  = s3Uploader.uploadPdf(pdfBytes, key);   // ← public URL or presigned URL
+        String url  = null; //todo : ncp 로직 설계 해야 함
 
-        return new EstateRegistrationResponse(url, dto.getCommUniqueNo());
+        //추가 로직 ★ 분석 리포트 데이터 저장
+        EstateRegisterData data = CodefConverter.parseDataToDto(
+                decodedJson, EstateRegisterData.class);
+
+        return new EstateRegistrationResponse(url, base64.getCommUniqueNo());
     }
     // 건축물대장 발급 api
     @Override
@@ -91,17 +96,19 @@ public class ContractServiceImpl implements ContractService {
         String rawResponse = codefTwoFactorService.generalBuildingLeader(request);
         // url 디코딩으로 최종 json 만듦
         String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
-        // 필요한 데이터만 파싱하여 저장
-        BuildingRegisterResponse dto = CodefConverter.parseDataToDto(decodedJson, BuildingRegisterResponse.class);
-
+        // pdf base64 데이터 저장
+        BuildingRegisterResponse base64 = CodefConverter.parseDataToDto(
+                decodedJson, BuildingRegisterResponse.class);
         // PDF 바이트 추출
-        byte[] pdfBytes = PdfUtil.decodePdfBytes(dto.getResOriginalData());
+        byte[] pdfBytes = PdfUtil.decodePdfBytes(base64.getResOriginalData());
 
-        /* 6) S3 업로드 */
+        /* S3 업로드~~ 임시 로직*/
         String key  = "building-register-" + dealId + ".pdf";
-        String url  = s3Uploader.uploadPdf(pdfBytes, key);   // ← public URL or presigned URL
+//        String url  = s3Uploader.uploadPdf(pdfBytes, key);   // ← public URL or presigned URL
+        String url  =null; //todo : ncp 로직 설계 해야 함
 
-        return new BuildingRegisterResponse(url, dto.getResViolationStatus());
+
+        return new BuildingRegisterResponse(url, base64.getResViolationStatus());
     }
 
     /**

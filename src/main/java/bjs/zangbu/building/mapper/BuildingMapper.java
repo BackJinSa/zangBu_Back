@@ -128,4 +128,7 @@ public interface BuildingMapper {
      */
     List<BuildingInfo> selectNewRooms(@Param("memberId") String memberId);
 
+
+    Integer getDeposit(Long buildingId);
+
 }

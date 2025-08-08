@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- src/main/resources/mapper/MapLocationMapper.xml -->
+<mapper namespace="bjs.zangbu.map.mapper.MapLocationMapper">
+    <select id="findLocationsByFilters" resultType="bjs.zangbu.map.vo.MapLocation">
+        SELECT
+        latitude       AS latitude,
+        longitude      AS longitude,
+        building_name  AS buildingName
+        FROM building
+        WHERE 1=1
+        <if test="saleTypes != null and saleTypes.size() &gt; 0">
+            AND sale_type IN
+            <foreach collection="saleTypes" item="st" open="(" separator="," close=")">
+                #{st}
+            </foreach>
+        </if>
+        <if test="propertyTypes != null and propertyTypes.size() &gt; 0">
+            AND property_type IN
+            <foreach collection="propertyTypes" item="pt" open="(" separator="," close=")">
+                #{pt}
+            </foreach>
+        </if>
+        <if test="priceMin != null">
+            AND price &gt;= #{priceMin}
+        </if>
+        <if test="priceMax != null">
+            AND price &lt;= #{priceMax}
+        </if>
+    </select>
+</mapper>
