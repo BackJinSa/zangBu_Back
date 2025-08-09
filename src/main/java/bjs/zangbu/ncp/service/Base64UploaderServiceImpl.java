@@ -30,7 +30,13 @@ public class Base64UploaderServiceImpl implements Base64UploaderService {
       base64Pdf = base64Pdf.substring(base64Pdf.indexOf(",") + 1);
     }
 
-    byte[] pdfBytes = Base64.getDecoder().decode(base64Pdf);
+    String cleaned = base64Pdf.replaceAll("\\\\n", "")   // 문자열 '\n' 제거
+        .replaceAll("\\\\r", "")
+        .replaceAll("\\\\", "")    // 역슬래시 자체 제거
+        .replaceAll("\"", "")      // 따옴표 제거
+        .replaceAll("\\s+", "");   // 모든 공백 문자 제거
+
+    byte[] pdfBytes = Base64.getDecoder().decode(cleaned);
     return binaryUploaderService.putPdfObject(bucketName, objectName, pdfBytes);
   }
 
