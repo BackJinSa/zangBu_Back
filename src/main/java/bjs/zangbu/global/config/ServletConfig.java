@@ -29,6 +29,7 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
     "bjs.zangbu.publicdata.controller",
     "bjs.zangbu.review.controller",
     "bjs.zangbu.scheduler.controller",
+        "bjs.zangbu.security.account.controller"
 })
 public class ServletConfig implements WebMvcConfigurer {
 

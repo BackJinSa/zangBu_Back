@@ -13,21 +13,39 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.authentication.BadCredentialsException;
 
+/**
+ * 인증 관련 API 요청 시 사용되는 DTO들을 모아놓은 클래스.
+ */
 public class AuthRequest {
 
-  // /auth/login Request
+  /**
+   * 로그인 요청을 위한 DTO.
+   */
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
   @ApiModel(description = "로그인 요청 DTO")
   public static class LoginRequest {
 
+    /**
+     * 사용자 이메일.
+     */
     @ApiModelProperty(value = "이메일", example = "example.zangbu.com")
     private String email;
 
-    //    @Schema(description = "비밀번호", example = "Password123!")
+    /**
+     * 사용자 비밀번호.
+     */
+    @ApiModelProperty(value = "비밀번호", example = "Password123!")
     private String password;
 
+    /**
+     * HttpServletRequest에서 LoginRequest 객체를 생성합니다.
+     *
+     * @param request HTTP 서블릿 요청 객체
+     * @return 생성된 LoginRequest 객체
+     * @throws BadCredentialsException 이메일 또는 비밀번호가 없을 경우 발생
+     */
     public static LoginRequest of(HttpServletRequest request) {
       ObjectMapper om = new ObjectMapper();
       try {
@@ -38,135 +56,218 @@ public class AuthRequest {
     } //of
   }
 
-  // /auth/email Request 이메일 찾기 요청
+  /**
+   * 이메일 찾기 요청을 위한 DTO.
+   */
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-//  @Schema(name = "EmailAuthRequest", description = "이메일 찾기 요청 DTO")
+  @ApiModel(description = "이메일 찾기 요청 DTO")
   public static class EmailAuthRequest {
 
-    //    @Schema(description = "이름", example = "김철수")
+    /**
+     * 사용자 이름.
+     */
+    @ApiModelProperty(value = "이름", example = "김철수")
     private String name;
 
-    //    @Schema(description = "휴대폰 번호", example = "01012345678")
+    /**
+     * 사용자 휴대폰 번호.
+     */
+    @ApiModelProperty(value = "휴대폰 번호", example = "01012345678")
     private String phone;
   }
 
-  // /auth/password Request 비밀번호 재설정
+  /**
+   * 비밀번호 재설정 요청을 위한 DTO.
+   */
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-//  @Schema(name = "ResetPassword", description = "비밀번호 재설정 요청 DTO")
+  @ApiModel(description = "비밀번호 재설정 요청 DTO")
   public static class ResetPassword {
 
-    //    @Schema(description = "새로운 비밀번호", example = "!123Password")
+    /**
+     * 새로 설정할 비밀번호.
+     */
+    @ApiModelProperty(value = "새로운 비밀번호", example = "!123Password")
     private String newPassword;
   }
 
-  // /auth/signup Request 회원가입
+  /**
+   * 회원가입 요청을 위한 DTO.
+   */
   @Setter
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-//  @Schema(name = "SignUp", description = "회원가입 요청 DTO")
+  @ApiModel(description = "회원가입 요청 DTO")
   public static class SignUp {
 
-    //    @Schema(description = "이메일", example = "example.zangbu.com")
+    /**
+     * 사용자 이메일.
+     */
+    @ApiModelProperty(value = "이메일", example = "example.zangbu.com")
     private String email;
 
-    //    @Schema(description = "닉네임", example = "김철수123")
+    /**
+     * 사용자 닉네임.
+     */
+    @ApiModelProperty(value = "닉네임", example = "김철수123")
     private String nickname;
 
-    //    @Schema(description = "비밀번호", example = "Password123!")
+    /**
+     * 사용자 비밀번호.
+     */
+    @ApiModelProperty(value = "비밀번호", example = "Password123!")
     private String password;
 
-    //    @Schema(description = "주민번호", example = "401234")
+    /**
+     * 사용자 주민등록번호 뒷자리 (또는 식별 번호).
+     */
+    @ApiModelProperty(value = "주민번호", example = "401234")
     private String identity;
 
-    //    @Schema(description = "생년월일", example = "010203")
+    /**
+     * 사용자 생년월일.
+     */
+    @ApiModelProperty(value = "생년월일", example = "010203")
     private String birth;
 
-    //    @Schema(description = "알림 수신 동의 여부", example = "true")
+    /**
+     * 알림 수신 동의 여부.
+     */
+    @ApiModelProperty(value = "알림 수신 동의 여부", example = "true")
     private boolean consent;
 
-    //vo로 변환하는 메서드
-    public static Member toVo(SignUp request, String encodedPassword) {
+    /**
+     * SignUp DTO를 Member VO로 변환합니다.
+     *
+     * @param request 회원가입 요청 DTO
+     * @param encodedPassword 인코딩된 비밀번호
+     * @return Member VO 객체
+     */
+    public static Member toVo(SignUp request, String encodedPassword, String memberId) {
       return new Member(
-          null,
-          request.getEmail(),
-          encodedPassword,
-          null,
-          request.getNickname(),
-          request.getIdentity(),
-          MemberEnum.ROLE_MEMBER,
-          request.getBirth(),
-          null,
-          request.isConsent(),
-          null
+              memberId,
+              request.getEmail(),
+              encodedPassword,
+              null,
+              request.getNickname(),
+              request.getIdentity(),
+              MemberEnum.ROLE_MEMBER,
+              request.getBirth(),
+              null,
+              request.isConsent(),
+              null
       );
     }
   }
 
-  // /auth/check/email 이메일 중복 체크
+  /**
+   * 이메일 중복 확인 요청을 위한 DTO.
+   */
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-//  @Schema(name = "EmailCheck", description = "이메일 중복 확인 요청 DTO")
+  @ApiModel(description = "이메일 중복 확인 요청 DTO")
   public static class EmailCheck {
 
-    //    @Schema(description = "이메일", example = "example.zangbu.com")
+    /**
+     * 중복 확인을 요청할 이메일.
+     */
+    @ApiModelProperty(value = "이메일", example = "example.zangbu.com")
     private String email;
   }
 
-  // /auth/check/nickname
+  /**
+   * 닉네임 중복 확인 요청을 위한 DTO.
+   */
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-//  @Schema(name = "NicknameCheck", description = "닉네임 중복 확인 요청 DTO")
+  @ApiModel(description = "닉네임 중복 확인 요청 DTO")
   public static class NicknameCheck {
 
-    //    @Schema(description = "닉네임", example = "김철수123")
+    /**
+     * 중복 확인을 요청할 닉네임.
+     */
+    @ApiModelProperty(value = "닉네임", example = "김철수123")
     private String nickname;
   }
 
-  //pass로 본인인증 요청 보낼 때
+  /**
+   * 본인인증 요청을 위한 DTO (Pass 앱 등 사용).
+   */
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-//  @Schema(name = "VerifyRequest", description = "본인인증 요청 DTO")
+  @ApiModel(description = "본인인증 요청 DTO")
   public static class VerifyRequest {
 
-    //    @Schema(description = "이름", example = "김철수")
+    /**
+     * 사용자 이름.
+     */
+    @ApiModelProperty(value = "이름", example = "김철수")
     private String name;       // 이름
 
-    //    @Schema(description = "주민번호", example = "401234")
+    /**
+     * 사용자 주민등록번호.
+     */
+    @ApiModelProperty(value = "주민번호", example = "401234")
     private String identity;   // 주민등록번호
 
-    //    @Schema(description = "휴대폰 번호", example = "01012345678")
+    /**
+     * 사용자 휴대폰 번호.
+     */
+    @ApiModelProperty(value = "휴대폰 번호", example = "01012345678")
     private String phone;      // 휴대폰 번호
 
-    //    @Schema(description = "이메일", example = "example.zangbu.com")
+    /**
+     * 사용자 이메일 (비밀번호 재설정 시 요청에만 사용).
+     */
+    @ApiModelProperty(value = "이메일", example = "example.zangbu.com")
     private String email;      // 이메일 -> 비밀번호 재설정 시 요청에만 사용
   }
 
-  //codef 진위확인
+  /**
+   * CODEF 주민등록 진위인증 요청을 위한 DTO.
+   */
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-//  @Schema(name = "VerifyCodefRequest", description = "Codef 주민등록 진위인증 요청 DTO")
+  @ApiModel(description = "Codef 주민등록 진위인증 요청 DTO")
   public static class VerifyCodefRequest {
 
-    //    @Schema(description = "이름", example = "김철수")
+    /**
+     * 이름.
+     */
+    @ApiModelProperty(value = "이름", example = "김철수")
     private String name;       // 이름
-    //    @Schema(description = "주민번호", example = "401234")
+    /**
+     * 주민등록번호 앞 6자리.
+     */
+    @ApiModelProperty(value = "주민번호", example = "401234")
     private String birth;   // 주민등록번호 앞6자리
-    //    @Schema(description = "주민번호", example = "4012345")
+    /**
+     * 주민등록번호 뒷 7자리.
+     */
+    @ApiModelProperty(value = "주민번호", example = "4012345")
     private String identity;   // 주민등록번호 뒷 7자리
-    //    @Schema(description = "휴대폰 번호", example = "01012345678")
+    /**
+     * 휴대폰 번호.
+     */
+    @ApiModelProperty(value = "휴대폰 번호", example = "01012345678")
     private String phone;      // 휴대폰 번호
-    //    @Schema(description = "통신사", example = "0 or 1 or 2")
+    /**
+     * 통신사 정보 (0: SKT, 1: KT, 2: LGU+).
+     */
+    @ApiModelProperty(value = "통신사", example = "0 or 1 or 2")
     private String telecom;
-    //    @Schema(description = "주민등록 발급일자 ", example = "yyyymmdd")
+    /**
+     * 주민등록증 발급일자 (YYYYMMDD).
+     */
+    @ApiModelProperty(value = "주민등록 발급일자 ", example = "yyyymmdd")
     private String issueDate;
   }
 
