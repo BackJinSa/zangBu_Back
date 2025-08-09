@@ -104,6 +104,8 @@ public class SecurityConfig {
             .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
 
+            // auth 엔트 포인트
+                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
             // 보안 API 경로 설정
             .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
