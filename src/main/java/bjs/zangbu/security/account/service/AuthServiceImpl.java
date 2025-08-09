@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -123,7 +124,8 @@ public class AuthServiceImpl implements AuthService {
     String RSAEncoded = rsaEncryption.encrypt(identity);
 
     signUpRequest.setIdentity(RSAEncoded);
-    Member member = SignUp.toVo(signUpRequest, encodedPassword);
+    String memberId = UUID.randomUUID().toString();
+    Member member = SignUp.toVo(signUpRequest, encodedPassword, memberId);
 
     int result = mapper.insertMember(member);
     if (result == 0) {
