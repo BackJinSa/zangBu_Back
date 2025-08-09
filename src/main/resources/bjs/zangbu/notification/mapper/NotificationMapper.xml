@@ -11,16 +11,18 @@
     <select id="selectAllByMemberId" resultType="bjs.zangbu.notification.vo.Notification">
         SELECT
             notification_id AS notificationId,
-            member_id AS userId,
+            member_id AS memberId,
             message,
             is_read AS isRead,
-            type,
+            `type`,
             created_at AS createdAt,
             sale_type AS saleType,
             price,
             address,
-            rank
+            `rank`,
+            building_id AS buildingId
         FROM notification
+        WHERE member_id = #{memberId}
         ORDER BY created_at DESC
     </select>
 
@@ -28,7 +30,7 @@
     <update id="updateIsRead">
         UPDATE notification
         SET is_read = TRUE
-        WHERE member_id = #{userId}
+        WHERE member_id = #{memberId}
           AND notification_id = #{notificationId}
     </update>
 
@@ -36,14 +38,14 @@
     <update id="updateAllIsRead" parameterType="String">
         UPDATE notification
         SET is_read = true
-        WHERE member_id = #{userId}
+        WHERE member_id = #{memberId}
           AND is_read = false
     </update>
 
     <!-- 알림 삭제 -->
     <delete id="removeNotification">
         DELETE FROM notification
-        WHERE member_id = #{userId}
+        WHERE member_id = #{memberId}
           AND notification_id = #{notificationId}
     </delete>
 
@@ -53,8 +55,8 @@
 
     <insert id="insertNotification" parameterType="bjs.zangbu.notification.vo.Notification">
         INSERT INTO notification (
-            member_id, message, is_read, type, created_at,
-            sale_type, price, address, rank
+            member_id, message, is_read, `type`, created_at,
+            sale_type, price, address, `rank`
         ) VALUES (
                      #{userId}, #{message}, false, #{type},
                      NOW(), #{saleType}, #{price}, #{address}, #{rank}
@@ -67,7 +69,7 @@
             SELECT 1
             FROM notification
             WHERE member_id = #{memberId}
-              AND type = #{type}
+              AND `type` = #{type}
               AND price = #{price}
               AND created_at >= CURDATE()
               AND building_id = #{buildingId}

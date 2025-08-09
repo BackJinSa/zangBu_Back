@@ -20,6 +20,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -58,6 +59,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     // [API] 하나의 알림 읽음 처리 (DB update)
     @Override
+    @Transactional
     public boolean markAsRead(String memberId, Long notificationId) {
         try {
             // 하나의 알림 수정 후 성공했다면 return 1 / 0 이면 읽음처리가 안된것
@@ -71,6 +73,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     // [API] 전체 알림 읽음 처리 (DB update) return 값 : 읽음 처리된 알림 개수
     @Override
+    @Transactional
     public MarkAllReadResult markAllAsRead(String memberId) {
         try {
             // 전체 알림 수정 후 성공했다면 return 읽음처리된 알림 개수 / 0 이면 읽음처리된 알림이 없는것
@@ -84,6 +87,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     // [API] 알림 삭제 (DB delete)
     @Override
+    @Transactional
     public boolean removeNotification(String memberId, Long notificationId) {
         try {
             // 선택된 알림 삭제/ 성공했다면 return 1/ 0 이면 삭제가 안된것
@@ -159,6 +163,7 @@ public class NotificationServiceImpl implements NotificationService {
      * @param currentPrice 현재 매물 가격 (DB에 저장될 정보)
      */
     @Override
+    @Transactional
     public void sendNotificationIfNotExists(String memberId, Building building,
                                             Type type, String title, String message, int currentPrice) {
 
@@ -264,6 +269,7 @@ public class NotificationServiceImpl implements NotificationService {
      * bookmark 테이블의 가격을 최신 시세로 갱신한다.
      */
     @Override
+    @Transactional
     public void detectPriceChangeForAllBookmarks() {
         // 1. [DB] 모든 bookmark 데이터 조회 (찜한 매물 리스트)
         // select bookmark_id, member_id, building_id, price
@@ -319,6 +325,7 @@ public class NotificationServiceImpl implements NotificationService {
      * @param dealId 거래 완료된 deal의 ID
      */
     @Override
+    @Transactional
     public void detectTradeHappenedNow(Long dealId) {
         // 1. [DB] dealId를 통해 거래가 발생한 건물(building) ID를 조회
         // select building_id
