@@ -8,17 +8,21 @@ import bjs.zangbu.deal.dto.join.DealWithSaleType;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import bjs.zangbu.deal.dto.request.EstateRegistrationRequest;
 import bjs.zangbu.deal.dto.response.BuildingRegisterResponse;
+import bjs.zangbu.deal.dto.response.DealResponse;
 import bjs.zangbu.deal.dto.response.EstateRegistrationResponse;
 import bjs.zangbu.deal.mapper.DealMapper;
 import bjs.zangbu.deal.util.PdfUtil;
 import bjs.zangbu.deal.vo.DocumentType;
 import bjs.zangbu.documentReport.dto.request.EstateRegisterData;
+import bjs.zangbu.ncp.service.BinaryUploaderService;
 import bjs.zangbu.notification.vo.SaleType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import static bjs.zangbu.ncp.auth.Holder.HeaderCreationHolder.ACCESS_KEY;
+import static bjs.zangbu.ncp.auth.Holder.HeaderCreationHolder.BUCKET_NAME;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -32,6 +36,7 @@ public class ContractServiceImpl implements ContractService {
     private final DealMapper dealMapper;
     private final CodefService codefService;
     private final CodefTwoFactorService codefTwoFactorService;
+    private final BinaryUploaderService binaryUploaderService;
 
 
     @Override
@@ -62,97 +67,49 @@ public class ContractServiceImpl implements ContractService {
     @Override
     // todo : 중복코드가 많아서 정리가 필요함
     public EstateRegistrationResponse getEstateRegistrationPdf(Long dealId)
-            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+            throws Exception {
         //DB에서 데이터 가져와서 request 생성
         EstateRegistrationRequest request = dealMapper.getEstateRegistrationRequest(dealId);
         // codef에서 응답 가져오기
         String rawResponse = codefService.realEstateRegistrationLeader(request);;
         // url 디코딩으로 최종 json 만듦 todo: 추가 자료 들고오기
-        String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
+//        String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
         // pdf base64 파싱로 직
         EstateRegistrationResponse base64 = CodefConverter.parseDataToDto(
-                decodedJson, EstateRegistrationResponse.class);
+                rawResponse, EstateRegistrationResponse.class);
         // PDF 바이트 추출
         byte[] pdfBytes = PdfUtil.decodePdfBytes(base64.getResOriginalData());
         /* 6) S3 업로드 */
-        String key  = "building-register-" + dealId + ".pdf";
-//        String url  = s3Uploader.uploadPdf(pdfBytes, key);   // ← public URL or presigned URL
-        String url  = null; //todo : ncp 로직 설계 해야 함
-
+        String key  = "estate-Register/" + dealId + ".pdf";
+        String url = binaryUploaderService.putPdfObject(BUCKET_NAME,key,pdfBytes);
         //추가 로직 ★ 분석 리포트 데이터 저장
-        EstateRegisterData data = CodefConverter.parseDataToDto(
-                decodedJson, EstateRegisterData.class);
+//        EstateRegisterData data = CodefConverter.parseDataToDto(
+//                rawResponse, EstateRegisterData.class);
 
         return new EstateRegistrationResponse(url, base64.getCommUniqueNo());
     }
     // 건축물대장 발급 api
     @Override
-    public BuildingRegisterResponse generateRegisterPdf(Long dealId) throws Exception {
+    public DealResponse.Download generateRegisterPdf(Long dealId) throws Exception {
         // 1) DB 조회
         DealDocumentInfo deal = dealMapper.getDocumentInfo(dealId);
         // request json 형식에 맞게 파싱
         BuildingRegisterRequest request = BuildingRegisterRequest.from(deal);
         // 1차·2차가 섞여 있을 수 있는 응답(rawResponse)
         String rawResponse = codefTwoFactorService.generalBuildingLeader(request);
-        // url 디코딩으로 최종 json 만듦
-        String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
+        // url 디코딩으로 최종 json 만듦 -> codef에서 제공함 패스
+//        String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
         // pdf base64 데이터 저장
-        BuildingRegisterResponse base64 = CodefConverter.parseDataToDto(
-                decodedJson, BuildingRegisterResponse.class);
+        BuildingRegisterResponse dto =
+                CodefConverter.parseDataToDto(rawResponse, BuildingRegisterResponse.class);
+        // json 파싱
+        String base64Pdf = dto.getResOriGinalData();
         // PDF 바이트 추출
-        byte[] pdfBytes = PdfUtil.decodePdfBytes(base64.getResOriginalData());
+        byte[] pdfBytes = PdfUtil.decodePdfBytes(base64Pdf);
+        /* ncp 업로드*/
+        String key  = "building-register/" + dealId + ".pdf";
+        String url = binaryUploaderService.putPdfObject(BUCKET_NAME,key,pdfBytes);
 
-        /* S3 업로드~~ 임시 로직*/
-        String key  = "building-register-" + dealId + ".pdf";
-//        String url  = s3Uploader.uploadPdf(pdfBytes, key);   // ← public URL or presigned URL
-        String url  =null; //todo : ncp 로직 설계 해야 함
-
-
-        return new BuildingRegisterResponse(url, base64.getResViolationStatus());
-    }
-
-    /**
-     * 거래 ID와 문서 유형에 따라 문서를 다운로드합니다.
-     *
-     * @param dealId 다운로드할 문서와 관련된 거래의 ID
-     * @param type 다운로드할 문서의 유형 (ESTATE: 등기부등본, BUILDING_REGISTER: 건축물대장)
-     * @return 문서의 바이트 배열
-     * @throws Exception 문서 다운로드 중 오류 발생 시
-     */
-    public byte[] downloadDocumentByType(Long dealId, DocumentType type) throws Exception {
-        return switch (type) {
-            case ESTATE -> {
-                try {
-                    yield getEstateRegistrationPdfBytes(dealId);
-                } catch (JsonProcessingException | InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            case BUILDING_REGISTER -> {
-                try {
-                    yield getBuildingRegisterPdfBytes(dealId);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            default -> throw new IllegalArgumentException("Unsupported type: " + type);
-        };
-    }
-
-    private byte[] getEstateRegistrationPdfBytes(Long dealId) throws JsonProcessingException, InterruptedException, UnsupportedEncodingException {
-        EstateRegistrationRequest request = dealMapper.getEstateRegistrationRequest(dealId);
-        String rawResponse = codefService.realEstateRegistrationLeader(request);
-        String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
-        EstateRegistrationResponse dto = CodefConverter.parseDataToDto(decodedJson, EstateRegistrationResponse.class);
-        return PdfUtil.decodePdfBytes(dto.getResOriginalData());
-    }
-
-    private byte[] getBuildingRegisterPdfBytes(Long dealId) throws Exception {
-        DealDocumentInfo deal = dealMapper.getDocumentInfo(dealId);
-        BuildingRegisterRequest request = BuildingRegisterRequest.from(deal);
-        String rawResponse = codefTwoFactorService.generalBuildingLeader(request);
-        String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
-        BuildingRegisterResponse dto = CodefConverter.parseDataToDto(decodedJson, BuildingRegisterResponse.class);
-        return PdfUtil.decodePdfBytes(dto.getResOriginalData());
+        return new DealResponse.Download(url);
     }
 }

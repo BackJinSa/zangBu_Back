@@ -261,8 +261,7 @@ public class DealController {
       EstateRegistrationResponse rsp = contractService.getEstateRegistrationPdf(buildingId);
       return ResponseEntity.ok(new DealResponse.Download(rsp.getResOriginalData()));
     } else if (type == DocumentType.BUILDING_REGISTER) {
-      BuildingRegisterResponse rsp = contractService.generateRegisterPdf(buildingId);
-      return ResponseEntity.ok(new DealResponse.Download(rsp.getResOriginalData()));
+      return ResponseEntity.ok(contractService.generateRegisterPdf(buildingId));
     }
     return null;
   }
