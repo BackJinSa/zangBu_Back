@@ -1,0 +1,8 @@
+2025-08-10 10:45:30.240 [Test worker] INFO  sqlonly - SELECT d.deal_id, d.chat_room_id, d.building_id, d.status, d.created_at, d.complex_id, b.price, 
+b.building_name, b.property_type, b.sale_type, cl.address, c.consumer_nickname, c.seller_nickname 
+-- ChatRoom, Building, Complex join FROM deal d JOIN chat_room c ON d.chat_room_id = c.chat_room_id 
+JOIN building b ON d.building_id = b.building_id JOIN complex_list cl ON d.complex_id = cl.complex_id 
+WHERE d.member_id = 'b93b7c61-fb18-4eab-abe0-13a4aa4722bd' AND d.status != 'BEFORE_TRANSACTION' 
+AND d.status != 'CLOSE_DEAL' ORDER BY d.created_at DESC 
+
+2025-08-10 10:45:30.292 [Test worker] INFO  DealMapperTest - [bjs.zangbu.deal.dto.join.DealWithChatRoom@11bfd751, bjs.zangbu.deal.dto.join.DealWithChatRoom@29519337]

@@ -6,8 +6,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Multipart 방식으로 Object Storage에 JPEG 파일을 업로드하거나, 멀티파트 업로드 상태를 제어하는 기능을 제공하는 서비스
- *
- * @see bjs.zangbu.ncp.service.MultipartUploaderServiceTest
  */
 public interface MultipartUploaderService {
 
@@ -23,8 +21,6 @@ public interface MultipartUploaderService {
    * @throws IllegalArgumentException JPEG 파일이 아닌 경우
    * @throws IllegalStateException    응답이 실패(2xx가 아닌 경우)했을 때 발생
    * @throws Exception                업로드 도중 실패한 경우
-   * @see bjs.zangbu.ncp.service.MultipartUploaderServiceTest#multipartUpload_validJpegFile_shouldReturnUrl()
-   * @see bjs.zangbu.ncp.service.MultipartUploaderServiceTest#multipartUpload_invalidFileType_shouldThrowIllegalArgumentException()
    */
   String multipartUpload(String bucket, String objectKey, MultipartFile multipartFile)
       throws Exception;
@@ -36,7 +32,6 @@ public interface MultipartUploaderService {
    * @return (objectKey, uploadId) 쌍 리스트 반환
    * @throws IllegalStateException 응답이 실패(2xx가 아닌 경우)했을 때 발생
    * @throws Exception             실패 시 예외 발생
-   * @see bjs.zangbu.ncp.service.MultipartUploaderServiceTest#listIncompleteUploads_shouldReturnList()
    */
   List<Pair<String, String>> listIncompleteUploads(String bucket) throws Exception;
 
@@ -48,7 +43,6 @@ public interface MultipartUploaderService {
    * @param uploadId  업로드 식별자
    * @throws IllegalStateException 업로드 중단 요청이 실패한 경우 (예: 4xx, 5xx 응답)
    * @throws Exception             실패 시 예외 발생
-   * @see bjs.zangbu.ncp.service.MultipartUploaderServiceTest#abortMultipartUpload_shouldSucceedIfUploadIdExists()
    */
   void abortMultipartUpload(String bucket, String objectKey, String uploadId)
       throws Exception;

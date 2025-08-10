@@ -1,47 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
 
+  <Properties>
+    <Property name="APP_LEVEL_PROP">${sys:APP_LEVEL:-info}</Property>
+    <Property name="SPRING_LEVEL_PROP">${sys:SPRING_LEVEL:-warn}</Property>
+    <Property name="HIKARI_LEVEL_PROP">${sys:HIKARI_LEVEL:-warn}</Property>
+    <Property name="MYBATIS_LEVEL_PROP">${sys:MYBATIS_LEVEL:-info}</Property>
+    <Property name="RABBIT_LEVEL_PROP">${sys:RABBIT_LEVEL:-warn}</Property>
+    <Property name="REDIS_LEVEL_PROP">${sys:REDIS_LEVEL:-warn}</Property>
+    <Property name="JDBC_SQLONLY_LEVEL_PROP">${sys:JDBC_SQLONLY_LEVEL:-info}</Property>
+    <Property name="JDBC_RESULTSETTABLE_LEVEL_PROP">${sys:JDBC_RESULTSETTABLE_LEVEL:-off}</Property>
+  </Properties>
+
   <Appenders>
+    <!-- 기본 콘솔 (다른 패키지들) -->
     <Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %c{1} - %msg%n"/>
+      <PatternLayout disableAnsi="false"
+        pattern="%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{cyan} [%t] %highlight{%-5level} %style{%c{1}}{magenta} - %msg%n"/>
+    </Console>
+
+    <!-- bjs.zangbu: JSON 메시지 -->
+    <Console name="AppConsoleJson" target="SYSTEM_OUT">
+      <Filters>
+        <RegexFilter regex="(?s)^\s*[\{\[].*" onMatch="ACCEPT" onMismatch="DENY"/>
+      </Filters>
+      <PatternLayout disableAnsi="false"
+        pattern="%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{bright_yellow} [%t] %style{%-5level}{bright_red} %style{%c{1}}{bright_magenta} - %style{%msg}{bright_yellow,bg_black}%n"/>
+    </Console>
+
+    <!-- bjs.zangbu: 일반 메시지 -->
+    <Console name="AppConsolePlain" target="SYSTEM_OUT">
+      <Filters>
+        <RegexFilter regex="(?s)^\s*[\{\[].*" onMatch="DENY" onMismatch="ACCEPT"/>
+      </Filters>
+      <PatternLayout disableAnsi="false"
+        pattern="%style{%d{yyyy-MM-dd HH:mm:ss.SSS}}{bright_yellow} [%t] %style{%-5level}{bright_red} %style{%c{1}}{bright_magenta} - %style{%msg}{bright_red}%n"/>
     </Console>
   </Appenders>
 
   <Loggers>
-    <!-- Root logger: 기본 로그는 INFO 이상만 출력 -->
-    <Root level="INFO">
+    <Root level="${APP_LEVEL_PROP}">
       <AppenderRef ref="Console"/>
     </Root>
 
-    <Logger name="bjs.zangbu" level="INFO" additivity="false">
-      <AppenderRef ref="Console"/>
+    <!-- bjs.zangbu 패키지: 강렬 색상 적용 -->
+    <Logger name="bjs.zangbu" level="${APP_LEVEL_PROP}" additivity="false">
+      <AppenderRef ref="AppConsoleJson"/>
+      <AppenderRef ref="AppConsolePlain"/>
     </Logger>
 
-    <!-- Spring framework 로그를 WARN 이상으로 제한 -->
-    <Logger name="org.springframework" level="WARN" additivity="false">
+    <!-- 나머지 로거들 -->
+    <Logger name="org.springframework" level="${SPRING_LEVEL_PROP}" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-
-    <!-- HikariCP 커넥션 로그를 WARN 이상으로 제한 -->
-    <Logger name="com.zaxxer.hikari" level="WARN" additivity="false">
+    <Logger name="com.zaxxer.hikari" level="${HIKARI_LEVEL_PROP}" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-
-    <!-- Swagger 로깅 줄이기 -->
-    <Logger name="springfox.documentation" level="ERROR" additivity="false">
+    <Logger name="org.mybatis" level="${MYBATIS_LEVEL_PROP}" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-
-    <!-- Tomcat JSP 관련 경고 제거 -->
-    <Logger name="org.apache.jasper" level="ERROR" additivity="false">
+    <Logger name="org.springframework.amqp" level="${RABBIT_LEVEL_PROP}" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-
-    <!-- MyBatis 또는 SQL 로그는 필요 시만 INFO -->
-    <Logger name="jdbc" level="WARN" additivity="false">
+    <Logger name="org.springframework.data.redis" level="${REDIS_LEVEL_PROP}" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-    <Logger name="jdbc.sqlonly" level="INFO" additivity="false">
+    <Logger name="springfox.documentation" level="error" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Logger name="jdbc.sqlonly" level="${JDBC_SQLONLY_LEVEL_PROP}" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Logger name="jdbc.resultsettable" level="${JDBC_RESULTSETTABLE_LEVEL_PROP}" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
   </Loggers>

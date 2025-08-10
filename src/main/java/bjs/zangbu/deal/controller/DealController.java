@@ -15,6 +15,7 @@ import bjs.zangbu.deal.vo.DocumentType;
 import bjs.zangbu.documentReport.dto.response.DocumentReportResponse.DocumentReportElement;
 import bjs.zangbu.documentReport.service.DocumentReportService;
 import bjs.zangbu.member.service.MemberService;
+import bjs.zangbu.security.account.vo.CustomUser;
 import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -105,14 +106,16 @@ public class DealController {
   @GetMapping("/waitinglist")
   public ResponseEntity<?> getAllWaitingList(
       @ApiIgnore
-      @AuthenticationPrincipal UserDetails userDetails,
+      @AuthenticationPrincipal CustomUser user,
       @ApiParam(value = "페이지 번호", example = "1")
       @RequestParam(defaultValue = "1") int page,
       @ApiParam(value = "페이지당 항목 수", example = "10")
       @RequestParam(defaultValue = "10") int size) {
     try {
-      String memberId = userDetails.getUsername();
+//      String email = user.getUsername();
+      String memberId = user.getMember().getMemberId();
       String nickname = memberService.getNickname(memberId); // 닉네임 추출
+      log.info("닉네임", nickname);
 
       // PageHelper 페이지네이션 시작
       PageHelper.startPage(page, size);
