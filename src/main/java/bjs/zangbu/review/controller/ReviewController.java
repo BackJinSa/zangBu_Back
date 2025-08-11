@@ -8,10 +8,10 @@ import bjs.zangbu.review.exception.ReviewNotFoundException;
 import bjs.zangbu.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/review")
 @RequiredArgsConstructor
 public class ReviewController {
@@ -60,9 +60,7 @@ public class ReviewController {
     // POST /review
     @PostMapping
     public ResponseEntity<?> create(@RequestBody ReviewCreateRequest req,
-                                    @RequestHeader("Authorization") String bearerToken) {
-
-
+                                    @RequestHeader(value = "Authorization", required = false) String bearerToken) {
 
         try {
             // 추후 토큰부 개발 시 수정
@@ -71,18 +69,13 @@ public class ReviewController {
             ReviewCreateResponse resp =
                     reviewService.createReview(req, "임시 아이디(memberId)", "임시 닉네임(nickname)");
 
-
-
-
-
-
             return ResponseEntity.status(201).body(resp);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                    .body("리뷰 작성에 실패했습니다.");
+                    .body(Map.of("message", "리뷰 작성에 실패했습니다."));
         } catch (Exception e) {
             return ResponseEntity.status(500)
-                    .body("서버에서 리뷰 작성 중 오류가 발생했습니다.");
+                    .body(Map.of("message", "서버에서 리뷰 작성 중 오류가 발생했습니다."));
         }
     }
 
@@ -97,8 +90,8 @@ public class ReviewController {
             return ResponseEntity.badRequest()
                     .body("리뷰 삭제에 실패했습니다.");
         } catch (ReviewNotFoundException e) {
-            return ResponseEntity.badRequest()
-                    .body("리뷰 삭제에 실패했습니다."); // 스펙에서 404가 아니라 400 처리
+            return ResponseEntity.status(404)
+                    .body("존재하지 않는 리뷰입니다.");
         } catch (Exception e) {
             return ResponseEntity.status(500)
                     .body("서버에서 리뷰를 삭제하던중 오류가 발생했습니다.");
