@@ -53,7 +53,7 @@ class MultipartUploaderServiceTest {
     );
 
     String url = multipartUploaderService.multipartUpload(bucket, objectKey, file);
-
+    log.info("성공 URL{}", url);
     assertNotNull(url, "업로드된 파일의 URL은 null이 아니어야 함");
     assertTrue(url.contains(bucket), "URL에 버킷 이름이 포함되어야 함");
     assertTrue(url.contains(objectKey), "URL에 오브젝트 키가 포함되어야 함");

@@ -7,9 +7,9 @@
 
 
     <!-- 디바이스 토큰 등록 -->
-    <insert id="insertFcmToken">
-        INSERT IGNORE INTO fcm_tokens (member_id, token, created_at)
-        VALUES (#{memberId}, #{token}, NOW())
+    <insert id="insertFcmToken" parameterType="bjs.zangbu.fcm.vo.Fcm">
+        INSERT IGNORE INTO fcm_tokens (member_id, token, device_type, device_name, created_at)
+        VALUES (#{memberId}, #{token}, #{deviceType}, #{deviceName}, NOW())
     </insert>
 
     <!-- 디바이스 토큰 모두 삭제 -->

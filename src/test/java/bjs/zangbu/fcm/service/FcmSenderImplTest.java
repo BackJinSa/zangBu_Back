@@ -1,10 +1,31 @@
 package bjs.zangbu.fcm.service;
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class FcmSenderImplTest {
+
+    @BeforeEach
+    void setUp() throws IOException {
+        if (FirebaseApp.getApps().isEmpty()) {
+            FileInputStream serviceAccount =
+                    new FileInputStream("src/main/resources/firebase-key.json");
+
+            FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .build();
+
+            FirebaseApp.initializeApp(options);
+        }
+    }
 
     @Test
     void send() {
@@ -12,7 +33,7 @@ class FcmSenderImplTest {
         FcmSenderImpl sender = new FcmSenderImpl();
 
         // 2. 실제 수신 가능한 디바이스 FCM 토큰 입력
-        String token = "dMWnxMeAb1S5PnXZ3WHgtG:APA91bF2yk4995VIdn4NpjI0YS5hz7S6-QUpknmULvg5cYWcTNwZR2kNaUJkybYwHniR3UnMWc3rMRjgKa3gJquLihWkKlipA7jpM39YRsqpDVMFSUJtav8"; // 웹, 안드로이드, iOS 등
+        String token = "dp50yXn_wTDuFLWE0ORoPE:APA91bH0CF44UE552qPkzNeKYA5Y-XqAMnrZkmEuQVCxlpPyEO5UIvCtNU_kz5NUHYNccHQOBvFW3IN_6vcZ-wI3FCXLXyxdsB88rIQfe_LpxTIssqKHFTU"; // 웹, 안드로이드, iOS 등
         String title = "[FCM 테스트]";
         String body = "이 알림이 디바이스로 수신되면 FCM 연동 성공!";
         String url = "";
@@ -30,8 +51,6 @@ class FcmSenderImplTest {
         */
     }
 
-    @Test
-    void a() {
-        System.out.println("테스트");
-    }
+
+
 }

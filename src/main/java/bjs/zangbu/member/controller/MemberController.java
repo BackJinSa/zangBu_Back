@@ -10,6 +10,7 @@ import bjs.zangbu.member.service.MemberService;
 import bjs.zangbu.security.account.vo.CustomUser;
 import bjs.zangbu.security.account.vo.Member;
 import com.github.pagehelper.PageHelper;
+import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/member/mypage")
-// @Tag(name = "Member API", description = "회원 마이페이지 관련 기능 API")
+@Api(tags = "Member API", value = "회원 마이페이지 관련 기능 API")
 public class MemberController {
 
   private final MemberService memberService;

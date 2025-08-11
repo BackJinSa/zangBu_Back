@@ -5,8 +5,8 @@ import bjs.zangbu.security.account.dto.request.AuthRequest.EmailAuthRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.LoginRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.ResetPassword;
 import bjs.zangbu.security.account.dto.request.AuthRequest.SignUp;
-import bjs.zangbu.security.account.dto.request.AuthRequest.VerifyRequest;
-import bjs.zangbu.security.account.dto.response.AuthResponse.AuthVerify;
+import bjs.zangbu.security.account.dto.request.AuthRequest.VerifyCodefRequest;
+import bjs.zangbu.security.account.dto.response.AuthResponse.VerifyCodefResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.EmailAuthResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.LoginResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.TokenResponse;
@@ -45,7 +45,7 @@ import springfox.documentation.annotations.ApiIgnore;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
-@Api(tags = "Auth API", description = "인증 관련 기능 API")
+@Api(tags = "Auth API", value = "인증 관련 기능 API")
 public class AuthController {
 
   private final AuthService authService;
@@ -233,44 +233,44 @@ public class AuthController {
    * @param customUser 인증된 사용자 정보 (현재 사용되지 않지만, 필요 시 확장 가능)
    * @param request 본인인증 정보를 담고 있는 {@link VerifyRequest} DTO
    * @param session HTTP 세션 객체 (인증 상태 저장을 위해 사용)
-   * @return 본인인증 성공 시 {@link AuthVerify}와 함께 200 OK 응답, 실패 시 400 Bad Request 또는 500 Internal Server Error 응답
+   * @return 본인인증 성공 시 {@link VerifyCodefResponse}와 함께 200 OK 응답, 실패 시 400 Bad Request 또는 500 Internal Server Error 응답
    */
-  @ApiOperation(
-          value = "본인인증 요청",
-          notes = "본인인증 수행 후 성공 시 세션에 인증 상태를 저장합니다.",
-          response = AuthVerify.class
-  )
-  @ApiResponses({
-          @ApiResponse(code = 200, message = "본인인증에 성공하였습니다."),
-          @ApiResponse(code = 400, message = "본인인증에 실패하였습니다."),
-          @ApiResponse(code = 500, message = "서버에서 본인인증을 처리하는데 오류가 발생했습니다.")
-  })
-  @PostMapping("/verify")
-  public ResponseEntity<?> verifyAuthenticity(
-          @ApiIgnore
-          @AuthenticationPrincipal CustomUser customUser,
-          @ApiParam(value = "본인인증 요청 DTO", required = true)
-          @RequestBody VerifyRequest request,
-          HttpSession session) {
-
-    try {
-      //본인인증 수행
-      AuthVerify result = authService.verifyAuthenticity(request);
-
-      // 진위 확인 성공 시 인증 상태 세션에 저장 --비밀번호 재설정 시 상태 사용
-      if ("Y".equalsIgnoreCase(result.getResAuthenticity())) {
-        //세션에 이메일 저장
-        session.setAttribute("verifiedEmail", request.getEmail());
-      }
-      return ResponseEntity.ok(result); //200
-
-    } catch (IllegalArgumentException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("본인인증에 실패하였습니다.");
-    } catch (Exception e) { //500
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body("서버에서 본인인증을 처리하는데 오류가 발생했습니다.");
-    }
-  }
+//  @ApiOperation(
+//          value = "본인인증 요청",
+//          notes = "본인인증 수행 후 성공 시 세션에 인증 상태를 저장합니다.",
+//          response = VerifyCodefResponse.class
+//  )
+//  @ApiResponses({
+//          @ApiResponse(code = 200, message = "본인인증에 성공하였습니다."),
+//          @ApiResponse(code = 400, message = "본인인증에 실패하였습니다."),
+//          @ApiResponse(code = 500, message = "서버에서 본인인증을 처리하는데 오류가 발생했습니다.")
+//  })
+//  @PostMapping("/verify")
+//  public ResponseEntity<?> verifyAuthenticity(
+//          @ApiIgnore
+//          @AuthenticationPrincipal CustomUser customUser,
+//          @ApiParam(value = "본인인증 요청 DTO", required = true)
+//          @RequestBody VerifyCodefRequest request,
+//          HttpSession session) {
+//
+//    try {
+//      //본인인증 수행
+//      VerifyCodefResponse result = authService.verifyAuthenticity(request);
+//
+//      // 진위 확인 성공 시 인증 상태 세션에 저장 --비밀번호 재설정 시 상태 사용
+//      if ("Y".equalsIgnoreCase(result.getResAuthenticity())) {
+//        //세션에 이메일 저장
+//        session.setAttribute("verifiedEmail", request.getEmail());
+//      }
+//      return ResponseEntity.ok(result); //200
+//
+//    } catch (IllegalArgumentException e) {
+//      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("본인인증에 실패하였습니다.");
+//    } catch (Exception e) { //500
+//      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//              .body("서버에서 본인인증을 처리하는데 오류가 발생했습니다.");
+//    }
+//  }
 
   /**
    * 본인인증 CODEF 진위인증 사용 (임시).
@@ -286,6 +286,8 @@ public class AuthController {
   )
   @PostMapping("/verify/authentication")
   public String verifyAuthentication(@RequestBody AuthRequest.VerifyCodefRequest request) {
+
+
     return null; //todo: 로직 설계해야함
   }
 
