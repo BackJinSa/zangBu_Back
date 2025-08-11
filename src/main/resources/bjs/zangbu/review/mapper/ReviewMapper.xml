@@ -4,11 +4,18 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="bjs.zangbu.review.mapper.ReviewMapper">
 
-    <select id="selectByBuilding" resultType="bjs.zangbu.review.dto.response.ReviewListResponse">
+    <resultMap id="ReviewListResponseMap" type="bjs.zangbu.review.dto.response.ReviewListResponse">
+        <id column="reviewId" property="reviewId"/>
+        <result column="reviewerNickName" property="reviewerNickName"/>
+        <result column="rank" property="rank"/>
+        <result column="createdAt" property="createdAt"/>
+    </resultMap>
+
+    <select id="selectByBuilding" resultMap="ReviewListResponseMap">
         SELECT
             review_id         AS reviewId,
-            reviewer_nickname AS reviewerNickname,
-            rank,
+            reviewer_nickname AS reviewerNickName,
+            `rank`,
             DATE_FORMAT(created_at, '%Y-%m-%dT%H:%i:%s') AS createdAt
         FROM review
         WHERE building_id = #{buildingId}
@@ -23,7 +30,7 @@
 
     <!-- 추가된 selectLatestReviewRank -->
     <select id="selectLatestReviewRank" resultType="int">
-        SELECT rank
+        SELECT `rank`
         FROM review
         WHERE building_id = #{buildingId}
         ORDER BY created_at DESC
@@ -31,14 +38,24 @@
     </select>
 
 
+    <resultMap id="ReviewDetailResponseMap" type="bjs.zangbu.review.dto.response.ReviewDetailResponse">
+        <id column="reviewId" property="reviewId"/>
+        <result column="buildingId" property="buildingId"/>
+        <result column="complexId" property="complexId"/>
+        <result column="reviewerNickname" property="reviewerNickname"/>
+        <result column="rank" property="rank"/>
+        <result column="content" property="content"/>
+        <result column="createdAt" property="createdAt"/>
+    </resultMap>
+
     <!-- 리뷰 상세보기 기능 쿼리 -->
-    <select id="selectById"
-            resultType="bjs.zangbu.review.dto.response.ReviewDetailResponse">
+    <select id="selectById" resultMap="ReviewDetailResponseMap">
         SELECT
             review_id          AS reviewId,
             building_id        AS buildingId,
+            complex_id         AS complexId,
             reviewer_nickname  AS reviewerNickname,
-            rank,
+            `rank`,
             content,
             DATE_FORMAT(created_at, '%Y-%m-%dT%H:%i:%s') AS createdAt
         FROM review
@@ -56,7 +73,7 @@
          member_id,
          complex_id,
          reviewer_nickname,
-         rank,
+         `rank`,
          content,
          created_at)
         VALUES

@@ -51,8 +51,8 @@ class ReviewControllerTest {
         ReviewListResult result = new ReviewListResult(
                 2L,
                 List.of(
-                        new ReviewListResponse(1L, "nick1", null, 5, null),
-                        new ReviewListResponse(2L, "nick2", null, 4, null)),
+                        new ReviewListResponse(1L, "nick1", 5, "2024-01-01T12:00:00"),
+                        new ReviewListResponse(2L, "nick2", 4, "2024-01-02T12:00:00")),
                 false,
                 5);
 
@@ -70,7 +70,7 @@ class ReviewControllerTest {
     void detail_ok() throws Exception {
         Long reviewId = 10L;
         ReviewDetailResponse dto = new ReviewDetailResponse(
-                reviewId, 100L, "nick", 5, "good", "2024-01-01T12:00:00");
+                reviewId, 100L, 200L, "nick", 5, "good", "2024-01-01T12:00:00");
         given(reviewService.getReviewDetail(reviewId)).willReturn(dto);
 
         mockMvc.perform(get("/review/{reviewId}", reviewId))

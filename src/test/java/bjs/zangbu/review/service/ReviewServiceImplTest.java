@@ -41,6 +41,8 @@ class ReviewServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        // NotificationService Mock을 ReviewServiceImpl에 주입
+        reviewService = new ReviewServiceImpl(reviewMapper, notificationService);
     }
 
     @Test
@@ -48,8 +50,8 @@ class ReviewServiceImplTest {
     void listReviews_ok() {
         Long buildingId = 100L;
         List<ReviewListResponse> rows = Arrays.asList(
-                new ReviewListResponse(1L, "nick1", null, 5, null),
-                new ReviewListResponse(2L, "nick2", null, 4, null));
+                new ReviewListResponse(1L, "nick1", 5, "2024-01-01T12:00:00"),
+                new ReviewListResponse(2L, "nick2", 4, "2024-01-02T12:00:00"));
 
         // PageHelper는 내부에서 limit/offset만 주입하므로 여기서는 목록만 스텁
         given(reviewMapper.selectByBuilding(buildingId)).willReturn(rows);
@@ -84,7 +86,7 @@ class ReviewServiceImplTest {
     void getReviewDetail_ok() {
         Long reviewId = 11L;
         ReviewDetailResponse detail = new ReviewDetailResponse(
-                reviewId, 100L, "nick", 5, "good", "2024-01-01T12:00:00");
+                reviewId, 100L, 200L, "nick", 5, "good", "2024-01-01T12:00:00");
         given(reviewMapper.selectById(reviewId)).willReturn(detail);
 
         ReviewDetailResponse resp = reviewService.getReviewDetail(reviewId);

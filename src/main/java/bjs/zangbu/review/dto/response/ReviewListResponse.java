@@ -8,7 +8,6 @@ import lombok.Getter;
 public class ReviewListResponse {
     private Long reviewId; // 리뷰 고유 번호
     private String reviewerNickName; // 리뷰 작성자 닉네임
-    private String title; // 리뷰 제목
     private Integer rank;
-    private String floor;
+    private String createdAt;
 }
