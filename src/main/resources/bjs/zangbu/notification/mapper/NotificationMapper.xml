@@ -74,6 +74,4 @@
               AND building_id = #{buildingId}
         )
     </select>
-
-
 </mapper>
