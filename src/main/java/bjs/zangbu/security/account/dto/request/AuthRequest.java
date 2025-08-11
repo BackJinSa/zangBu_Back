@@ -252,7 +252,8 @@ public class AuthRequest {
     /**
      * 주민등록번호 뒷 7자리.
      */
-    @ApiModelProperty(value = "주민번호", example = "4012345")
+//    @ApiModelProperty(value = "주민번호", example = "4012345")
+    @ApiModelProperty(value = "주민번호", example = "RSA 암호화된 주민번호")
     private String identity;   // 주민등록번호 뒷 7자리
     /**
      * 휴대폰 번호.
