@@ -10,6 +10,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * 행안부 도로명주소 Open API 호출 클라이언트
  *
@@ -29,9 +31,10 @@ public class JusoClient {
     // JSON 파싱용 ObjectMapper (스레드세이프)
     private static final ObjectMapper OM = new ObjectMapper();
     // API URL (JSON/폼 전송)
-    private static final String URL = "https://business.juso.go.kr/addrlink/addrLinkApi.do";
+    @Value("${juso.endpoint:https://business.juso.go.kr/addrlink/addrLinkApi.do}")
+    private String endpoint;
     @Value("${juso.serviceKey}")
-    private String key;
+    private String confmKey;
 
     /**
      * 검색어(keyword)로 후보를 조회하고, 최상위 1건의 roadAddrPart1을 반환합니다.
@@ -40,11 +43,15 @@ public class JusoClient {
      * @return roadAddrPart1 (예: "경기도 고양시 일산서구 강선로 30") 또는 null(없음/오류)
      */
     public String searchBestRoadAddr1(String keyword) {
+        if (confmKey == null || confmKey.isBlank()) {
+            throw new IllegalStateException("juso.serviceKey 미설정");
+        }
+
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setContentType(new MediaType(MediaType.APPLICATION_FORM_URLENCODED, StandardCharsets.UTF_8));
 
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("confmKey", key);
+        form.add("confmKey", confmKey);
         form.add("currentPage", "1");
         form.add("countPerPage", "10");
         form.add("keyword", keyword);
@@ -52,9 +59,10 @@ public class JusoClient {
         form.add("hstryYn", "Y");
         form.add("firstSort", "road");
         form.add("addInfoYn", "Y");
-        //요청전송
+
+        //요청 전송
         ResponseEntity<String> rsp =
-                restTemplate.postForEntity(URL, new HttpEntity<>(form, headers), String.class);
+                restTemplate.postForEntity(endpoint, new HttpEntity<>(form, headers), String.class);
         // http 상태/바디 검증
         if (!rsp.getStatusCode().is2xxSuccessful() || rsp.getBody() == null) return null;
 
@@ -67,7 +75,9 @@ public class JusoClient {
                 // 최상위 1건에서 "roadAddrPart1" 추출
                 return juso.get(0).path("roadAddrPart1").asText(null);
             }
-        } catch (Exception ignore) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return null;
     }
 }
