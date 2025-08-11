@@ -8,15 +8,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * 거래 관련 응답 DTO 모음 클래스입니다. 거래 안내, 의향 응답, 다운로드 링크, 리포트 관련 응답 등을 포함합니다.
+ * 거래 관련 응답 DTO 모음
+ *
+ * <p>거래 안내, 거래 의향, 다운로드 링크, 리포트 결제, 거래 생성 결과 등을 포함</p>
  */
 @ApiModel(description = "거래 관련 응답 DTO 모음")
 public class DealResponse {
 
-  // /deal/notice/{buildingId} Response
-
   /**
    * 거래 전 안내 정보 응답 DTO
+   *
+   * <p>/deal/notice/{buildingId} API 응답</p>
    */
   @Getter
   @NoArgsConstructor
@@ -24,9 +26,6 @@ public class DealResponse {
   @ApiModel(description = "거래 전 안내 정보 응답 DTO")
   public static class Notice {
 
-    /**
-     * 매물 식별 ID
-     */
     @ApiModelProperty(value = "건물 ID", example = "1001")
     private Long buildingId;
 
@@ -37,11 +36,11 @@ public class DealResponse {
     private String infoBuilding;
 
     /**
-     * Building VO 객체로부터 Notice DTO 생성
+     * {@link Building} → {@link Notice} 변환
      *
-     * @param buildingId 건물 ID
-     * @param buildVO    Building 객체
-     * @return Notice DTO
+     * @param buildingId 매물 ID
+     * @param buildVO    건물 VO
+     * @return 변환된 Notice DTO
      */
     public static Notice toDto(Long buildingId, Building buildVO) {
       return new Notice(
@@ -52,10 +51,10 @@ public class DealResponse {
     }
   }
 
-  // /deal/consumer/intent Response
-
   /**
    * 거래 의향 응답 DTO
+   *
+   * <p>/deal/consumer/intent API 응답</p>
    */
   @Getter
   @NoArgsConstructor
@@ -83,10 +82,10 @@ public class DealResponse {
 
   }
 
-// /deal/consumer/intent building Element
-
   /**
    * 거래 시 포함되는 매물 정보 DTO
+   *
+   * <p>/deal/consumer/intent 응답 내 building 요소</p>
    */
   @Getter
   @NoArgsConstructor
@@ -106,12 +105,12 @@ public class DealResponse {
     @ApiModelProperty(value = "보증금", example = "5000")
     private int deposit;
   }
-// /deal/consumer/documents/{dealId}/{type}/download Response
-// /deal/consumer/report/{reportId}/download Response
-// /deal/consumer/contract/download Response
 
   /**
    * 파일 다운로드 링크 응답 DTO
+   *
+   * <p>/deal/consumer/documents/{dealId}/{type}/download,
+   * /deal/consumer/report/{reportId}/download, /deal/consumer/contract/download API 응답</p>
    */
   @Getter
   @NoArgsConstructor
@@ -123,10 +122,10 @@ public class DealResponse {
     private String url;
   }
 
-// /deal/consumer/membership Response
-
   /**
    * 분석 리포트 결제 완료 응답 DTO
+   *
+   * <p>/deal/consumer/membership API 응답</p>
    */
   @Getter
   @NoArgsConstructor
@@ -141,6 +140,8 @@ public class DealResponse {
 
   /**
    * 거래 생성 결과 응답 DTO
+   *
+   * <p>거래 생성 후 생성된 dealId 반환</p>
    */
   @Getter
   @NoArgsConstructor

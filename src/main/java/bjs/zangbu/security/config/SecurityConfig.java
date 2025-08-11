@@ -112,6 +112,9 @@ public class SecurityConfig {
             .requestMatchers(new AntPathRequestMatcher("/security/member"))
             .hasAnyRole("ADMIN", "MEMBER")
 
+            .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
+
             // 그 외 요청은 인증 필요
             .anyRequest().authenticated()
         );
