@@ -11,7 +11,7 @@ import java.util.List;
 public interface ReviewMapper {
     List<ReviewListResponse> selectByBuilding(@Param("buildingId") long buildingId);
 
-    Long countByBuilding(@Param("building") Long buildingId);
+    Long countByBuilding(@Param("buildingId") Long buildingId);
 
     // 최신 리뷰의 별점 가져오기
     Integer selectLatestReviewRank(@Param("buildingId") Long buildingId);
@@ -24,4 +24,7 @@ public interface ReviewMapper {
 
     // 리뷰 삭제 기능
     int deleteReview(@Param("reviewId") Long reviewId);
+
+    // building_id로 complex_id 조회
+    Long selectComplexIdByBuildingId(@Param("buildingId") Long buildingId);
 }
