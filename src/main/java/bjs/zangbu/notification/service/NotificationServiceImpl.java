@@ -63,7 +63,9 @@ public class NotificationServiceImpl implements NotificationService {
     public boolean markAsRead(String memberId, Long notificationId) {
         try {
             // 하나의 알림 수정 후 성공했다면 return 1 / 0 이면 읽음처리가 안된것
+            log.info("1 서비스단 아이디 : {}=== 알림아이디 : {}", memberId, notificationId);
             int updated = notificationMapper.updateIsRead(memberId, notificationId);
+            log.info("2 서비스단 아이디 : {}=== 알림아이디 : {}", memberId, notificationId);
             return updated == 1;
         } catch (Exception e) {
             log.error("알림 읽음 처리 실패: memberId={}, notificationId={}", memberId, notificationId, e);

@@ -55,10 +55,10 @@
 
     <insert id="insertNotification" parameterType="bjs.zangbu.notification.vo.Notification">
         INSERT INTO notification (
-            member_id, message, is_read, `type`, created_at,
+            member_id, building_id, message, is_read, `type`, created_at,
             sale_type, price, address, `rank`
         ) VALUES (
-                     #{userId}, #{message}, false, #{type},
+                     #{memberId}, #{buildingId}, #{message}, false, #{type},
                      NOW(), #{saleType}, #{price}, #{address}, #{rank}
                  )
     </insert>
@@ -71,7 +71,6 @@
             WHERE member_id = #{memberId}
               AND `type` = #{type}
               AND price = #{price}
-              AND created_at >= CURDATE()
               AND building_id = #{buildingId}
         )
     </select>

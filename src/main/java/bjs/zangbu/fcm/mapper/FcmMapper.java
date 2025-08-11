@@ -10,7 +10,7 @@ public interface FcmMapper {
     boolean existsByMemberIdAndToken(String memberId, String token);
 
     // 디바이스 토큰 등록
-    int insertFcmToken(String memberId, String token);
+    int insertFcmToken(String memberId, Fcm fcm);
 
     // 유저 id로 디바이스 토큰 모두 삭제
     int deleteAllTokensByMemberId(String memberId);

@@ -40,9 +40,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @Log4j2
 class NotificationMapperTest {
 
-    PasswordEncoder passwordEncoder =
-            PasswordEncoderFactories.createDelegatingPasswordEncoder();
-
     /**
      * MyBatis + HikariCP + 트랜잭션 매니저 설정
      * - 스프링 부트가 아니므로 수동으로 Bean 등록
@@ -84,18 +81,12 @@ class NotificationMapperTest {
     private NotificationMapper notificationMapper;
 
     // 테스트용 회원 ID (DB에 미리 더미 데이터 존재해야 함)
-    private static final String MEMBER_ID = "member-0001";
-
-    @Test
-    void encodingTest() {
-        String encodedPassword = passwordEncoder.encode("pass0001");
-        log.info("암호화된 비밀번호 확인 : {}", encodedPassword);
-    }
+    private static final String MEMBER_ID = "a0030658-24f8-42cd-8d78-a9fd06bf02b2";
 
 
     /**
      * 회원 알림 전체 조회 테스트
-     * - DB에 member-0001의 알림이 1건 이상 존재해야 성공
+     * - DB에 a0030658-24f8-42cd-8d78-a9fd06bf02b2의 알림이 1건 이상 존재해야 성공
      */
     @Test
     @Order(1)
@@ -105,7 +96,7 @@ class NotificationMapperTest {
         log.info("조회된 알림 개수 = {}", list.size());
 
         // 기대값: 알림이 최소 1건 이상
-        assertEquals(6, list.size());
+        assertEquals(2, list.size());
         // 모든 결과가 해당 MEMBER_ID를 가져야 함
         assertTrue(list.stream().allMatch(n -> MEMBER_ID.equals(n.getMemberId())));
     }
@@ -140,7 +131,6 @@ class NotificationMapperTest {
         // 2) 해당 알림 읽음 처리
         int updated = notificationMapper.updateIsRead(MEMBER_ID, targetId);
         assertEquals(1, updated);
-
         // 3) 다시 조회하여 isRead 값 검증
         Notification after = notificationMapper.selectAllByMemberId(MEMBER_ID).stream()
                 .filter(n -> n.getNotificationId().equals(targetId))
@@ -158,7 +148,7 @@ class NotificationMapperTest {
     void insertNotification() {
         Notification n = new Notification(
                 null,                       // PK (Auto Increment)
-                "새 알림 메시지",            // message
+                "관심 매물의 시세가 변동되었습니다.",            // message
                 false,                      // isRead
                 Type.BUILDING,               // type ENUM
                 new Date(),                  // createdAt
@@ -167,14 +157,14 @@ class NotificationMapperTest {
                 "송파구 잠실동",               // address
                 3,                           // rank
                 MEMBER_ID,                   // memberId
-                99L                          // buildingId
+                1L                         // buildingId
         );
         int inserted = notificationMapper.insertNotification(n);
         assertEquals(1, inserted);
 
         // 삽입된 알림이 존재하는지 확인
         boolean exists = notificationMapper.selectAllByMemberId(MEMBER_ID).stream()
-                .anyMatch(x -> "새 알림 메시지".equals(x.getMessage()));
+                .anyMatch(x -> "관심 매물의 시세가 변동되었습니다.".equals(x.getMessage()));
         assertTrue(exists);
     }
 
@@ -187,12 +177,12 @@ class NotificationMapperTest {
     @DisplayName("existsSamePriceNotificationToday: 오늘 동일 시세 알림 중복 체크")
     void existsSamePriceNotificationToday() {
         boolean exists = notificationMapper.existsSamePriceNotificationToday(
-                MEMBER_ID, 10L, Type.BUILDING.name(), 99000000
+                MEMBER_ID, 1L, Type.BUILDING.name(), 34500
         );
         assertTrue(exists);
 
         boolean notExists = notificationMapper.existsSamePriceNotificationToday(
-                MEMBER_ID, 10L, Type.BUILDING.name(), 7777
+                MEMBER_ID, 1L, Type.BUILDING.name(), 345000
         );
         assertFalse(notExists);
     }
