@@ -1,5 +1,7 @@
 package bjs.zangbu.fcm.service;
 
+import bjs.zangbu.fcm.dto.request.FcmRequest;
+import bjs.zangbu.fcm.dto.request.FcmRequest.FcmRegisterRequest;
 import bjs.zangbu.fcm.mapper.FcmMapper;
 import bjs.zangbu.fcm.vo.Fcm;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +17,10 @@ public class FcmServiceImpl implements FcmService {
 
     // 디바이스 토큰 등록
     @Override
-    public void registerToken(String memberId, String token) {
-        boolean exists = fcmMapper.existsByMemberIdAndToken(memberId, token);
+    public void registerToken(String memberId, FcmRegisterRequest request) {
+        boolean exists = fcmMapper.existsByMemberIdAndToken(memberId, request.getToken());
         if (!exists) {
-            fcmMapper.insertFcmToken(memberId, token);
+            fcmMapper.insertFcmToken(FcmRequest.tovo(memberId, request));
         }
     }
 
