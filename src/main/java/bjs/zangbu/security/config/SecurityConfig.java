@@ -114,8 +114,9 @@ public class SecurityConfig {
 
                         // 테스트용: /chat/** 전체 허용
                         .requestMatchers(new AntPathRequestMatcher("/chat/**")).permitAll()
-
-                        // 그 외 요청은 인증 필요
+            .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
+                                // 그 외 요청은 인증 필요
                         .anyRequest().authenticated()
                 );
 

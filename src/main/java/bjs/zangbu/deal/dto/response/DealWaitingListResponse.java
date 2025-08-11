@@ -13,16 +13,20 @@ import lombok.NoArgsConstructor;
 
 /**
  * 거래 대기 매물 목록 응답 DTO 모음
+ *
+ * <p>
+ * - /deal/waiting - /deal/waitinglist/purchase - /deal/waitinglist/onsale
+ * </p>
+ *
+ * <p>개별 매물 요소 DTO({@link WaitingListElement})와 페이징된 전체 목록 DTO({@link WaitingList})를 포함</p>
  */
 @ApiModel(description = "거래 대기 매물 목록 응답 DTO 모음")
 public class DealWaitingListResponse {
 
-  // /deal/waiting Response Element
-  // /deal/waitinglist/purchase Response Element
-  // /deal/waitinglist/onsale Response Element
-
   /**
    * 개별 거래 대기 매물 요소 응답 DTO
+   *
+   * <p>건물 기본 정보, 거래 유형, 대표 이미지, 주소, 사용자 관점의 거래 상태를 포함</p>
    */
   @Getter
   @NoArgsConstructor
@@ -40,7 +44,7 @@ public class DealWaitingListResponse {
     private String buildingName;
 
     @ApiModelProperty(value = "부동산 유형", example = "APARTMENT", allowableValues = "APARTMENT,OFFICETEL,VILLA,HOUSE")
-    private String houseType;
+    private String propertyType;
 
     @ApiModelProperty(value = "거래 유형", example = "CHARTER", allowableValues = "MONTHLY,CHARTER,TRADING")
     private String saleType;
@@ -58,12 +62,12 @@ public class DealWaitingListResponse {
     private String dealStatus;
 
     /**
-     * DealWithChatRoom 객체를 WaitingListElement로 변환
+     * {@link DealWithChatRoom} → {@link WaitingListElement} 변환
      *
      * @param dto        거래 및 채팅 정보
      * @param myNickname 현재 로그인 사용자의 닉네임
-     * @param imageUrl   매물 이미지 URL
-     * @return WaitingListElement 객체
+     * @param imageUrl   매물 대표 이미지 URL
+     * @return 변환된 WaitingListElement
      */
     public static WaitingListElement toDto( // DealWithChatRoom DTO -> WaitingListElement DTO
         DealWithChatRoom dto,
@@ -80,7 +84,7 @@ public class DealWaitingListResponse {
           dto.getBuildingId(),
           dto.getPrice(),
           dto.getBuildingName(),
-          dto.getHouseType(),
+          dto.getPropertyType(),
           dto.getSaleType(),
           imageUrl,
           dto.getAddress(),
@@ -89,7 +93,14 @@ public class DealWaitingListResponse {
       );
     }
 
-    // 다건 변환: Service에서 imageMap 만들어서 넘겨줌
+    /**
+     * {@link DealWithChatRoom} 리스트 → {@link WaitingListElement} 리스트 변환
+     *
+     * @param deals    거래·채팅 데이터 목록
+     * @param nickname 현재 로그인한 사용자 닉네임
+     * @param imageMap 건물 ID별 대표 이미지 URL 매핑
+     * @return 변환된 WaitingListElement 리스트
+     */
     public static List<WaitingListElement> fromList(
         List<DealWithChatRoom> deals,
         String nickname,
@@ -104,12 +115,10 @@ public class DealWaitingListResponse {
     }
   }
 
-// /deal/waiting Response
-// /deal/waitinglist/purchase Response
-// /deal/waitinglist/onsale Response
-
   /**
-   * 거래 대기 매물 목록 전체 응답 DTO
+   * 거래 대기 매물 목록 전체 응답 DTO (페이징 포함)
+   *
+   * <p>{@link PageInfo}를 기반으로 {@link WaitingListElement} 목록과 페이징 메타데이터를 제공</p>
    */
   @Getter
   @NoArgsConstructor
@@ -133,12 +142,12 @@ public class DealWaitingListResponse {
     private List<WaitingListElement> deals;
 
     /**
-     * PageInfo<DealWithChatRoom> 객체를 WaitingList DTO로 변환합니다.
+     * {@link PageInfo}&lt;{@link DealWithChatRoom}&gt; → {@link WaitingList} 변환
      *
-     * @param dtoList  PageInfo 형태의 거래 리스트
+     * @param dtoList  PageInfo 형태의 거래 목록
      * @param nickname 현재 로그인한 사용자 닉네임
-     * @param imageMap 건물 ID와 이미지 URL 매핑 정보
-     * @return WaitingList DTO
+     * @param imageMap 건물 ID별 대표 이미지 URL 매핑
+     * @return 변환된 WaitingList
      */
     public static WaitingList toDto(
         PageInfo<DealWithChatRoom> dtoList,

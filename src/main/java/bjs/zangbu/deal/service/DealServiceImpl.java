@@ -21,6 +21,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 거래 관련 비즈니스 로직 구현체
+ *
+ * <p>거래 생성/삭제, 대기 목록 조회, 상태 전환( {@link DealEnum} )을 담당</p>
+ */
 @Log4j2
 @Service
 @RequiredArgsConstructor
@@ -32,7 +37,10 @@ public class DealServiceImpl implements DealService {
   private final NotificationService notificationService;
 
   /**
-   * 거래 전 안내
+   * 거래 전 안내 조회
+   *
+   * @param buildingId 매물 식별 ID
+   * @return 거래 전 안내 DTO
    */
   @Override
   public Notice getNotice(Long buildingId) {
@@ -43,7 +51,11 @@ public class DealServiceImpl implements DealService {
   }
 
   /**
-   * 거래중인 list 모두 조회
+   * (구매/판매 구분 없이) 내가 관여한 대기 중 거래 목록 조회
+   *
+   * @param memberId 회원 식별 ID
+   * @param nickname 나의 닉네임
+   * @return 대기 목록 DTO
    */
   @Override
   public WaitingList getAllWaitingList(String memberId, String nickname) {
@@ -53,26 +65,38 @@ public class DealServiceImpl implements DealService {
   }
 
   /**
-   * 구매 중인 매물 조회
+   * 내가 구매자로 참여 중인 대기 거래 목록 조회
+   *
+   * @param memberId 회원 식별 ID
+   * @param nickname 나의 닉네임(구매자)
+   * @return 대기 목록 DTO
    */
   @Override
   public WaitingList getPurchaseWaitingList(String memberId, String nickname) {
-    List<DealWithChatRoom> deals = dealMapper.getPurchaseWaitingList(memberId);
+    List<DealWithChatRoom> deals = dealMapper.getPurchaseWaitingList(memberId, nickname);
     return buildWaitingList(deals, nickname);
 
   }
 
   /**
-   * 판매중인 매물 조회
+   * 내가 판매자로 참여 중인 대기 거래 목록 조회
+   *
+   * @param memberId 회원 식별 ID
+   * @param nickname 나의 닉네임(판매자)
+   * @return 대기 목록 DTO
    */
   @Override
   public WaitingList getOnSaleWaitingList(String memberId, String nickname) {
-    List<DealWithChatRoom> deals = dealMapper.getOnSaleWaitingList(memberId);
+    List<DealWithChatRoom> deals = dealMapper.getOnSaleWaitingList(memberId, nickname);
     return buildWaitingList(deals, nickname);
   }
 
   /**
-   * 상위 이미지 포함해서 dto 생성
+   * 대기 목록을 페이지 정보와 대표 이미지 포함 형태로 구성
+   *
+   * @param deals    조회된 거래+채팅방 조인 결과
+   * @param nickname 나의 닉네임
+   * @return 대기 목록 DTO
    */
   private WaitingList buildWaitingList(List<DealWithChatRoom> deals, String nickname) {
     PageInfo<DealWithChatRoom> pageInfo = new PageInfo<>(deals);
@@ -90,7 +114,10 @@ public class DealServiceImpl implements DealService {
   }
 
   /**
-   * Deal 삭제 메서드
+   * 거래 삭제
+   *
+   * @param dealId 거래 식별 ID
+   * @return 삭제 성공 여부
    */
   @Override
   @Transactional
@@ -99,30 +126,45 @@ public class DealServiceImpl implements DealService {
   }
 
   /**
-   * 상태 변환 메서드
+   * 거래 상태 전환
+   *
+   * <p>현재 상태에서 {@link bjs.zangbu.deal.vo.DealEnum}의 다음 유효 상태로 전환</p>
+   *
+   * @param status 거래 ID와 목표 상태를 담은 요청 DTO ({@link bjs.zangbu.deal.dto.request.DealRequest.Status})
+   * @return 전환 및 업데이트 성공 여부
    */
   @Override
   @Transactional
   public boolean patchStatus(Status status) {
-    // 이전 상태
-    String from = status.getStatus();
-    // 바꿀 상태
-    String to = dealMapper.getStatusByDealId(status.getDealId());
-    // 상태 FLOW 가 맞는 지 체크
-    if (checkStatus(from, to)) {
-      // 만약 거래 성사 시 알람 트리거
-      if (to.equals("CLOSE_DEAL")) {
-        notificationService.detectTradeHappenedNow(status.getDealId());
-      }
-      // status PATCH
-      return dealMapper.patchStatus(status) == 1;
-    } else {
+    // 현재(DB) 상태
+    String from = dealMapper.getStatusByDealId(status.getDealId());
+    // 바꿀(요청) 상태
+    String to = status.getStatus();
+
+    // 상태 FLOW 체크: from -> to 가 유효한지
+    if (!checkStatus(from, to)) {
+      log.warn("Invalid transition {} -> {} (dealId={})", from, to, status.getDealId());
       return false;
     }
+
+    // 상태 업데이트
+    int updated = dealMapper.patchStatus(status);
+    if (updated != 1) {
+      return false;
+    }
+
+    // 성공적으로 업데이트된 뒤 알림
+    if ("CLOSE_DEAL".equals(to)) {
+      notificationService.detectTradeHappenedNow(status.getDealId());
+    }
+    return true;
   }
 
   /**
-   * 거래 생성 (생성된 dealId 반환)
+   * 거래 생성
+   *
+   * @param chatRoomId 채팅방 식별 ID
+   * @return 생성된 거래 식별 ID
    */
   @Override
   @Transactional
@@ -134,8 +176,11 @@ public class DealServiceImpl implements DealService {
 
 
   /**
-   * 이전 상태에서 다음 상태 이어지는 게 맞는지 체크<br><br> [거래 전] -> 채팅 시작 -> <br> [판매자 수락 전] -> 판매자 수락 -> <br> [구매자
-   * 수락 전] -> 구매자 수락 -> <br> [거래 중] -> 거래 완료 -> <br> [거래 성사]
+   * 유효한 상태 전환 정의
+   *
+   * <pre>
+   * BEFORE_TRANSACTION → BEFORE_OWNER → BEFORE_CONSUMER → MIDDLE_DEAL → CLOSE_DEAL
+   * </pre>
    */
   private static final Map<DealEnum, DealEnum> validTransitions = Map.of(
       DealEnum.BEFORE_TRANSACTION, DealEnum.BEFORE_OWNER,
@@ -144,6 +189,13 @@ public class DealServiceImpl implements DealService {
       DealEnum.MIDDLE_DEAL, DealEnum.CLOSE_DEAL
   );
 
+  /**
+   * 상태 전환 유효성 검사
+   *
+   * @param from 현재 상태 (DB 저장 문자열)
+   * @param to   목표 상태 (요청 문자열)
+   * @return 유효 전환이면 true
+   */
   private boolean checkStatus(String from, String to) {
     try {
       DealEnum fromEnum = DealEnum.valueOf(from);
