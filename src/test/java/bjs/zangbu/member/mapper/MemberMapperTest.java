@@ -88,7 +88,8 @@ class MemberMapperTest {
     @Test
     @DisplayName("deleteBookMark: 북마크 삭제")
     void deleteBookMark_success() {
-        String memberId = insertMember("bm_del@t.com", "nick", true);
+//        String memberId = insertMember("bm_del@t.com", "nick", true);
+        String memberId = "7085bd6d-8ccd-4311-8cc6-87002c3dc99c";
         Long complexId = insertComplex();
         Long b1 = insertBuilding(memberId, complexId, "판매자", "TRADING",
                 Timestamp.valueOf(LocalDateTime.of(2025,1,1,10,0)));
@@ -197,23 +198,21 @@ class MemberMapperTest {
     // ----------------------
 
     @Test
-    @DisplayName("getBookmarksByMemberId: 최신 이미지 1장 + created_at DESC 정렬")
+    @DisplayName("getBookmarksByMemberId: 최신 이미지 1장 + created_at DESC 정렬 (스키마 기준)")
     void getBookmarksByMemberId_success_latestImageAndOrder() {
         String memberId = insertMember("bm@t.com", "nick", true);
         Long complexId = insertComplex();
 
-        // building 두 개: b2가 더 최신(created_at)
         Long b1 = insertBuilding(memberId, complexId, "판매자A", "TRADING",
                 Timestamp.valueOf(LocalDateTime.of(2025,1,1,10,0)));
-        Long b2 = insertBuilding(memberId, complexId, "판매자B", "RENT",
-                Timestamp.valueOf(LocalDateTime.of(2025,2,1,12,0)));
+        Long b2 = insertBuilding(memberId, complexId, "판매자B", "MONTHLY",
+                Timestamp.valueOf(LocalDateTime.of(2025,2,1,12,0))); // 더 최신
 
-        // 각 빌딩 최신 이미지 설정
-        insertImage(b1, "https://img/a_old.jpg", Timestamp.valueOf(LocalDateTime.of(2025,1,1,10,0)));
-        insertImage(b1, "https://img/a_new.jpg", Timestamp.valueOf(LocalDateTime.of(2025,1,2,9,0)));
-        insertImage(b2, "https://img/b_new.jpg", Timestamp.valueOf(LocalDateTime.of(2025,2,1,12,0)));
+        // 이미지: image_id 최대값이 최신
+        insertImage(memberId, complexId, b1, "https://img/a_old.jpg");
+        insertImage(memberId, complexId, b1, "https://img/a_new.jpg"); // 최신
+        insertImage(memberId, complexId, b2, "https://img/b_new.jpg"); // 최신
 
-        // 북마크
         insertBookmark(memberId, b1, complexId);
         insertBookmark(memberId, b2, complexId);
 
@@ -221,7 +220,7 @@ class MemberMapperTest {
         assertNotNull(list);
         assertEquals(2, list.size());
 
-        // 최신 생성일의 b2가 먼저
+        // building.created_at DESC → b2 먼저
         assertEquals(b2, list.get(0).getBuildingId());
         assertEquals("https://img/b_new.jpg", list.get(0).getImageUrl());
 
@@ -229,6 +228,7 @@ class MemberMapperTest {
         assertEquals(b1, list.get(1).getBuildingId());
         assertEquals("https://img/a_new.jpg", list.get(1).getImageUrl());
     }
+
 
     // =========================
     // 픽스처 INSERT helpers
@@ -252,22 +252,24 @@ class MemberMapperTest {
         return jdbc.queryForObject("SELECT MAX(complex_id) FROM complex_list", Long.class);
     }
 
-    private Long insertBuilding(String memberId, Long complexId, String sellerNickname, String saleType, Timestamp createdAt) {
+    private Long insertBuilding(String memberId, Long complexId, String sellerNickname,
+                                String saleType, Timestamp createdAt) {
         jdbc.update(
-                "INSERT INTO building(member_id,complex_id,seller_nickname,sale_type,price,deposit,bookmark_count,created_at,building_name,seller_type,property_type,move_date,info_one_line,info_building,contact_name,contact_phone,facility) " +
+                "INSERT INTO building(member_id,complex_id,seller_nickname,sale_type,price,deposit,bookmark_count,created_at," +
+                        " building_name,seller_type,property_type,move_date,info_oneline,info_building,contact_name,contact_phone,facility) " +
                         "VALUES (?,?,?,?, ?,?,0, ?, '테스트빌딩','OWNER','APARTMENT', CURRENT_DATE, '한 줄 소개','건물 설명','담당자','01033334444','편의시설')",
                 memberId, complexId, sellerNickname, saleType, 80000, 1000, createdAt
         );
         return jdbc.queryForObject("SELECT MAX(building_id) FROM building", Long.class);
     }
 
-    private void insertImage(Long buildingId, String url, Timestamp createdAt) {
+
+    private void insertImage(String memberId, Long complexId, Long buildingId, String url) {
         jdbc.update(
-                "INSERT INTO image_list(building_id,image_url,created_at) VALUES (?,?,?)",
-                buildingId, url, createdAt
+                "INSERT INTO image_list(member_id, complex_id, building_id, image_url) VALUES (?,?,?,?)",
+                memberId, complexId, buildingId, url
         );
     }
-
     private void insertBookmark(String memberId, Long buildingId, Long complexId) {
         // bookmark 테이블 스키마에 complex_id가 있다면 아래 VALUES 3번째에 complexId 넣기
         try {
@@ -279,4 +281,5 @@ class MemberMapperTest {
                     memberId, buildingId);
         }
     }
+
 }
