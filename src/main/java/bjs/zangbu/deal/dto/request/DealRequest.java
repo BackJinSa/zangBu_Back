@@ -7,14 +7,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * DealRequest 클래스는 거래 관련 요청 DTO들을 포함하는 래퍼 클래스
+ * 거래 관련 요청 DTO 모음
+ *
+ * <p>
+ * - 거래 의향 전달 - 거래 상태 변경 요청
+ * </p>
  */
 public class DealRequest {
 
-  // /deal/consumer/intent Request
-
   /**
-   * 분석 리포트 결제 의도를 전달 DTO
+   * 분석 리포트 결제 의도 요청 DTO
+   *
+   * <p>/deal/consumer/intent API 요청 시 사용</p>
    */
   @Getter
   @NoArgsConstructor
@@ -22,14 +26,19 @@ public class DealRequest {
   @ApiModel(description = "분석 리포트 결제 의도 요청 DTO")
   public static class IntentRequest {
 
+    /**
+     * 건물 식별 ID
+     */
     @ApiModelProperty(value = "건물 ID", example = "101")
     private Long buildingId;
   }
 
-  //  /deal/status Request
-
   /**
-   * 거래 상태 변경 요청을 전달하는 DTO
+   * 거래 상태 변경 요청 DTO
+   *
+   * <p>/deal/status API 요청 시 사용</p>
+   *
+   * <p>{@link bjs.zangbu.deal.vo.DealEnum}의 값 중 하나로 상태 변경</p>
    */
   @Getter
   @NoArgsConstructor
@@ -37,10 +46,20 @@ public class DealRequest {
   @ApiModel(description = "거래 상태 변경 요청 DTO")
   public static class Status {
 
+    /**
+     * 거래 식별 ID
+     */
     @ApiModelProperty(value = "거래 ID", example = "2001")
     private Long dealId;
 
-    @ApiModelProperty(value = "변경할 거래 상태", example = "CLOSE_DEAL", allowableValues = "BEFORE_TRANSACTION,BEFORE_OWNER,BEFORE_CONSUMER,MIDDLE_DEAL,CLOSE_DEAL")
+    /**
+     * 변경할 거래 상태 {@link bjs.zangbu.deal.vo.DealEnum} 참고
+     */
+    @ApiModelProperty(
+        value = "변경할 거래 상태",
+        example = "CLOSE_DEAL",
+        allowableValues = "BEFORE_TRANSACTION,BEFORE_OWNER,BEFORE_CONSUMER,MIDDLE_DEAL,CLOSE_DEAL"
+    )
     private String status;
   }
 

@@ -10,70 +10,121 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+/**
+ * 거래 관련 MyBatis Mapper
+ *
+ * <p>거래 생성/삭제, 상태 변경, 목록 조회 및 계약·등기·건축물대장 조회를 위한 데이터를 조회</p>
+ */
 @Mapper
 public interface DealMapper {
 
   /**
-   * 거래중인 list 모두 조회
+   * 내가 참여한 모든 대기 거래 목록 조회
+   *
+   * @param memberId 회원 식별 ID
+   * @return 대기 거래 목록
    */
-  List<DealWithChatRoom> getAllWaitingList(String userId);
+  List<DealWithChatRoom> getAllWaitingList(@Param("memberId") String memberId);
 
   /**
-   * Deal 삭제
+   * 거래 삭제
+   *
+   * @param dealId 거래 식별 ID
+   * @return 삭제된 행 수
    */
-  int deleteDealById(Long dealId);
+  int deleteDealById(@Param("dealId") Long dealId);
 
   /**
-   * Deal.status
+   * 거래 상태 변경
+   *
+   * @param status 거래 ID와 목표 상태를 담은 요청 DTO ({@link bjs.zangbu.deal.dto.request.DealRequest.Status})
+   * @return 변경된 행 수
    */
   int patchStatus(Status status);
 
   /**
-   * Deal.status 가져오기
+   * 거래 상태 조회
+   *
+   * @param dealId 거래 식별 ID
+   * @return 현재 거래 상태 (문자열, {@link bjs.zangbu.deal.vo.DealEnum} 값)
    */
-  String getStatusByDealId(Long dealId);
+  String getStatusByDealId(@Param("dealId") Long dealId);
 
   /**
-   * 구매중인 list 모두 조회
+   * 내가 구매자로 참여 중인 대기 거래 목록 조회
+   *
+   * @param memberId 회원 식별 ID
+   * @param nickname 회원 닉네임(구매자)
+   * @return 대기 거래 목록
    */
-  List<DealWithChatRoom> getPurchaseWaitingList(String userId);
+  List<DealWithChatRoom> getPurchaseWaitingList(@Param("memberId") String memberId,
+      @Param("nickname") String nickname);
 
   /**
-   * 판매중인 list 모두 조회
+   * 내가 판매자로 참여 중인 대기 거래 목록 조회
+   *
+   * @param memberId 회원 식별 ID
+   * @param nickname 회원 닉네임(판매자)
+   * @return 대기 거래 목록
    */
-  List<DealWithChatRoom> getOnSaleWaitingList(String userId);
-/**
- * 등기부등본 조회에 필요한 데이터
- */
-  EstateRegistrationRequest getEstateRegistrationRequest(Long dealId);
-/**
- * 건축물대장 조회에 필요한 데이터
- */
-DealDocumentInfo getDocumentInfo(@Param("dealId") Long dealId);
+  List<DealWithChatRoom> getOnSaleWaitingList(@Param("memberId") String memberId,
+      @Param("nickname") String nickname);
 
   /**
-   * 표준계약서 xml 코드
+   * 등기부등본 조회에 필요한 데이터 조회
+   *
+   * @param dealId 거래 식별 ID
+   * @return 등기부등본 요청 DTO
    */
-  DealWithSaleType findWithType(Long dealId);
+  EstateRegistrationRequest getEstateRegistrationRequest(@Param("dealId") Long dealId);
 
   /**
-   * 오늘 거래된 매물들의 building_id 조회
+   * 건축물대장 조회에 필요한 데이터 조회
+   *
+   * @param dealId 거래 식별 ID
+   * @return 건축물대장 정보 DTO
+   */
+  DealDocumentInfo getDocumentInfo(@Param("dealId") Long dealId);
+
+  /**
+   * 표준계약서 XML 코드 조회
+   *
+   * @param dealId 거래 식별 ID
+   * @return 매물의 판매 유형과 계약서 정보 DTO
+   */
+  DealWithSaleType findWithType(@Param("dealId") Long dealId);
+
+  /**
+   * 오늘 거래된 매물들의 building_id 목록 조회
+   *
+   * @return building_id 목록
    */
   List<Long> selectTodayTradedBuildingIds();
 
   /**
    * 거래 신규 생성
+   *
+   * @param chatRoomId 채팅방 식별 ID
+   * @param result     생성된 거래 ID를 담을 DTO
+   * @return 생성된 행 수
    */
   int createDeal(@Param("chatRoomId") String chatRoomId,
-      @Param("result") CreateResult result);  // insert count 반환됨
+      @Param("result") CreateResult result);
 
   /**
-   * dealId로 buildingId 조회
+   * 거래 ID로 buildingId 조회
+   *
+   * @param dealId 거래 식별 ID
+   * @return buildingId
    */
-  Long getBuildingIdByDealId(Long dealId);
-  /**
-   * dealId로 complexId 조회
-   */
-  Long getComplexIdByDealId(Long dealId);
+  Long getBuildingIdByDealId(@Param("dealId") Long dealId);
 
-  }
+  /**
+   * 거래 ID로 complexId 조회
+   *
+   * @param dealId 거래 식별 ID
+   * @return complexId
+   */
+  Long getComplexIdByDealId(@Param("dealId") Long dealId);
+
+}

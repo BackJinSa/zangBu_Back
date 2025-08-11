@@ -49,7 +49,7 @@
 
            b.price,
            b.building_name,
-           b.house_type,
+           b.property_type,
            b.sale_type,
            cl.address,
 
@@ -60,7 +60,7 @@
            JOIN chat_room c ON d.chat_room_id = c.chat_room_id
            JOIN building b ON d.building_id = b.building_id
            JOIN complex_list cl ON d.complex_id = cl.complex_id
-    WHERE d.member_id = #{userId}
+    WHERE d.member_id = #{memberId}
       AND d.status != 'BEFORE_TRANSACTION'
       AND d.status != 'CLOSE_DEAL'
     ORDER BY d.created_at DESC
@@ -85,7 +85,7 @@
 
            b.price,
            b.building_name,
-           b.house_type,
+           b.property_type,
            b.sale_type,
 
            cl.address,
@@ -98,6 +98,7 @@
            JOIN building b ON d.building_id = b.building_id
            JOIN complex_list cl ON d.complex_id = cl.complex_id
     WHERE c.consumer_nickname = #{nickname}
+      AND d.member_id = #{memberId}
       AND d.status != 'BEFORE_TRANSACTION'
       AND d.status != 'CLOSE_DEAL'
     ORDER BY d.created_at DESC
@@ -115,7 +116,7 @@
 
            b.price,
            b.building_name,
-           b.house_type,
+           b.property_type,
            b.sale_type,
 
            cl.address,
@@ -128,7 +129,7 @@
            JOIN building b ON d.building_id = b.building_id
            JOIN complex_list cl ON d.complex_id = cl.complex_id
     WHERE c.seller_nickname = #{nickname}
-      AND d.member_id = #{userId}
+      AND b.member_id = #{memberId}
       AND d.status != 'BEFORE_TRANSACTION'
       AND d.status != 'CLOSE_DEAL'
     ORDER BY d.created_at DESC
@@ -145,7 +146,7 @@
 
     <result property="price" column="price"/>
     <result property="buildingName" column="building_name"/>
-    <result property="houseType" column="house_type"/>
+    <result property="propertyType" column="property_type"/>
     <result property="saleType" column="sale_type"/>
     <result property="address" column="address"/>
 
@@ -160,7 +161,7 @@
 
     SELECT d.deal_id,
            d.status,
-           d.user_id,
+           d.member_id,
            d.building_id,
            b.sale_type
     FROM deal d
@@ -168,20 +169,20 @@
     WHERE d.deal_id = #{dealId}
 
   </select>
-    <!-- 결과 매핑 -->
-    <resultMap id="DealWithSaleTypeMap"
-               type="bjs.zangbu.deal.dto.join.DealWithSaleType">
+  <!-- 결과 매핑 -->
+  <resultMap id="DealWithSaleTypeMap"
+    type="bjs.zangbu.deal.dto.join.DealWithSaleType">
 
-        <id property="dealId" column="deal_id"/>
-        <result property="status"
-                column="status"
-                javaType="bjs.zangbu.deal.vo.DealEnum"/>
-        <result property="userId" column="user_id"/>
-        <result property="buildingId" column="building_id"/>
-        <result property="saleType"
-                column="sale_type"
-                javaType="bjs.zangbu.notification.vo.SaleType"/>
-    </resultMap>
+    <id property="dealId" column="deal_id"/>
+    <result property="status"
+      column="status"
+      javaType="bjs.zangbu.deal.vo.DealEnum"/>
+    <result property="memberId" column="member_id"/>
+    <result property="buildingId" column="building_id"/>
+    <result property="saleType"
+      column="sale_type"
+      javaType="bjs.zangbu.notification.vo.SaleType"/>
+  </resultMap>
 
   <!-- 오늘 거래된 매물들의 building_id 조회 -->
   <select id="selectTodayTradedBuildingIds" resultType="java.lang.Long">
@@ -196,51 +197,50 @@
     FROM deal
     WHERE deal_id = #{dealId}
   </select>
-    <!-- dealId로 complexId 조회 -->
-    <select id="getComplexIdByDealId" resultType="java.lang.Long">
-        SELECT complex_id
-        FROM deal
-        WHERE deal_id = #{dealId}
-    </select>
+  <!-- dealId로 complexId 조회 -->
+  <select id="getComplexIdByDealId" resultType="java.lang.Long">
+    SELECT complex_id
+    FROM deal
+    WHERE deal_id = #{dealId}
+  </select>
 
-<!--    등기부등본 조회에 필요한 정보 가져오기 -->
-    <select id="getEstateRegistrationRequest"
-            resultType="bjs.zangbu.deal.dto.request.EstateRegistrationRequest">
-        SELECT  d.dealId,
-                m.phone,
-                m.birth,
-                cl.sido,
-                cl.address,
-                cl.sigungu,
-                cl.dong,
-                cl.ho
-                cl.roadName
-        FROM    deal            d
-                    JOIN  member          m  ON m.member_id   = d.member_id
-                    JOIN  complex_list    cl ON cl.complex_id = d.complex_id
-                    JOIN building     b  ON d.building_id = b.building_id
-        WHERE   d.deal_id = #{dealId}
-    </select>
-<!--    건축물대장 조회에 필요한 정보 가져오기 -->
-    <select id="getDocumentInfo"
-            resultType="bjs.zangbu.deal.dto.join.DealDocumentInfo">
-        SELECT  d.dealId,
-                m.identity,
-                m.birth,
-                m.phone,
-                m.name,
-                m.telecom,
-                cl.address,
-                cl.zonecode,
-                cl.dong,
-                cl.ho
-        FROM    deal            d
-                    JOIN  member          m  ON m.member_id   = d.member_id
-                    JOIN  complex_list    cl ON cl.complex_id = d.complex_id
-                     JOIN building     b  ON d.building_id = b.building_id
-        WHERE   d.deal_id = #{dealId}
-    </select>
-
+  <!--    등기부등본 조회에 필요한 정보 가져오기 -->
+  <select id="getEstateRegistrationRequest"
+    resultType="bjs.zangbu.deal.dto.request.EstateRegistrationRequest">
+    SELECT d.deal_id,
+           m.phone,
+           m.birth,
+           cl.sido,
+           cl.address,
+           cl.sigungu,
+           cl.dong,
+           cl.ho,
+           cl.roadName
+    FROM deal d
+           JOIN member m ON m.member_id = d.member_id
+           JOIN complex_list cl ON cl.complex_id = d.complex_id
+           JOIN building b ON d.building_id = b.building_id
+    WHERE d.deal_id = #{dealId}
+  </select>
+  <!--    건축물대장 조회에 필요한 정보 가져오기 -->
+  <select id="getDocumentInfo"
+    resultType="bjs.zangbu.deal.dto.join.DealDocumentInfo">
+    SELECT d.deal_id,
+           m.identity,
+           m.birth,
+           m.phone,
+           m.name,
+           m.telecom,
+           cl.address,
+           cl.zonecode,
+           cl.dong,
+           cl.ho
+    FROM deal d
+           JOIN member m ON m.member_id = d.member_id
+           JOIN complex_list cl ON cl.complex_id = d.complex_id
+           JOIN building b ON d.building_id = b.building_id
+    WHERE d.deal_id = #{dealId}
+  </select>
 
 
 </mapper>
