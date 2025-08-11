@@ -58,7 +58,7 @@ public class ChatStompController {  //WebSocket 메시지 수신 컨트롤러
 
 
         // 채팅방 구독자(/topic/chat/{roomId}를 구독하고 있는 모든 클라이언트)에게 메시지 브로드캐스트(response를 실시간 전송)
-        messagingTemplate.convertAndSend("/exchange/chat.exchange/chat.room." + roomId, response);
+        messagingTemplate.convertAndSend("/topic/chat.room." + roomId, response);
     }
 
 }

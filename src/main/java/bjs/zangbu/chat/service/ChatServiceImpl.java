@@ -7,10 +7,8 @@ import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.mapper.ChatMapper;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
+import bjs.zangbu.deal.vo.DealEnum;
 import bjs.zangbu.member.mapper.MemberMapper;
-import bjs.zangbu.building.service.BuildingService; // building 정보 조회를 위한 서비스(가정)
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
@@ -105,7 +103,6 @@ public class ChatServiceImpl implements ChatService{
 
             //마지막 메시지 조회
             ChatMessage lastMessage = chatMapper.selectLastMessageByRoomId(chatRoomId);
-            log.info("ChatServiceImpl - lastMessage : " + lastMessage.getMessage());
 
             //대화 상대방 닉네임 조회
             String otherNickname = userId.equals(room.getConsumerId())
@@ -118,8 +115,7 @@ public class ChatServiceImpl implements ChatService{
                     .lastMessage(lastMessage != null ? lastMessage.getMessage() : null)
                     .lastMessageTime(lastMessage != null ? formattingCreatedAt(lastMessage.getCreatedAt()) : null)
                     .otherUserNickname(otherNickname)
-                    //.status(room.getStatus()) //TODO: 나중에 수정
-                    .status("status test")
+                    .status(room.getStatus())
                     .sellerType(room.getSellerType())
                     .hasNext(chatRooms.size() == size) // 페이지 사이즈와 같으면 다음 있음
                     .unreadCount(unreadCount)
@@ -144,28 +140,29 @@ public class ChatServiceImpl implements ChatService{
         //채팅방 이미 존재하는지 확인
         if (existingChatRoom != null) {
             log.info("ChatServiceImpl - createChatRoom: 이미 존재: " + existingChatRoom.getChatRoomId());
+            //TODO: building, deal 가져와서 null값들 넣어줘야함
             return existingChatRoom;
         }
 
-        log.info("ChatServiceImpl - createChatRoom : 채팅방 존재xx : buildingId는 " + buildingId);
+        log.info("ChatServiceImpl - createChatRoom : 채팅방 존재x : buildingId는 " + buildingId);
 
-        Building building = null;
-        try {
-            building = buildingMapper.getBuildingById(buildingId);
-            log.info("building 조회 성공: {}", building);
-        } catch (Exception e) {
-            log.error("building 조회 중 예외 발생", e);  // 🔥 예외 로그 여기서 확인
-            throw e;
-        }
+        Building building = buildingMapper.getBuildingById(buildingId);
 
         if (building == null) {
             log.info("building이 null");
             throw new IllegalArgumentException("존재하지 않는 매물입니다.");
         }
+        log.info("building 조회 성공: {}", building);
+
         // 구매자, 판매자 닉네임 조회
         String consumerNickname = memberMapper.getNicknameByMemberId(consumerId);
         String sellerNickname = memberMapper.getNicknameByMemberId(building.getMemberId());
         log.info("ChatServiceImpl - createChatRoom: 구매자닉네임: " + consumerNickname + ", 판매자: " + sellerNickname);
+
+        if(consumerId.equals(building.getMemberId())) {
+            log.info("본인 소유의 건물");
+            throw new IllegalArgumentException("본인 소유의 건물입니다.");
+        }
 
         // 모든 정보가 확인되었을 때만 채팅방 생성
         if (consumerNickname != null && sellerNickname != null) {
@@ -182,6 +179,8 @@ public class ChatServiceImpl implements ChatService{
                     .sellerId(building.getMemberId())
                     .sellerVisible(true)    // 초기값 true
                     .consumerVisible(true)  // 초기값 true
+                    .sellerType(building.getSellerType())
+                    .status(DealEnum.BEFORE_OWNER)
                     .build();
 
             chatMapper.insertChatRoom(newChatRoom);

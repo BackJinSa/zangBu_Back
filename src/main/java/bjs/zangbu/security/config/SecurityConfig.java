@@ -32,93 +32,93 @@ import org.springframework.web.cors.CorsConfiguration;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  private final UserDetailsService userDetailsService;
-  private final JwtAuthenticationFilter jwtAuthenticationFilter;
-  private final AuthenticationErrorFilter authenticationErrorFilter;
-  private final LoginSuccessHandler loginSuccessHandler;
-  private final LoginFailureHandler loginFailureHandler;
+    private final UserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final AuthenticationErrorFilter authenticationErrorFilter;
+    private final LoginSuccessHandler loginSuccessHandler;
+    private final LoginFailureHandler loginFailureHandler;
 
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-  /**
-   * AuthenticationManager 빈으로 등록 (Spring 6 표준 방식)
-   */
-  @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
-      throws Exception {
-    return authConfig.getAuthenticationManager();
-  }
+    /**
+     * AuthenticationManager 빈으로 등록 (Spring 6 표준 방식)
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+            throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
 
-  /**
-   * SecurityFilterChain 구성
-   */
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http,
-      AuthenticationManager authenticationManager) throws Exception {
-    // 로그인 필터 생성
-    JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter =
-        new JwtUsernamePasswordAuthenticationFilter(authenticationManager, loginSuccessHandler,
-            loginFailureHandler);
+    /**
+     * SecurityFilterChain 구성
+     */
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   AuthenticationManager authenticationManager) throws Exception {
+        // 로그인 필터 생성
+        JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter =
+                new JwtUsernamePasswordAuthenticationFilter(authenticationManager, loginSuccessHandler,
+                        loginFailureHandler);
 
-    http
-        .addFilterBefore(jwtUsernamePasswordAuthenticationFilter,
-            org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
-        .addFilterBefore(jwtAuthenticationFilter, JwtUsernamePasswordAuthenticationFilter.class)
-        .addFilterBefore(authenticationErrorFilter, JwtAuthenticationFilter.class)
+        http
+                .addFilterBefore(jwtUsernamePasswordAuthenticationFilter,
+                        org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, JwtUsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(authenticationErrorFilter, JwtAuthenticationFilter.class)
 
-        // CORS 설정
-        .cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
-          CorsConfiguration config = new CorsConfiguration();
-          config.setAllowedOrigins(List.of("https://www.zangbu.site", "http://localhost:8080",
-              "http://localhost:61613"));
-          config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-          config.setAllowedHeaders(List.of("*"));
-          config.setAllowCredentials(true);
-          config.setMaxAge(3600L);
-          return config;
-        }))
+                // CORS 설정
+                .cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of("https://www.zangbu.site", "http://localhost:8080",
+                            "http://localhost:61613", "http://localhost:5500",  "http://127.0.0.1:5500"));
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    config.setAllowedHeaders(List.of("*"));
+                    config.setAllowCredentials(true);
+                    config.setMaxAge(3600L);
+                    return config;
+                }))
 
-        .csrf(csrf -> csrf.disable())
-        .httpBasic(httpBasic -> httpBasic.disable())
-        .formLogin(formLogin -> formLogin.disable())
-        .sessionManagement(
-            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(csrf -> csrf.disable())
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(formLogin -> formLogin.disable())
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-        // 권한 설정
-        .authorizeHttpRequests(auth -> auth
-            // 기본 및 테스트 URL
-            .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/index.html")).permitAll()
+                // 권한 설정
+                .authorizeHttpRequests(auth -> auth
+                        // 기본 및 테스트 URL
+                        .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/index.html")).permitAll()
 
-            // Swagger 관련 경로 허용 (Springfox 기준)
-            .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html/**")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/v2/api-docs")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
+                        // Swagger 관련 경로 허용 (Springfox 기준)
+                        .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/v2/api-docs")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
 
-            // 정적 리소스 허용 (필요시)
-            .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
+                        // 정적 리소스 허용 (필요시)
+                        .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
 
-            // auth 엔트 포인트
-                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-            // 보안 API 경로 설정
-            .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
-            .requestMatchers(new AntPathRequestMatcher("/security/member"))
-            .hasAnyRole("ADMIN", "MEMBER")
+                        // auth 엔트 포인트
+                        .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+                        // 보안 API 경로 설정
+                        .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
+                        .requestMatchers(new AntPathRequestMatcher("/security/member"))
+                        .hasAnyRole("ADMIN", "MEMBER")
 
-                // 테스트용: /chat/** 전체 허용
-                .requestMatchers(new AntPathRequestMatcher("/chat/**")).permitAll()
+                        // 테스트용: /chat/** 전체 허용
+                        .requestMatchers(new AntPathRequestMatcher("/chat/**")).permitAll()
 
-            // 그 외 요청은 인증 필요
-            .anyRequest().authenticated()
-        );
+                        // 그 외 요청은 인증 필요
+                        .anyRequest().authenticated()
+                );
 
-    return http.build();
-  }
+        return http.build();
+    }
 }

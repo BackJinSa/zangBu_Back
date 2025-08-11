@@ -75,7 +75,7 @@ class ChatMapperTest {
                 .chatRoomId("room-001")
                 .buildingId(5L)
                 .consumerId("user-001")
-                .complexId("2")
+                .complexId(2L)
                 .sellerNickname("유저6")
                 .consumerNickname("유저8")
                 .sellerVisible(true)

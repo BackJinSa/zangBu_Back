@@ -2,6 +2,9 @@ package bjs.zangbu.chat.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import bjs.zangbu.building.vo.SellerType;
+import bjs.zangbu.deal.vo.DealEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,7 +45,7 @@ public class ChatResponse {
     //         @Schema(description = "판매자 유형", example = "집주인")
     private String sellerType;      //세입자, 집주인
     //         @Schema(description = "거래 상태", example = "거래 진행 중")
-    private String status;          //거래 상태
+    private DealEnum status;          //거래 상태
     //         @Schema(description = "채팅방 내 메시지들")
     private List<Message> messageList;      //채팅방 내 메시지들
   }
@@ -110,9 +113,9 @@ public class ChatResponse {
     //         @Schema(description = "상대방 닉네임", example = "김구매자")
     private String otherUserNickname;       //대화 상대방 닉네임
     //         @Schema(description = "거래 상태", example = "완료")
-    private String status;                  //거래 상태
+    private DealEnum status;                  //거래 상태
     //         @Schema(description = "판매자 타입", example = "세입자")
-    private String sellerType;              //판매자 타입 : 집주인 or 세입자
+    private SellerType sellerType;              //판매자 타입 : 집주인 or 세입자
     //         @Schema(description = "다음 페이지 존재 여부", example = "true")
     private boolean hasNext;                //페이지네이션 다음 여부
     //         @Schema(description = "안 읽은 메시지 개수", example = "3")

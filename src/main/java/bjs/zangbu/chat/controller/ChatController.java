@@ -46,7 +46,7 @@ public class ChatController {
   public ResponseEntity<ChatRoom> createChatRoom(@PathVariable Long buildingId) {
 //    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //    String consumerId = authentication.getName();  //TODO: 테스트용, 나중에 주석 취소
-    String consumerId = "user-001";
+    String consumerId = "094cb0e2-6cb9-4d8e-8359-5c337ef07653"; //user1
 
     log.info("ChatController - createChatRoom");
     ChatRoom room = chatService.createChatRoom(buildingId, consumerId);
@@ -71,9 +71,9 @@ public class ChatController {
       @RequestParam int size) {
     log.info("ChatController - getChatRoomList");
 
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     //String userId = authentication.getName();  //TODO: 테스트하느라 주석처리함
-    String userId = "user-001";
+    String userId = "094cb0e2-6cb9-4d8e-8359-5c337ef07653"; //user1
     List<ChatResponse.ChatRoomListResponse> roomList = chatService.getChatRoomList(userId, type,
         page, size);
     return ResponseEntity.status(200).body(roomList);
@@ -133,7 +133,7 @@ public class ChatController {
       @PathVariable String roomId) {
 //    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //    String userId = authentication.getName();
-    String userId = "user-010";
+    String userId = "094cb0e2-6cb9-4d8e-8359-5c337ef07653"; //user1
 
     chatService.leaveChatRoom(roomId, userId);
     return ResponseEntity.status(204).build();
@@ -154,7 +154,7 @@ public class ChatController {
       @PathVariable String roomId) {
 //    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //    String userId = authentication.getName();
-    String userId = "user-001";
+    String userId = "094cb0e2-6cb9-4d8e-8359-5c337ef07653"; //user1
     log.info("ChatController - markAsRead");
 
     chatService.markAsRead(roomId, userId);
