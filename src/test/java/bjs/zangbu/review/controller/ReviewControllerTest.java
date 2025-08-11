@@ -51,8 +51,8 @@ class ReviewControllerTest {
         ReviewListResult result = new ReviewListResult(
                 2L,
                 List.of(
-                        new ReviewListResponse(1L, "nick1", 5, "2024-01-01T12:00:00"),
-                        new ReviewListResponse(2L, "nick2", 4, "2024-01-02T12:00:00")),
+                        new ReviewListResponse(1L, "nick1", "좋은 리뷰", 5, "중층"),
+                        new ReviewListResponse(2L, "nick2", "괜찮은 리뷰", 4, "고층")),
                 false,
                 5);
 

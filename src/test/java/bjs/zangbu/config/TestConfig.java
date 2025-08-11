@@ -1,6 +1,10 @@
 package bjs.zangbu.config;
 
 import bjs.zangbu.notification.service.NotificationService;
+import bjs.zangbu.payment.controller.PaymentController;
+import bjs.zangbu.payment.mapper.PaymentMapper;
+import bjs.zangbu.payment.service.PaymentService;
+
 import bjs.zangbu.review.controller.ReviewController;
 import bjs.zangbu.review.mapper.ReviewMapper;
 import bjs.zangbu.review.service.ReviewService;
@@ -79,6 +83,16 @@ public class TestConfig {
     @Bean
     public ReviewController reviewController(ReviewService reviewService) {
         return new ReviewController(reviewService);
+    }
+
+    @Bean
+    public PaymentService paymentService(PaymentMapper paymentMapper) {
+        return new PaymentService(paymentMapper);
+    }
+
+    @Bean
+    public PaymentController paymentController(PaymentService paymentService) {
+        return new PaymentController(paymentService);
     }
 
     @Bean
