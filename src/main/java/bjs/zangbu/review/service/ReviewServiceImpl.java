@@ -19,13 +19,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ReviewServiceImpl implements ReviewService{
+public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper reviewMapper;
     private final NotificationService notificationService;
 
     // 날짜 형식 설정
-    private static final DateTimeFormatter DF =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public ReviewListResult listReviews(Long buildingId, int page, int size) {
@@ -66,17 +65,25 @@ public class ReviewServiceImpl implements ReviewService{
     @Override
     public ReviewCreateResponse createReview(ReviewCreateRequest req, String userId, String nickname) {
         if (req.getBuildingId() == null ||
-                req.getAddressId()  == null ||
-                req.getRank()       == null ||
-                req.getRank() < 1   ||
+                req.getRank() == null ||
+                req.getRank() < 1 ||
                 req.getRank() > 5) {
             throw new IllegalArgumentException("리뷰 작성에 실패했습니다."); // 400
+        }
+
+        // complexId를 요청에서 받거나, buildingId로 조회하여 보정
+        Long complexId = req.getComplexId();
+        if (complexId == null) {
+            complexId = reviewMapper.selectComplexIdByBuildingId(req.getBuildingId());
+        }
+        if (complexId == null) {
+            throw new IllegalArgumentException("리뷰 작성에 실패했습니다.");
         }
 
         ReviewInsertParam param = new ReviewInsertParam();
         param.setBuildingId(req.getBuildingId());
         param.setMemberId(userId);
-        param.setAddressId(req.getAddressId());
+        param.setComplexId(complexId);
         param.setReviewerNickname(nickname);
         param.setRank(req.getRank());
         param.setContent(req.getContent());
@@ -93,8 +100,7 @@ public class ReviewServiceImpl implements ReviewService{
                 req.getFloor(),
                 req.getRank(),
                 req.getContent(),
-                createdAt
-        );
+                createdAt);
     }
 
     // 리뷰 삭제

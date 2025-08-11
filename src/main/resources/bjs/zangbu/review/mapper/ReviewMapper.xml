@@ -37,7 +37,6 @@
         SELECT
             review_id          AS reviewId,
             building_id        AS buildingId,
-            address_id         AS addressId,
             reviewer_nickname  AS reviewerNickname,
             rank,
             content,
@@ -54,16 +53,16 @@
             keyProperty="reviewId">
         INSERT INTO review
         (building_id,
-         user_id,
-         address_id,
+         member_id,
+         complex_id,
          reviewer_nickname,
          rank,
          content,
          created_at)
         VALUES
             (#{buildingId},
-             #{userId},
-             #{addressId},
+             #{memberId},
+             #{complexId},
              #{reviewerNickname},
              #{rank},
              #{content},
@@ -76,4 +75,11 @@
         DELETE FROM review
         WHERE review_id = #{reviewId}
     </delete>
+
+    <!-- building_id로 complex_id 조회 -->
+    <select id="selectComplexIdByBuildingId" resultType="long">
+        SELECT complex_id
+        FROM building
+        WHERE building_id = #{buildingId}
+    </select>
 </mapper>
