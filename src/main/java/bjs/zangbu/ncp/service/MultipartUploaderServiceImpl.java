@@ -70,7 +70,8 @@ public class MultipartUploaderServiceImpl implements MultipartUploaderService {
       throws Exception {
 
     // JPEG MIME 타입 또는 확장자 검사
-    if (!isAllowedMultipartFileType("image/jpeg", multipartFile)) {
+    if (!isAllowedMultipartFileType("image/jpg", multipartFile) && !isAllowedMultipartFileType(
+        "image/jpeg", multipartFile)) {
       log.error("jpeg 확장자만 허용 됩니다.");
       throw new IllegalArgumentException("jpeg 확장자만 허용 됩니다.");
 

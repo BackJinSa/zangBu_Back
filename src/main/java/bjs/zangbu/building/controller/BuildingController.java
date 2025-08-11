@@ -1,11 +1,15 @@
 package bjs.zangbu.building.controller;
 
 import bjs.zangbu.building.dto.request.BuildingRequest.BookmarkRequest;
+import bjs.zangbu.building.dto.request.BuildingRequest.BuildingDetails;
+import bjs.zangbu.building.dto.request.BuildingRequest.ComplexDetails;
+import bjs.zangbu.building.dto.request.BuildingRequest.ImageDetails;
 import bjs.zangbu.building.dto.request.BuildingRequest.SaleRegistrationRequest;
 import bjs.zangbu.building.dto.request.BuildingRequest.ViewDetailRequest;
 import bjs.zangbu.building.dto.response.BuildingResponse.FilteredResponse;
 import bjs.zangbu.building.dto.response.BuildingResponse.ViewDetailResponse;
 import bjs.zangbu.building.service.BuildingService;
+import bjs.zangbu.security.account.vo.CustomUser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -15,6 +19,7 @@ import io.swagger.annotations.ApiResponses;
 import java.io.UnsupportedEncodingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +30,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -51,20 +58,20 @@ public class BuildingController {
    * @throws InterruptedException         API 호출 지연 시 발생하는 예외
    */
   @ApiOperation(
-          value = "매물 필터링 상세보기",
-          notes = "필터링된 매물에 대한 상세정보를 조회합니다.",
-          response = ViewDetailResponse.class
+      value = "매물 필터링 상세보기",
+      notes = "필터링된 매물에 대한 상세정보를 조회합니다.",
+      response = ViewDetailResponse.class
   )
   @ApiResponses({
-          @ApiResponse(code = 200, message = "매물 상세정보 조회 성공"),
-          @ApiResponse(code = 400, message = "매물 상세정보 조회 실패"),
-          @ApiResponse(code = 500, message = "서버 오류로 인한 매물 상세정보 조회 실패")
+      @ApiResponse(code = 200, message = "매물 상세정보 조회 성공"),
+      @ApiResponse(code = 400, message = "매물 상세정보 조회 실패"),
+      @ApiResponse(code = 500, message = "서버 오류로 인한 매물 상세정보 조회 실패")
   })
   @PostMapping("")
   public ResponseEntity<?> viewDetail(
-          @ApiParam(value = "매물 상세 조회 요청 DTO", required = true)
-          @RequestBody ViewDetailRequest request)
-          throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+      @ApiParam(value = "매물 상세 조회 요청 DTO", required = true)
+      @RequestBody ViewDetailRequest request)
+      throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
     ViewDetailResponse response = buildingService.viewDetailFilterService(request);
     return ResponseEntity.ok(response);
   }
@@ -84,39 +91,39 @@ public class BuildingController {
    * @return 페이징된 매물 목록이 담긴 {@link FilteredResponse} DTO와 함께 200 OK 응답
    */
   @ApiOperation(
-          value = "필터링된 매물 리스트 조회",
-          notes = "특정 조건에 따라 필터링된 매물 목록을 조회합니다.",
-          response = FilteredResponse.class
+      value = "필터링된 매물 리스트 조회",
+      notes = "특정 조건에 따라 필터링된 매물 목록을 조회합니다.",
+      response = FilteredResponse.class
   )
   @ApiResponses({
-          @ApiResponse(code = 200, message = "필터링된 매물 목록 조회 성공"),
-          @ApiResponse(code = 400, message = "필터링된 매물 목록 조회 실패"),
-          @ApiResponse(code = 500, message = "서버 오류로 인한 필터링된 매물 목록 조회 실패")
+      @ApiResponse(code = 200, message = "필터링된 매물 목록 조회 성공"),
+      @ApiResponse(code = 400, message = "필터링된 매물 목록 조회 실패"),
+      @ApiResponse(code = 500, message = "서버 오류로 인한 필터링된 매물 목록 조회 실패")
   })
   @GetMapping("/list")
   public ResponseEntity<?> getBuildingList(
-          @ApiParam(value = "매물명 필터", example = "강남빌딩")
-          @RequestParam(value = "buildingName", required = false) String buildingName,
-          @ApiParam(value = "판매 유형 필터", example = "sale")
-          @RequestParam(value = "saleType", required = false) String saleType,
-          @ApiParam(value = "가격 범위 시작", example = "100000000")
-          @RequestParam(value = "startPrice", required = false) Long startPrice,
-          @ApiParam(value = "가격 범위 종료", example = "500000000")
-          @RequestParam(value = "endPrice", required = false) Long endPrice,
-          @ApiParam(value = "부동산 종류 필터", example = "apartment")
-          @RequestParam(value = "propertyType", required = false) String propertyType,
-          @ApiParam(value = "페이지 번호", example = "1")
-          @RequestParam(value = "page", defaultValue = "1") int page,
-          @ApiParam(value = "페이지당 항목 수", example = "10")
-          @RequestParam(value = "size", defaultValue = "10") int size,
-          @ApiIgnore
-          @AuthenticationPrincipal UserDetails userDetails) {
+      @ApiParam(value = "매물명 필터", example = "강남빌딩")
+      @RequestParam(value = "buildingName", required = false) String buildingName,
+      @ApiParam(value = "판매 유형 필터", example = "sale")
+      @RequestParam(value = "saleType", required = false) String saleType,
+      @ApiParam(value = "가격 범위 시작", example = "100000000")
+      @RequestParam(value = "startPrice", required = false) Long startPrice,
+      @ApiParam(value = "가격 범위 종료", example = "500000000")
+      @RequestParam(value = "endPrice", required = false) Long endPrice,
+      @ApiParam(value = "부동산 종류 필터", example = "apartment")
+      @RequestParam(value = "propertyType", required = false) String propertyType,
+      @ApiParam(value = "페이지 번호", example = "1")
+      @RequestParam(value = "page", defaultValue = "1") int page,
+      @ApiParam(value = "페이지당 항목 수", example = "10")
+      @RequestParam(value = "size", defaultValue = "10") int size,
+      @ApiIgnore
+      @AuthenticationPrincipal UserDetails userDetails) {
 
     String memberId = (userDetails != null && !userDetails.getUsername().isBlank())
-            ? userDetails.getUsername() : null;
+        ? userDetails.getUsername() : null;
 
     FilteredResponse pageInfo = buildingService.getBuildingList(buildingName, saleType, startPrice,
-            endPrice, propertyType, page, size, memberId);
+        endPrice, propertyType, page, size, memberId);
     return ResponseEntity.ok(pageInfo);
   }
 
@@ -130,20 +137,20 @@ public class BuildingController {
    * @throws InterruptedException         API 호출 지연 시 발생하는 예외
    */
   @ApiOperation(
-          value = "매물 상세 정보 조회",
-          notes = "매물 ID를 기반으로 매물의 상세 정보를 조회합니다.",
-          response = ViewDetailResponse.class
+      value = "매물 상세 정보 조회",
+      notes = "매물 ID를 기반으로 매물의 상세 정보를 조회합니다.",
+      response = ViewDetailResponse.class
   )
   @ApiResponses({
-          @ApiResponse(code = 200, message = "매물 상세정보 조회 성공"),
-          @ApiResponse(code = 400, message = "매물 상세정보 조회 실패"),
-          @ApiResponse(code = 500, message = "서버 오류로 인한 매물 상세정보 조회 실패")
+      @ApiResponse(code = 200, message = "매물 상세정보 조회 성공"),
+      @ApiResponse(code = 400, message = "매물 상세정보 조회 실패"),
+      @ApiResponse(code = 500, message = "서버 오류로 인한 매물 상세정보 조회 실패")
   })
   @GetMapping("/building/{buildingId}")
   public ResponseEntity<?> getBuilding(
-          @ApiParam(value = "매물 ID", example = "100")
-          @PathVariable("buildingId") Long buildingId)
-          throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+      @ApiParam(value = "매물 ID", example = "100")
+      @PathVariable("buildingId") Long buildingId)
+      throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
     ViewDetailResponse response = buildingService.viewDetailService(buildingId);
     return ResponseEntity.ok(response);
   }
@@ -152,30 +159,39 @@ public class BuildingController {
   /**
    * 매물 등록 요청 처리. {@code POST /building/upload} 엔드포인트를 통해 매물을 신규 등록합니다.
    *
-   * @param request     매물 등록 정보를 담고 있는 {@link SaleRegistrationRequest} DTO
-   * @param userDetails 인증된 사용자 정보
+   * @param building 매물 등록 정보를 담고 있는 {@link SaleRegistrationRequest} DTO
+   * @param user     인증된 사용자 정보
    * @return 200 OK 응답 (본문 없음)
    * @throws ResponseStatusException 인증되지 않은 사용자가 요청할 경우 401 Unauthorized 에러 반환
    */
   @ApiOperation(
-          value = "매물 등록",
-          notes = "로그인한 사용자가 매물을 신규 등록합니다."
+      value = "매물 등록",
+      notes = "로그인한 사용자가 매물을 신규 등록합니다."
   )
   @ApiResponses({
-          @ApiResponse(code = 201, message = "매물 등록 성공"),
-          @ApiResponse(code = 400, message = "매물 등록 실패"),
-          @ApiResponse(code = 401, message = "로그인한 사용자만 매물 등록 가능")
+      @ApiResponse(code = 201, message = "매물 등록 성공"),
+      @ApiResponse(code = 400, message = "매물 등록 실패"),
+      @ApiResponse(code = 401, message = "로그인한 사용자만 매물 등록 가능")
   })
-  @PostMapping("/upload")
+  @PostMapping(value = "/upload",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+  )
   public ResponseEntity<?> saleRegistration(
-          @ApiParam(value = "매물 등록 요청 DTO", required = true)
-          @RequestBody SaleRegistrationRequest request,
-          @ApiIgnore
-          @AuthenticationPrincipal UserDetails userDetails) {
-    if (userDetails == null || userDetails.getUsername().isBlank()) {
+      @RequestPart("building") BuildingDetails building,
+      @RequestPart("complexList") ComplexDetails complexList,
+      @RequestPart(value = "imageFile", required = true) MultipartFile imageFile,
+      @AuthenticationPrincipal CustomUser user
+  ) {
+    if (user == null || user.getUsername().isBlank()) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인을 한 사용자만 매물 등록 가능합니다.");
     }
-    String memberId = userDetails.getUsername();
+    String memberId = user.getMember().getMemberId();
+    ImageDetails image =
+        (imageFile != null ? new ImageDetails(imageFile) : null);
+
+    SaleRegistrationRequest request =
+        new SaleRegistrationRequest(building, complexList, image);
+
     buildingService.SaleRegistration(request, memberId);
     return ResponseEntity.status(HttpStatus.CREATED).body("매물이 성공적으로 등록되었습니다.");
   }
@@ -188,18 +204,18 @@ public class BuildingController {
    * @return 200 OK 응답 (본문 없음)
    */
   @ApiOperation(
-          value = "매물 삭제",
-          notes = "매물 ID를 기반으로 특정 매물을 삭제합니다."
+      value = "매물 삭제",
+      notes = "매물 ID를 기반으로 특정 매물을 삭제합니다."
   )
   @ApiResponses({
-          @ApiResponse(code = 200, message = "매물 삭제 성공"),
-          @ApiResponse(code = 400, message = "매물 삭제 실패"),
-          @ApiResponse(code = 500, message = "서버 오류로 인한 매물 삭제 실패")
+      @ApiResponse(code = 200, message = "매물 삭제 성공"),
+      @ApiResponse(code = 400, message = "매물 삭제 실패"),
+      @ApiResponse(code = 500, message = "서버 오류로 인한 매물 삭제 실패")
   })
   @DeleteMapping("/remove/{buildingId}")
   public ResponseEntity<?> removeBuilding(
-          @ApiParam(value = "매물 ID", example = "100")
-          @PathVariable("buildingId") Long buildingId) {
+      @ApiParam(value = "매물 ID", example = "100")
+      @PathVariable("buildingId") Long buildingId) {
     buildingService.removeBuilding(buildingId);
     return ResponseEntity.status(HttpStatus.OK).body("매물이 성공적으로 삭제되었습니다.");
   }
@@ -213,22 +229,22 @@ public class BuildingController {
    * @return 200 OK 응답 (본문 없음)
    */
   @ApiOperation(
-          value = "매물 찜하기",
-          notes = "로그인한 사용자가 특정 매물을 찜 목록에 추가합니다.",
-          response = BookmarkRequest.class
+      value = "매물 찜하기",
+      notes = "로그인한 사용자가 특정 매물을 찜 목록에 추가합니다.",
+      response = BookmarkRequest.class
   )
   @ApiResponses({
-          @ApiResponse(code = 200, message = "매물 찜하기 성공"),
-          @ApiResponse(code = 400, message = "매물 찜하기 실패"),
-          @ApiResponse(code = 401, message = "로그인 정보 없음"),
-          @ApiResponse(code = 500, message = "서버 오류로 인한 매물 찜하기 실패")
+      @ApiResponse(code = 200, message = "매물 찜하기 성공"),
+      @ApiResponse(code = 400, message = "매물 찜하기 실패"),
+      @ApiResponse(code = 401, message = "로그인 정보 없음"),
+      @ApiResponse(code = 500, message = "서버 오류로 인한 매물 찜하기 실패")
   })
   @PostMapping("/bookmark")
   public ResponseEntity<?> bookMark(
-          @ApiParam(value = "찜하기 요청 DTO", required = true)
-          @RequestBody BookmarkRequest request,
-          @ApiIgnore
-          @AuthenticationPrincipal UserDetails userDetails) {
+      @ApiParam(value = "찜하기 요청 DTO", required = true)
+      @RequestBody BookmarkRequest request,
+      @ApiIgnore
+      @AuthenticationPrincipal UserDetails userDetails) {
     String memberId = userDetails.getUsername();
     buildingService.bookMarkService(request, memberId);
     return ResponseEntity.status(HttpStatus.OK).body("매물 찜하기에 성공했습니다.");
@@ -243,20 +259,20 @@ public class BuildingController {
    * @return 200 OK 응답 (본문 없음)
    */
   @ApiOperation(
-          value = "매물 찜하기 취소",
-          notes = "로그인한 사용자가 찜한 매물을 찜 목록에서 해제합니다."
+      value = "매물 찜하기 취소",
+      notes = "로그인한 사용자가 찜한 매물을 찜 목록에서 해제합니다."
   )
   @ApiResponses({
-          @ApiResponse(code = 200, message = "매물 찜하기 취소 성공"),
-          @ApiResponse(code = 400, message = "매물 찜하기 취소 실패"),
-          @ApiResponse(code = 500, message = "서버 오류로 인한 찜하기 취소 실패")
+      @ApiResponse(code = 200, message = "매물 찜하기 취소 성공"),
+      @ApiResponse(code = 400, message = "매물 찜하기 취소 실패"),
+      @ApiResponse(code = 500, message = "서버 오류로 인한 찜하기 취소 실패")
   })
   @DeleteMapping("/bookmark/{buildingId}")
   public ResponseEntity<?> bookMarkDelete(
-          @ApiParam(value = "매물 ID", example = "100")
-          @PathVariable("buildingId") Long buildingId,
-          @ApiIgnore
-          @AuthenticationPrincipal UserDetails userDetails) {
+      @ApiParam(value = "매물 ID", example = "100")
+      @PathVariable("buildingId") Long buildingId,
+      @ApiIgnore
+      @AuthenticationPrincipal UserDetails userDetails) {
     String memberId = userDetails.getUsername();
     buildingService.bookMarkServiceDelete(buildingId, memberId);
     return ResponseEntity.status(HttpStatus.OK).body("매물 찜하기 취소에 성공했습니다.");
