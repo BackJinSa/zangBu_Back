@@ -51,3 +51,4 @@ firebase-key.json
 src/main/resources/firebase-key.json
 
 src/test/resources/
+dummy.sql
