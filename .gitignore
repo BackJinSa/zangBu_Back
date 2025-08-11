@@ -41,8 +41,10 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+logs/app.log
 
 database.sql
+dummy.sql
 application.properties
 application.yml
 
@@ -51,4 +53,3 @@ firebase-key.json
 src/main/resources/firebase-key.json
 
 src/test/resources/
-dummy.sql
