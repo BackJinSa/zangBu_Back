@@ -110,7 +110,7 @@ public class CodefServiceImpl implements CodefService {
       throw new RuntimeException("RSA 암호화 실패", e);
     }
 
-    // 건물번호 로직
+    // 건물번호 로직 todo: 항상 주소 마지막에 띄어쓰기 번호 되어있어야 함 ex. 오부자로 14
     String address_tmp = request.getAddress();
     String[] parts = address_tmp.split(" ");
     String bN = parts[parts.length - 1];
@@ -137,7 +137,7 @@ public class CodefServiceImpl implements CodefService {
     map.put("addr_sigungu", request.getSigungu());
     map.put("addr_roadName", request.getRoadName());
 
-    String url = " https://development.codef.io/v1/kr/public/ck/real-estate-register/status";
+    String url = "/v1/kr/public/ck/real-estate-register/status";
 
     String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
 
