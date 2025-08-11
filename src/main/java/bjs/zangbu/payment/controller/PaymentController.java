@@ -1,51 +1,40 @@
 package bjs.zangbu.payment.controller;
 
-import bjs.zangbu.payment.dto.request.PaymentConfirmRequest;
-import bjs.zangbu.payment.dto.request.PaymentRequest;
-import bjs.zangbu.payment.dto.response.PaymentConfirmResponse;
-import bjs.zangbu.payment.dto.response.PaymentResponse;
 import bjs.zangbu.payment.service.PaymentService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/payment")
-@RequiredArgsConstructor
 public class PaymentController {
     private final PaymentService paymentService;
 
-    // POST /payment
-    @PostMapping
-    public ResponseEntity<?> create(@RequestBody PaymentRequest req,
-                                    @RequestHeader("Authorization") String bearerToken) {
-        try {
-            // 토큰에서 memberId 추출 (JwtUtil 등)
-            //String memberId = TokenUtil.getUserId(bearerToken);
-            PaymentResponse resp = paymentService.createPayment(req, "임시 상단 memberId 구현 시 memberId 로 변경");
-            return ResponseEntity.ok(resp);  // 200
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body("결제 요청에 실패했습니다.");
-        } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body("서버에서 결제 요청을 처리하는데 실패했습니다.");
-        }
+    public PaymentController(PaymentService paymentService) {
+        this.paymentService = paymentService;
     }
 
-    // POST /payment/confirm
     @PostMapping("/confirm")
-    public ResponseEntity<?> confirm(@RequestBody PaymentConfirmRequest req,
-                                     @RequestHeader("Authorization") String bearerToken) {
-        try {
-            PaymentConfirmResponse resp = paymentService.confirmPayment(req);
-            return ResponseEntity.ok(resp); // 200
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body("결제 승인에 실패했습니다.");
-        } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body("결제 승인을 서버에서 처리하지 못했습니다.");
-        }
+    public ResponseEntity<?> confirm(@RequestBody Map<String, Object> body, HttpServletRequest req) {
+        String memberId = /* 인증 컨텍스트에서 추출 or 테스트용 하드코딩 */ (String) req.getAttribute("memberId");
+        paymentService.confirmPayment(memberId, body);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    @GetMapping("/entitlements")
+    public ResponseEntity<?> entitlements(HttpServletRequest req) {
+        String memberId = (String) req.getAttribute("memberId");
+        return ResponseEntity.ok(paymentService.getEntitlements(memberId));
+    }
+
+    @PostMapping("/consume")
+    public ResponseEntity<?> consume(@RequestBody Map<String, Object> body, HttpServletRequest req) {
+        String memberId = (String) req.getAttribute("memberId");
+        boolean ok = paymentService.consumePerCase(memberId);
+        if (!ok) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message","잔여 건수가 없습니다."));
+        return ResponseEntity.ok(Map.of("success", true));
     }
 }
