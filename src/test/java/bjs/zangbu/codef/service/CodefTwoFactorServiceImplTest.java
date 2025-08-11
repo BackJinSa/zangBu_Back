@@ -1,8 +1,10 @@
 package bjs.zangbu.codef.service;
 
+import bjs.zangbu.addressChange.dto.request.ResRegisterCertRequest;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import bjs.zangbu.global.config.RootConfig;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,5 +45,25 @@ public class CodefTwoFactorServiceImplTest {
         assertTrue(result != null && !result.isEmpty(), "응답 문자열은 비어 있지 않아야 합니다.");
         assertTrue(result.contains("result"), "응답에 'result' 필드가 포함되어야 합니다.");
         System.out.println("통합 테스트 성공! Codef API 응답:\n" + result);
+    }
+    @Test
+    @DisplayName("주민등록 초본 응답 테스트")
+    public void residentRegistrationCertificateTest() throws Exception {
+        ResRegisterCertRequest request = ResRegisterCertRequest.builder()
+                .birth("981207")
+                .identity("bQvUpPc1lO+khOzXaUXUwIZXddmE+dSpOT7JErdq11yUgpSoqte9/lG+HQZk7G1KPL5CTuywcUqPfHLHo7KmmPW47Rf7fUXWjbojl5ax1K7JTYYIq0dv0RAfRfNLVqR5EPYAbMXjOVN3zwLFdbELKEfs2c7BzFWyxt4mxXe3O8Srtjo0HgHmrzwuhcrfZIeAa/gH5FUyOoILyG7SfvvvipQqtLzCPwoIRUGUIscEZI78c8o9GUvdBEliPVapKzHZTgiEYYia45IL2Lq5giG0qrgmSthXU/HlO/eFjATE7dqzxEIbb85tScMyDiMC5oUqfB/c3RFAlV4gE3snl6I9Tg==")
+                .phone("01093687950")
+                .name("전경환")
+                .telecom("0")
+                .memberId("")
+                .build();
+
+
+        String result = codefTwoFactorService.residentRegistrationCertificate(request);
+        assertNotNull(result, "API 응답은 null이 아니어야 합니다.");
+        assertTrue(result != null && !result.isEmpty(), "응답 문자열은 비어 있지 않아야 합니다.");
+        assertTrue(result.contains("result"), "응답에 'result' 필드가 포함되어야 합니다.");
+        System.out.println("통합 테스트 성공! Codef API 응답:\n" + result);
+
     }
 }

@@ -63,13 +63,13 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
     parameterMap.put("loginType", "5");
     parameterMap.put("identityEncYn", "Y");
     parameterMap.put("birthDate", request.getBirth());
-    parameterMap.put("identity", URLEncoder.encode(request.getIdentity(), StandardCharsets.UTF_8));
+    parameterMap.put("identity", request.getIdentity());
     parameterMap.put("timeout", "170"); // 2차 인증 대기 시간
     parameterMap.put("userName", request.getName());
     parameterMap.put("loginTypeLevel", "1");
     parameterMap.put("phoneNo", request.getPhone());
-    parameterMap.put("personalInfoChangeYN", "0");
-    parameterMap.put("pastAddrChangeYN", "1");
+    parameterMap.put("personalInfoChangeYN", "0"); //개인 인적사항 변경 내용 -> 미포함
+    parameterMap.put("pastAddrChangeYN", "1"); // 과거 주소 조회 -> 포함
     parameterMap.put("nameRelationYN", "0");
     parameterMap.put("militaryServiceYN", "0");
     parameterMap.put("overseasKoreansIDYN", "0");
@@ -86,18 +86,36 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
     // 3. 2차 인증이 필요한 경우 (CF-03002)
     if ("CF-03002".equals(code)) {
       System.out.println("주민등록초본 1차 인증 완료. 2차 인증을 위해 대기합니다...");
+      Thread.sleep(60000);
+
       HashMap<String, Object> dataMap = (HashMap<String, Object>) responseMap.get("data");
 
       // 2차 인증 파라미터 맵 생성
-      HashMap<String, Object> twoWayParams = new HashMap<>();
-      twoWayParams.put("jobIndex", dataMap.get("jobIndex"));
-      twoWayParams.put("threadIndex", dataMap.get("threadIndex"));
-      twoWayParams.put("jti", dataMap.get("jti"));
-      twoWayParams.put("twoWayTimestamp", ((Number) dataMap.get("twoWayTimestamp")).longValue());
-      twoWayParams.put("timeout", parameterMap.get("timeout")); // 2차 인증 대기 시간
+      HashMap<String, Object> twoWayInfoParams = new HashMap<>();
+      twoWayInfoParams.put("jobIndex", dataMap.get("jobIndex"));
+      twoWayInfoParams.put("threadIndex", dataMap.get("threadIndex"));
+      twoWayInfoParams.put("jti", dataMap.get("jti"));
+      twoWayInfoParams.put("twoWayTimestamp", ((Number) dataMap.get("twoWayTimestamp")).longValue());
+//      twoWayParams.put("timeout", parameterMap.get("timeout")); // 2차 인증 대기 시간
+
+      // ⭐ 1차 파라미터 맵에 `twoWayInfo` 객체를 추가합니다.
+      parameterMap.put("twoWayInfo", twoWayInfoParams);
+
+      // ⭐ 2차 인증 요청에 필요한 파라미터만 담은 맵을 생성합니다.
+      HashMap<String, Object> secondRequestParams = new HashMap<>(parameterMap);
+      secondRequestParams.put("twoWayInfo", twoWayInfoParams);
+
+      // ⭐ is2Way 파라미터도 추가
+      secondRequestParams.put("simpleAuth", "1");
+      secondRequestParams.put("secureNo", "");
+      secondRequestParams.put("secureNoRefresh", "");
+      secondRequestParams.put("singedData", "");
+      secondRequestParams.put("is2Way", true);
+
+      System.out.println("2차 인증 요청 파라미터 = " + secondRequestParams);
 
       // 4. 2차 인증 스레드 시작
-      CodefThread t = new CodefThread(codef, twoWayParams, productUrl);
+      CodefThread t = new CodefThread(codef, secondRequestParams, productUrl);
       t.start();
       t.join(); // 스레드 종료까지 대기
 
@@ -173,7 +191,7 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
       CodefThread t = new CodefThread(codef, secondRequestParams, productUrl);
       t.start();
       t.join(); // 스레드 종료까지 대기
-
+      System.out.println("초본 응답 json " + t.getSecondResponse());
       return t.getSecondResponse();
     }
 
