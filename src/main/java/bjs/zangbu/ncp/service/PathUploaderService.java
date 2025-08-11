@@ -2,8 +2,6 @@ package bjs.zangbu.ncp.service;
 
 /**
  * 로컬 PDF 파일을 Object Storage에 업로드, 다운로드, 목록 조회하는 기능을 제공하는 서비스
- *
- * @see bjs.zangbu.ncp.service.PathUploaderServiceTest
  */
 public interface PathUploaderService {
 
@@ -17,9 +15,6 @@ public interface PathUploaderService {
    * @throws IllegalArgumentException PDF가 아닌 파일일 경우
    * @throws IllegalStateException    응답이 실패(2xx가 아닌 경우) 발생
    * @throws Exception                업로드 과정 중 오류 발생 시
-   * @see bjs.zangbu.ncp.service.PathUploaderServiceTest#putObject()
-   * @see bjs.zangbu.ncp.service.PathUploaderServiceTest#putObject_throwsException_ifNotPdf()
-   * @see bjs.zangbu.ncp.service.PathUploaderServiceTest#putObject_throwsException_ifNotPdf_signatureMismatch()
    */
   String putObject(String bucketName, String objectName, String localFilePath) throws Exception;
 
@@ -37,7 +32,6 @@ public interface PathUploaderService {
    * @throws IllegalArgumentException 다운로드된 파일이 PDF가 아닐 경우
    * @throws IllegalStateException    응답이 실패(2xx가 아닌 경우) 발생
    * @throws Exception                다운로드 중 오류 발생 시
-   * @see bjs.zangbu.ncp.service.PathUploaderServiceTest#getObject()
    */
   void getObject(String bucketName, String objectName, String localFilePath) throws Exception;
 
@@ -53,7 +47,6 @@ public interface PathUploaderService {
    * @return 조회 결과 XML 문자열
    * @throws IllegalStateException 응답이 실패(2xx가 아닌 경우) 발생
    * @throws Exception             목록 조회 중 오류 발생 시
-   * @see bjs.zangbu.ncp.service.PathUploaderServiceTest#listObjects()
    */
   String listObjects(String bucketName, String queryString) throws Exception;
 }
