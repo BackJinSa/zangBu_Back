@@ -66,7 +66,13 @@ public class AuthResponse {
   @NoArgsConstructor
   @AllArgsConstructor
   @ApiModel(description = "본인인증 결과 응답 DTO")
-  public static class AuthVerify {
+  public static class VerifyCodefResponse {
+
+    /**
+     * Redis가 발급한 세션 id
+     */
+    @ApiModelProperty(value = "본인인증 세션 ID", example = "f3f8d8b4-1f6a-4b1e-9a0b-1f1c2d3e4f5a")
+    private String sessionId;
 
     /**
      * 진위확인 결과 (예: "Y", "N").

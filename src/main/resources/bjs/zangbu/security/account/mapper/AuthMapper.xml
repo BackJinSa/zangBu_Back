@@ -16,7 +16,8 @@
                             role,
                             birth,
                             name,
-                            consent)
+                            consent,
+                            telecom)
         VALUES (#{memberId},
                 #{email},
                 #{password},
@@ -26,7 +27,8 @@
                 #{role},
                 #{birth},
                 #{name},
-                #{consent})
+                #{consent},
+                #{telecom})
     </insert>
 
     <!--비밀번호 변경-->
@@ -48,7 +50,8 @@
             role,
             birth,
             name,
-            consent
+            consent,
+            telecom
         from member
         where email = #{email}
     </select>
