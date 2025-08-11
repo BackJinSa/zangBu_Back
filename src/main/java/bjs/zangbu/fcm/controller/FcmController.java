@@ -1,6 +1,7 @@
 package bjs.zangbu.fcm.controller;
 
-import bjs.zangbu.fcm.dto.request.FcmRequest.FcmRegisterRequest;
+import bjs.zangbu.fcm.dto.request.FcmRequest;
+import bjs.zangbu.fcm.dto.request.FcmRequest.*;
 import bjs.zangbu.fcm.service.FcmService;
 import bjs.zangbu.security.account.vo.CustomUser;
 import io.swagger.annotations.ApiOperation;
@@ -77,7 +78,7 @@ public class FcmController {
   public ResponseEntity<?> deleteTokens(
           @ApiIgnore
           @AuthenticationPrincipal UserDetails userDetails,
-          @RequestBody FcmTokenRequest request) {
+          @RequestBody FcmRemoveRequest request) {
     try {
       // 유저 ID를 받아온다.
       String memberId = userDetails.getUsername();

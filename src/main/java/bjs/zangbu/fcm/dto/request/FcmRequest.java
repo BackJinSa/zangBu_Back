@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
 
+import java.util.Date;
+
 public class FcmRequest {
 
   /**
@@ -20,16 +22,26 @@ public class FcmRequest {
   }
 
   /**
+   * 토큰 삭제 Request /fcm/remove
+   */
+  @Getter
+  @NoArgsConstructor
+  public class FcmRemoveRequest {
+    @NotBlank
+    private String token;        // FCM 디바이스 토큰 (필수)
+  }
+
+  /**
    * DTO → VO 변환
    */
-  public static Fcm tovo(FcmRegisterRequest request, String memberId) {
+  public static Fcm tovo(String memberId, FcmRegisterRequest request) {
     return new Fcm(
             null,                   // id (Auto Increment)
             request.getToken(),     // token
             request.getDeviceType(),// 디바이스 유형
-            request.getDeviceName(),
-            request.get// 디바이스 이름
-            memberId               // memberId
+            request.getDeviceName(),// 디바이스 이름
+            new Date(),             // 오늘 날짜
+            memberId                // memberId
     );
   }
 }

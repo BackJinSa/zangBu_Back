@@ -1,5 +1,6 @@
 package bjs.zangbu.fcm.service;
 
+import bjs.zangbu.fcm.dto.request.FcmRequest;
 import bjs.zangbu.fcm.dto.request.FcmRequest.FcmRegisterRequest;
 import bjs.zangbu.fcm.mapper.FcmMapper;
 import bjs.zangbu.fcm.vo.Fcm;
@@ -19,7 +20,7 @@ public class FcmServiceImpl implements FcmService {
     public void registerToken(String memberId, FcmRegisterRequest request) {
         boolean exists = fcmMapper.existsByMemberIdAndToken(memberId, request.getToken());
         if (!exists) {
-            fcmMapper.insertFcmToken(memberId, request);
+            fcmMapper.insertFcmToken(FcmRequest.tovo(memberId, request));
         }
     }
 

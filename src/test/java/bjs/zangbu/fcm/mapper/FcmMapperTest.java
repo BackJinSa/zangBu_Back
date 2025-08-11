@@ -76,12 +76,10 @@ class FcmMapperTest {
 
     // 테스트용 회원 ID (DB에 미리 더미 데이터 존재해야 함)
     private static final String MEMBER_ID = "a0030658-24f8-42cd-8d78-a9fd06bf02b2";
-    private static final String TOKEN = "dp50yXn_wTDuFLWE0ORoPE:APA91bH0CF44UE552qPkzNeKYA5Y-XqAMnrZkmEuQVCxlpPyEO5UIvCtNU_kz5NUHYNccHQOBvFW3IN_6vcZ-wI3FCXLXyxdsB88rIQfe_LpxTIssqKHFTU";
+    private static final String TOKEN = "123123dp50yXn_wTDuFLWE0ORoPE:APA91bH0CF44UE552qPkzNeKYA5Y-XqAMnrZkmEuQVCxlpPyEO5UIvCtNU_kz5NUHYNccHQOBvFW3IN_6vcZ-wI3FCXLXyxdsB88rIQfe_LpxTIssqKHFTU";
 
     /**
-     * 1) FCM 토큰 삽입 테스트
-     * - 같은 MEMBER_ID에 대해 TOKEN1, TOKEN2를 삽입
-     * - insertFcmToken(Fcm fcm) → int (영향 행수) 가정
+     * 1) FCM 토큰 등록 테스트
      */
     @Test
     @Order(1)
@@ -95,32 +93,27 @@ class FcmMapperTest {
                 new Date(),
                 MEMBER_ID);
 
-        int result = fcmMapper.insertFcmToken(MEMBER_ID, fcm);
+        int result = fcmMapper.insertFcmToken(fcm);
 
         assertEquals(1, result, "TOKEN 등록 성공");
     }
 
     /**
      * 2) 존재 여부 테스트
-     * - existsByMemberIdAndToken(String memberId, String token) → boolean 가정
      */
     @Test
     @Order(2)
     @DisplayName("existsByMemberIdAndToken: 멤버/토큰 존재 여부")
     void existsByMemberIdAndToken() {
-        boolean e1 = fcmMapper.existsByMemberIdAndToken(MEMBER_ID, TOKEN1);
-        boolean e2 = fcmMapper.existsByMemberIdAndToken(MEMBER_ID, TOKEN2);
-        boolean e3 = fcmMapper.existsByMemberIdAndToken(MEMBER_ID, "no-such-token");
+        boolean test1 = fcmMapper.existsByMemberIdAndToken(MEMBER_ID, TOKEN);
+        boolean test2 = fcmMapper.existsByMemberIdAndToken(MEMBER_ID, "no-such-token");
 
-        assertTrue(e1, "TOKEN1 존재해야 함");
-        assertTrue(e2, "TOKEN2 존재해야 함");
-        assertFalse(e3, "없는 토큰은 존재하면 안 됨");
+        assertTrue(test1, "TOKEN 존재해야 함");
+        assertFalse(test2, "없는 토큰은 존재하면 안 됨");
     }
 
     /**
      * 3) 토큰 목록 조회 테스트
-     * - selectTokensByMemberId(String memberId) → List<String> 가정
-     *   * 만약 Mapper가 List<Fcm>을 반환한다면 타입/검증 로직을 맞게 변경하세요.
      */
     @Test
     @Order(3)
@@ -129,8 +122,7 @@ class FcmMapperTest {
         List<String> tokens = fcmMapper.selectTokensByMemberId(MEMBER_ID);
         assertNotNull(tokens);
         assertTrue(tokens.size() >= 2, "최소 2개 이상 있어야 함");
-        assertTrue(tokens.contains(TOKEN1), "TOKEN1이 목록에 있어야 함");
-        assertTrue(tokens.contains(TOKEN2), "TOKEN2가 목록에 있어야 함");
+        assertTrue(tokens.contains(TOKEN), "TOKEN이 목록에 있어야 함");
 
         log.info("토큰 목록: {}", tokens);
     }
@@ -147,12 +139,10 @@ class FcmMapperTest {
         int deleted = fcmMapper.deleteAllTokensByMemberId(MEMBER_ID);
         assertTrue(deleted >= 1, "삭제된 행이 1 이상이어야 함");
 
-        boolean stillExists1 = fcmMapper.existsByMemberIdAndToken(MEMBER_ID, TOKEN1);
-        boolean stillExists2 = fcmMapper.existsByMemberIdAndToken(MEMBER_ID, TOKEN2);
+        boolean stillExists = fcmMapper.existsByMemberIdAndToken(MEMBER_ID, TOKEN);
         List<String> tokensAfter = fcmMapper.selectTokensByMemberId(MEMBER_ID);
 
-        assertFalse(stillExists1, "삭제 후 TOKEN1이 남아 있으면 안 됨");
-        assertFalse(stillExists2, "삭제 후 TOKEN2가 남아 있으면 안 됨");
+        assertFalse(stillExists, "삭제 후 TOKEN1이 남아 있으면 안 됨");
         assertTrue(tokensAfter == null || tokensAfter.isEmpty(), "삭제 후 토큰 목록이 비어야 함");
     }
 }
