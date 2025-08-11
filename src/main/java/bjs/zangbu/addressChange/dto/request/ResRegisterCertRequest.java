@@ -1,15 +1,12 @@
 package bjs.zangbu.addressChange.dto.request;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 // 주민등록 초본 api 호출 인자 dto
 public class ResRegisterCertRequest {
     private String birth;
