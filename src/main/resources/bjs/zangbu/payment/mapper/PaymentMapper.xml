@@ -1,31 +1,72 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="bjs.zangbu.payment.mapper.PaymentMapper">
 
-    <insert id="insertPayment"
-            parameterType="bjs.zangbu.payment.mapper.PaymentInsertParam"
-            useGeneratedKeys="true"
-            keyProperty="paymentId">
+    <!-- 결제 승인 시 upsert -->
+    <insert id="upsertPaymentOnConfirm" parameterType="map">
         INSERT INTO payment
-        (member_id,
-        order_id,
-        token, <!-- DB 칼럼명 token 그대로 -->
-        membership_date)
+        (member_id, order_id, payment_key, amount, currency, product_type, product_id, method, status, approved_at, created_at, pg_payload)
         VALUES
-        (#{memberId},
-        #{orderId},
-        #{amount}, <!-- DTO 필드 amount 에서 꺼내서 token 칼럼에 삽입 -->
-        NOW())
+            (#{memberId}, #{orderId}, #{paymentKey}, #{amount}, 'KRW', #{productType}, #{productId}, #{method}, 'APPROVED', NOW(), NOW(), #{pgPayload})
+            ON DUPLICATE KEY UPDATE
+                                 payment_key = VALUES(payment_key),
+                                 amount = VALUES(amount),
+                                 product_type = VALUES(product_type),
+                                 product_id = VALUES(product_id),
+                                 method = VALUES(method),
+                                 status = 'APPROVED',
+                                 approved_at = NOW(),
+                                 pg_payload = VALUES(pg_payload)
     </insert>
 
+    <!-- 건당 크레딧 추가 (결제 시 적립) -->
+    <insert id="addPerCaseBalance" parameterType="map">
+        INSERT INTO member_entitlement (member_id, per_case_balance, updated_at)
+        VALUES (#{memberId}, #{delta}, NOW())
+            ON DUPLICATE KEY UPDATE
+                                 per_case_balance = per_case_balance + VALUES(per_case_balance),
+                                 updated_at = NOW()
+    </insert>
 
-    <update id="confirmPayment"
-            parameterType="bjs.zangbu.payment.dto.request.PaymentConfirmRequest">
-        UPDATE payment
-        SET membership_date = NOW()  <!-- 승인 시각 갱신 -->
-        WHERE order_id = #{orderId}
+    <!-- 멤버십 upsert -->
+    <insert id="upsertMembership" parameterType="map">
+        INSERT INTO membership (member_id, plan, status, start_at, end_at, next_billing_at, created_at)
+        VALUES (#{memberId}, 'STANDARD', 'ACTIVE', NOW(), NULL, DATE_ADD(NOW(), INTERVAL 1 MONTH), NOW())
+            ON DUPLICATE KEY UPDATE
+                                 status = 'ACTIVE',
+                                 start_at = IF(start_at IS NULL, NOW(), start_at),
+                                 end_at = NULL,
+                                 next_billing_at = DATE_ADD(NOW(), INTERVAL 1 MONTH)
+    </insert>
+
+    <!-- 권한 조회 -->
+    <select id="selectEntitlements" parameterType="string" resultType="map">
+        SELECT
+            (EXISTS(
+                SELECT 1 FROM membership
+                WHERE member_id = #{memberId}
+                  AND status = 'ACTIVE'
+                  AND (end_at IS NULL OR end_at > NOW())
+            )) AS membershipActive,
+            COALESCE((SELECT per_case_balance FROM member_entitlement WHERE member_id = #{memberId}), 0) AS perCaseRemaining
+    </select>
+
+    <!-- 건당 차감 -->
+    <update id="consumePerCase" parameterType="string">
+        UPDATE member_entitlement
+        SET per_case_balance = per_case_balance - 1,
+            updated_at = NOW()
+        WHERE member_id = #{memberId}
+          AND per_case_balance > 0
     </update>
 
+    <!-- 다운로드 기록 -->
+    <insert id="insertDownloadHistory" parameterType="map">
+        INSERT INTO download_history
+        (member_id, resource_type, resource_id, used_payment_type, order_id, downloaded_at)
+        VALUES
+            (#{memberId}, #{resourceType}, #{resourceId}, #{usedPaymentType}, #{orderId,jdbcType=VARCHAR}, NOW())
+    </insert>
 </mapper>
