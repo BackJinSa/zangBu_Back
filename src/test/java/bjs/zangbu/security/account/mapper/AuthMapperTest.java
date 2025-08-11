@@ -31,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
  * - 픽스처는 JdbcTemplate로 직접 INSERT하여 상태를 명확히 통제
  */
 @SpringJUnitConfig(classes = RootConfig.class)
-@Transactional
 @ActiveProfiles("test")
 @Log4j2
 class AuthMapperTest {
@@ -57,7 +56,7 @@ class AuthMapperTest {
         m.setMemberId(memberId);
         m.setEmail(email);
         m.setPassword("$2a$10$dummybcrypt"); // 테스트 해시(혹은 평문) – 검증만 할 거라 값 자체는 중요치 않음
-        m.setPhone("010-1111-2222");
+        m.setPhone("01099998888");
         m.setNickname("nick_join");
         m.setIdentity("1234567"); // 주민번호 뒷자리만
         m.setRole(MemberEnum.valueOf("ROLE_MEMBER"));
@@ -84,46 +83,77 @@ class AuthMapperTest {
     }
 
     @Test
-    @DisplayName("updatePassword: 비밀번호 변경 성공")
+    @DisplayName("updatePassword: 비밀번호 재설정 성공")
     void updatePassword_success() {
         // given
-        String memberId = insertMemberFixture("user_pw@t.com", "nick_pw");
+        insertMemberFixture("user_pw99@t.com", "nick_pw");
+        String email = "user_pw99@t.com";
         String newPw = "$2a$10$newbcrypt";
 
         // when
-        int rows = authMapper.updatePassword(memberId, newPw);
+        int rows = authMapper.updatePassword(email, newPw);
 
         // then
         assertEquals(1, rows);
         String dbPw = jdbc.queryForObject(
-                "SELECT password FROM member WHERE member_id = ?",
-                String.class, memberId);
+                "SELECT password FROM member WHERE email = ?",
+                String.class, email);
         assertEquals(newPw, dbPw);
     }
 
     @Test
-    @DisplayName("findByEmail: 로그인용 회원 조회")
-    void findByEmail_success() {
-        // given
-        String email = "login_" + UUID.randomUUID().toString().substring(0, 8) + "@t.com";
-        insertMemberFixture(email, "nick_login");
+    @DisplayName("findByEmail: 모든 필드 매핑 확인")
+    void findByEmail_returnsFullMember() {
+        // given: 모든 필드 세팅한 레코드 삽입
+        String memberId = UUID.randomUUID().toString();
+        String email    = "full_" + memberId.substring(0, 8) + "@t.com";
+        String password = "$2a$10$fixtureHash";
+        String phone    = "01033334444";
+        String nickname = "nick_full";
+        String identity = "2345678";                 // 주민번호 뒷 7자리
+        MemberEnum role = MemberEnum.ROLE_MEMBER;    // Enum 매핑 확인
+        String birth    = "990101";                  // YYMMDD
+        String name     = "김민수";
+        Boolean consent = true;
+        String telecom  = "KT";
+
+        jdbc.update(
+                "INSERT INTO member(member_id,email,password,phone,nickname,identity,`role`,birth,name,consent,telecom) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                memberId, email, password, phone, nickname, identity, role.name(), birth, name, consent, telecom
+        );
 
         // when
         Member found = authMapper.findByEmail(email);
 
         // then
-        assertNotNull(found);
-        assertEquals(email, found.getEmail());
-        assertNotNull(found.getPassword());
+        assertNotNull(found, "Member should not be null");
+
+        assertAll("모든 컬럼 매핑 검증",
+                () -> assertEquals(memberId, found.getMemberId(), "memberId"),
+                () -> assertEquals(email,    found.getEmail(),    "email"),
+                () -> assertEquals(password, found.getPassword(), "password"),
+                () -> assertEquals(phone,    found.getPhone(),    "phone"),
+                () -> assertEquals(nickname, found.getNickname(), "nickname"),
+                () -> assertEquals(identity, found.getIdentity(), "identity"),
+                () -> assertEquals(role,     found.getRole(),     "role(enum)"),
+                () -> assertEquals(birth,    found.getBirth(),    "birth"),
+                () -> assertEquals(name,     found.getName(),     "name"),
+                () -> assertEquals(consent,  found.isConsent(),  "consent"),
+                () -> assertEquals(telecom,  found.getTelecom(),  "telecom")
+        );
+
+        log.info("\nfound=\n{}", toPrettyJson(found));
     }
+
 
     @Test
     @DisplayName("findEmailByNameAndPhone: 이름, 전화번호로 이메일 찾기")
     void findEmailByNameAndPhone_success() {
         // given
         String email = "find_" + UUID.randomUUID().toString().substring(0, 8) + "@t.com";
-        String name = "김철수";
-        String phone = "010-2222-3333";
+        String name = "할명수";
+        String phone = "01022223333";
         insertMemberFixture(email, "nick_find", name, phone);
 
         // when
@@ -142,7 +172,7 @@ class AuthMapperTest {
 
         insertMemberFixture(email, "nick_dup");
 
-        // when & then
+        // 같은 이메일 있는지 카운트
         assertEquals(1, authMapper.countByEmail(email));
     }
 
@@ -156,7 +186,7 @@ class AuthMapperTest {
         String email = "nick_" + UUID.randomUUID().toString().substring(0, 8) + "@t.com";
         insertMemberFixture(email, nick);
 
-        // when & then
+        // 같은 닉네임 있는지 카운트
         assertEquals(1, authMapper.countByNickname(nick));
     }
 
@@ -165,11 +195,11 @@ class AuthMapperTest {
     // =========================
 
     /**
-     * 최소 필드로 member 한 건 삽입
+     * member 한 건 삽입
      * @return 생성한 member_id
      */
     private String insertMemberFixture(String email, String nickname) {
-        return insertMemberFixture(email, nickname, "홍길동", "010-0000-0000");
+        return insertMemberFixture(email, nickname, "홍길동", "01000000000");
     }
 
     /**

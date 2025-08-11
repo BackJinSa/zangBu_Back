@@ -121,8 +121,23 @@
         FROM member
         WHERE member_id = #{memberId}
     </select>
+
     <select id="findByEmail" resultType="bjs.zangbu.security.account.vo.Member">
         SELECT * FROM member WHERE email = #{email}
+    </select>
+
+    <!--생년월일 조회-->
+    <select id="getBirthByMemberId" resultType="java.lang.String">
+        select birth
+        from member
+        where member_id = #{memberId}
+    </select>
+
+    <!--주민번호 뒷자리 조회-->
+    <select id="getIdentityByMemberId" resultType="java.lang.String">
+        select identity
+        from member
+        where member_id = #{memberId}
     </select>
 
     <!--  getBookmarksByMemberId join 한 결과값 -->
