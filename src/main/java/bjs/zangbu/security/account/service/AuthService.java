@@ -5,8 +5,8 @@ import bjs.zangbu.security.account.dto.request.AuthRequest.EmailAuthRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.LoginRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.ResetPassword;
 import bjs.zangbu.security.account.dto.request.AuthRequest.SignUp;
-import bjs.zangbu.security.account.dto.request.AuthRequest.VerifyRequest;
-import bjs.zangbu.security.account.dto.response.AuthResponse.AuthVerify;
+import bjs.zangbu.security.account.dto.request.AuthRequest.VerifyCodefRequest;
+import bjs.zangbu.security.account.dto.response.AuthResponse.VerifyCodefResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.EmailAuthResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.LoginResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.TokenResponse;
@@ -37,7 +37,7 @@ public interface AuthService {
   boolean isNicknameDuplicated(String nickname);
 
   // 본인 인증 처리 - 응답에 따라 회원가입/비번 변경 가능
-  AuthVerify verifyAuthenticity(VerifyRequest request);
+//  VerifyCodefResponse verifyAuthenticity(VerifyCodefRequest request);
 
   // 비밀번호 변경 처리
   void resetPassword(ResetPassword request, HttpSession session);

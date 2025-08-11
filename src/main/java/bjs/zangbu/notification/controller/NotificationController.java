@@ -3,7 +3,12 @@ package bjs.zangbu.notification.controller;
 import bjs.zangbu.notification.dto.response.NotificationResponse.MarkAllReadResult;
 import bjs.zangbu.notification.dto.response.NotificationResponse.NotificationAll;
 import bjs.zangbu.notification.service.NotificationService;
+import bjs.zangbu.security.account.vo.CustomUser;
 import com.github.pagehelper.PageHelper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -17,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 
 @Log4j2
 @RestController
@@ -24,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/notification")
 // @Tag(name = "Notification API", description = "FCM 및 트리거 기반 알림 관련 기능을 제공합니다.")
 //@SecurityRequirement(name = "Authorization") // Swagger JWT 인증 적용
+@Api(tags = "Notification API", description = "FCM 및 트리거 기반 알림 관련 기능을 제공합니다.")
 public class NotificationController {
 
   private final NotificationService notificationService;
@@ -32,26 +39,22 @@ public class NotificationController {
    * 전체 알림 조회
    *
    * ------------------------------------------------- */
-//     @Operation(
-//  summary ="전체 알림 조회",
-//  description ="현재 로그인한 사용자의 전체 알림 목록을 페이지 단위로 조회합니다."
-//      )
-// 
-//   @ApiResponses({
-//       @ApiResponse(responseCode = "200", description = "알림 목록 조회 성공",
-//          content = @Content(schema = @Schema(implementation = NotificationAll.class))),
-//       @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-//       @ApiResponse(responseCode = "500", description = "서버 오류")
-//  })
+  @ApiOperation(value = "전체 알림 조회", notes = "현재 로그인한 사용자의 전체 알림 목록을 페이지 단위로 조회합니다.")
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "알림 목록 조회 성공"),
+          @ApiResponse(code = 400, message = "잘못된 요청"),
+          @ApiResponse(code = 500, message = "서버 오류")
+  })
   @GetMapping("/all")
   public ResponseEntity<?> getAllNotifications(
-      @AuthenticationPrincipal UserDetails userDetails,
-      @RequestParam(defaultValue = "1") int page,         // 요청 페이지 (1부터 시작)
-      @RequestParam(defaultValue = "10") int size         // 페이지당 항목 수
+          @ApiIgnore
+          @AuthenticationPrincipal CustomUser userDetails,
+          @RequestParam(defaultValue = "1") int page,         // 요청 페이지 (1부터 시작)
+          @RequestParam(defaultValue = "10") int size         // 페이지당 항목 수
   ) {
     try {
       // 유저 ID를 받아온다.
-      String memberId = userDetails.getUsername();
+      String memberId = userDetails.getMember().getMemberId();
 
       // PageHelper 페이지네이션 시작
       PageHelper.startPage(page, size);
@@ -70,24 +73,22 @@ public class NotificationController {
    * 하나의 알림 읽음 처리
    *
    * ------------------------------------------------- */
-//     @Operation(
-//  summary ="알림 읽음 처리",
-//  description ="특정 알림 1개를 읽음 처리합니다. 이미 읽음 처리된 경우 실패 응답을 반환합니다."
-//      )
-// 
-//   @ApiResponses({
-//       @ApiResponse(responseCode = "200", description = "읽음 처리 성공 (알림 ID 반환)",
-//          content = @Content(schema = @Schema(implementation = Long.class))),
-//       @ApiResponse(responseCode = "400", description = "알림 없음 or 이미 읽음 처리됨"),
-//       @ApiResponse(responseCode = "500", description = "서버 오류")
-//  })
+  @ApiOperation(value = "알림 읽음 처리", notes = "특정 알림 1개를 읽음 처리합니다. 이미 처리된 경우 실패 응답을 반환합니다.")
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "읽음 처리 성공 (알림 ID 반환)"),
+          @ApiResponse(code = 400, message = "알림 없음 또는 이미 처리됨"),
+          @ApiResponse(code = 500, message = "서버 오류")
+  })
   @PatchMapping("/read/{notificationId}")
   public ResponseEntity<?> notificationRead(
-      @AuthenticationPrincipal UserDetails userDetails,
-      @PathVariable Long notificationId
+          @ApiIgnore
+          @AuthenticationPrincipal CustomUser userDetails,
+          @PathVariable Long notificationId
   ) {
     // 유저 ID를 받아온다.
-    String memberId = userDetails.getUsername();
+    String memberId = userDetails.getMember().getMemberId();
+
+    log.info("memberId ============================================ : {}", memberId);
 
     try {
       boolean result = notificationService.markAsRead(memberId, notificationId);
@@ -115,23 +116,19 @@ public class NotificationController {
    * 알림 전체 읽음 처리
    *
    * ------------------------------------------------- */
-//     @Operation(
-//  summary ="전체 알림 읽음 처리",
-//  description ="현재 로그인한 사용자의 모든 안 읽은 알림을 읽음 처리합니다."
-//      )
-// 
-//   @ApiResponses({
-//       @ApiResponse(responseCode = "200", description = "읽음 처리 성공 (읽은 알림 개수 반환)",
-//          content = @Content(schema = @Schema(implementation = Integer.class))),
-//       @ApiResponse(responseCode = "400", description = "읽음 처리된 알림 없음"),
-//       @ApiResponse(responseCode = "500", description = "서버 오류")
-//  })
+  @ApiOperation(value = "전체 알림 읽음 처리", notes = "현재 로그인한 사용자의 모든 안 읽은 알림을 읽음 처리합니다.")
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "읽음 처리 성공 (읽은 알림 개수 반환)"),
+          @ApiResponse(code = 400, message = "읽음 처리된 알림 없음"),
+          @ApiResponse(code = 500, message = "서버 오류")
+  })
   @PatchMapping("/read/all")
   public ResponseEntity<?> notificationAllRead(
-      @AuthenticationPrincipal UserDetails userDetails
+          @ApiIgnore
+          @AuthenticationPrincipal CustomUser userDetails
   ) {
     // 유저 ID를 받아온다.
-    String memberId = userDetails.getUsername();
+    String memberId = userDetails.getMember().getMemberId();
 
     try {
       MarkAllReadResult result = notificationService.markAllAsRead(memberId);
@@ -158,24 +155,20 @@ public class NotificationController {
    * 알림 삭제
    *
    * ------------------------------------------------- */
-//     @Operation(
-//  summary ="알림 삭제",
-//  description ="특정 알림을 삭제합니다. 이미 삭제되었거나 존재하지 않는 경우 실패 응답을 반환합니다."
-//      )
-// 
-//   @ApiResponses({
-//       @ApiResponse(responseCode = "200", description = "알림 삭제 성공 (알림 ID 반환)",
-//          content = @Content(schema = @Schema(implementation = Long.class))),
-//       @ApiResponse(responseCode = "400", description = "삭제할 알림이 없음"),
-//       @ApiResponse(responseCode = "500", description = "서버 오류")
-//  })
+  @ApiOperation(value = "알림 삭제", notes = "특정 알림을 삭제합니다. 이미 삭제되었거나 존재하지 않는 경우 실패 응답을 반환합니다.")
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "알림 삭제 성공 (알림 ID 반환)"),
+          @ApiResponse(code = 400, message = "삭제할 알림이 없음"),
+          @ApiResponse(code = 500, message = "서버 오류")
+  })
   @DeleteMapping("/remove/{notificationId}")
   public ResponseEntity<?> removeNotification(
-      @AuthenticationPrincipal UserDetails userDetails,
-      @PathVariable Long notificationId
+          @ApiIgnore
+          @AuthenticationPrincipal CustomUser userDetails,
+          @PathVariable Long notificationId
   ) {
     // 유저 ID를 받아온다.
-    String memberId = userDetails.getUsername();
+    String memberId = userDetails.getMember().getMemberId();
 
     try {
       boolean removed = notificationService.removeNotification(memberId, notificationId);
