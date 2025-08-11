@@ -1,8 +1,12 @@
 package bjs.zangbu.global.config;
 
 
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -29,7 +33,7 @@ import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
     "bjs.zangbu.publicdata.controller",
     "bjs.zangbu.review.controller",
     "bjs.zangbu.scheduler.controller",
-        "bjs.zangbu.security.account.controller"
+    "bjs.zangbu.security.account.controller"
 })
 public class ServletConfig implements WebMvcConfigurer {
 
@@ -69,4 +73,14 @@ public class ServletConfig implements WebMvcConfigurer {
     return new HandlerMappingIntrospector();
   }
 
+  @Override
+  public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+    for (HttpMessageConverter<?> c : converters) {
+      if (c instanceof StringHttpMessageConverter) {
+        ((StringHttpMessageConverter) c).setDefaultCharset(StandardCharsets.UTF_8);
+      }
+    }
+  }
+
+ 
 }
