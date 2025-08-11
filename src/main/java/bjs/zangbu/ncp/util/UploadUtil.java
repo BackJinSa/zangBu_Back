@@ -35,11 +35,16 @@ public class UploadUtil {
    */
   public static boolean isAllowedMultipartFileType(String allowedMimeType,
       MultipartFile multipartFile) {
-    String contentType = multipartFile.getContentType();
+    // TODO: mime type 확인 필요
+//    String contentType = multipartFile.getContentType();
+//    log.info("contentType: {}", contentType);
     String originalFilename = multipartFile.getOriginalFilename();
+    log.info("originalFilename: {}", originalFilename);
 
-    return allowedMimeType.equals(contentType)
-        && (originalFilename == null || originalFilename.toLowerCase().endsWith(".jpeg"));
+//    return allowedMimeType.equals(contentType)
+//        && (originalFilename == null || originalFilename.toLowerCase().endsWith(".jpg"));
+    return originalFilename.toLowerCase().endsWith(".jpg") || originalFilename.toLowerCase()
+        .endsWith(".jpeg");
   }
 
   /**
