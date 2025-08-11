@@ -1,6 +1,6 @@
 package bjs.zangbu.addressChange.service;
 
-import bjs.zangbu.addressChange.dto.abstractResponse.ResidentAbstractResponse;
+import bjs.zangbu.addressChange.dto.abstractResponse.ResidentDataResponse;
 import bjs.zangbu.addressChange.dto.request.ResRegisterCertRequest;
 import bjs.zangbu.addressChange.dto.response.ResRegisterCertResponse;
 import bjs.zangbu.addressChange.mapper.AddressChangeMapper;
@@ -44,17 +44,17 @@ public class AddressChangeServiceImpl implements AddressChangeService {
         ResRegisterCertRequest dto = addressChangeMapper.getRegisterCertRequest(memberId);
         //1,2차 응답 후 응답
         String rawResponse = codefTwoFactorService.residentRegistrationCertificate(dto);
-        // 디코딩
-        String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
 
-        // 2) data 블록만 DTO로 파싱 (result는 별도 필요시 확인)
-        ResidentAbstractResponse.Data data =
-                CodefConverter.parseDataToDto(decodedJson, ResidentAbstractResponse.Data.class);
+        // 2) DTO로 파싱
+        ResidentDataResponse data =
+                CodefConverter.parseDataToDto(rawResponse, ResidentDataResponse.class);
 
         if (data == null || data.addrChanges == null || data.addrChanges.isEmpty()) {
             log.info("No address changes in response. memberId={}", memberId);
             return List.of();
         }
+        // 여기까진 동일
+
 
         // 3) '전입'만 선별 → 전입일 확정 → 메모 행 제외 → 전입일 오름차순
         var selected = data.addrChanges.stream()
@@ -122,7 +122,7 @@ public class AddressChangeServiceImpl implements AddressChangeService {
         return result; // 컨트롤러에서 그대로 반환하거나 요약 DTO로 감싸 반환
     }
     /** 전입일 확정: resMoveInDate 우선, 없으면 resChangeDate 사용 */
-    private static LocalDateTime resolveMoveIn(ResidentAbstractResponse.AddrChange a) {
+    private static LocalDateTime resolveMoveIn(ResidentDataResponse.AddrChange a) {
         String d = (a.resMoveInDate != null && !a.resMoveInDate.isBlank())
                 ? a.resMoveInDate
                 : (a.resChangeDate != null ? a.resChangeDate : "");
@@ -131,19 +131,68 @@ public class AddressChangeServiceImpl implements AddressChangeService {
     }
 
     /** 내부 작업용 튜플 */
-    private record Temp(ResidentAbstractResponse.AddrChange src, LocalDateTime moveIn) {}
+    private record Temp(ResidentDataResponse.AddrChange src, LocalDateTime moveIn) {}
 
-    /*임시 비활성화*/
-//    @Override
-//    public ResRegisterCertResponse generateAddressChange(Long memberId)
-//            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-//        //db 조회
-//        ResRegisterCertRequest dto = addressChangeMapper.getRegisterCertRequest(memberId);
-//        //1,2차 응답 후 응답
-//        String rawResponse = codefTwoFactorService.residentRegistrationCertificate(dto);
-//        // 디코딩
-//        String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
-//
-//
-//    }
+
+    // 테스트 메소드 todo: 지우기
+    @Override
+    @Transactional(readOnly = true)
+    public List<ResRegisterCertResponse> generateAddressChangeFromRaw(String memberId, String rawJson) throws Exception {
+        // 1) CODEF 응답의 data 노드만 DTO 매핑
+        ResidentDataResponse data = CodefConverter.parseDataToDto(rawJson, ResidentDataResponse.class);
+        if (data == null || data.addrChanges == null || data.addrChanges.isEmpty()) {
+            log.info("No address changes in response. memberId={}", memberId);
+            return List.of();
+        }
+
+        // 2) '전입'만 선별 → 전입일 확정 → 메모 라인 제외 → 전입일 오름차순
+        var selected = data.addrChanges.stream()
+                .filter(a -> "전입".equals(a.resChangeReason))
+                .map(a -> new Temp(a, resolveMoveIn(a)))
+                .filter(t -> t.moveIn != null && !AddrUtil.isMemoLine(t.src.resUserAddr))
+                .sorted(Comparator.comparing(t -> t.moveIn))
+                .toList(); // JDK 11이면 Collectors.toList() 사용
+
+        List<ResRegisterCertResponse> result = new ArrayList<>();
+
+        // 3) 저장 없이 변환만 수행
+        for (Temp t : selected) {
+            try {
+                String original = t.src.resUserAddr == null ? "" : t.src.resUserAddr;
+
+                // 검색용 전처리
+                String q1 = AddrUtil.normalizeForSearchKeepDongHo(original);
+                // 동·호 추출 → resNumber
+                String resNumber = AddrUtil.extractDongHo(original).orElse(null);
+
+                // 정책 기준일 이전이면 지번→도로명 변환 시도
+                String saveAddr = q1;
+                if (t.moveIn.toLocalDate().isBefore(CUTOFF)) {
+                    String roadPart1 = jusoClient.searchBestRoadAddr1(q1);
+                    if (roadPart1 == null || roadPart1.isBlank()) {
+                        String q2 = AddrUtil.removeDongHo(q1);
+                        roadPart1 = jusoClient.searchBestRoadAddr1(q2);
+                    }
+                    if (roadPart1 != null && !roadPart1.isBlank()) {
+                        saveAddr = roadPart1; // 동·호는 resNumber에 분리 보관
+                    }
+                }
+
+                // ★ DB 저장 없이 DTO만 생성해서 반환 리스트에 추가
+                result.add(new ResRegisterCertResponse(
+                        null,          // addressChangeId: 저장 안 하므로 null
+                        resNumber,     // 동/호 (예: "1606동 902호" or "1606-902")
+                        saveAddr,      // 도로명 주소(변환 성공 시) 또는 전처리 원문
+                        t.moveIn,      // 전입일(LocalDateTime)
+                        memberId
+                ));
+            } catch (Exception e) {
+                log.warn("AddressChange preview failed. memberId={}, addr='{}'", memberId, t.src.resUserAddr, e);
+            }
+        }
+        return result;
+    }
+
+
+
 }

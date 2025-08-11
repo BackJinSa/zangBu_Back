@@ -8,7 +8,7 @@ import lombok.Getter;
 public class ReviewDetailResponse {
     private Long reviewId; // 리뷰 고유 ID
     private Long buildingId;
-    private Long addressId;
+    private Long complexId;
     private String reviewerNickname;
     private Integer rank;
     private String content;

@@ -104,6 +104,12 @@ public class AuthRequest {
   @ApiModel(description = "회원가입 요청 DTO")
   public static class SignUp {
 
+    /*
+    * Redis가 발급한 세션 아이디
+    * */
+    @ApiModelProperty(value = "본인인증 세션 ID", example = "f3f8d8b4-1f6a-4b1e-9a0b-1f1c2d3e4f5a")
+    private String sessionId;
+
     /**
      * 사용자 이메일.
      */
@@ -122,6 +128,26 @@ public class AuthRequest {
     @ApiModelProperty(value = "비밀번호", example = "Password123!")
     private String password;
 
+
+    /**
+     * 알림 수신 동의 여부.
+     */
+    @ApiModelProperty(value = "알림 수신 동의 여부", example = "true")
+    private boolean consent;
+
+    //본인인증에서 온 필드
+    /**
+     * 사용자 이름
+     */
+    @ApiModelProperty(value = "이름", example = "김철수")
+    private String name;
+
+    /**
+     * 사용자 생년월일.
+     */
+    @ApiModelProperty(value = "생년월일", example = "010203")
+    private String birth;     // YYMMDD
+
     /**
      * 사용자 주민등록번호 뒷자리 (또는 식별 번호).
      */
@@ -129,16 +155,36 @@ public class AuthRequest {
     private String identity;
 
     /**
-     * 사용자 생년월일.
+     * 통신사
      */
-    @ApiModelProperty(value = "생년월일", example = "010203")
-    private String birth;
+    @ApiModelProperty(value = "통신사", example = "SKT")
+    private String telecom;
 
     /**
-     * 알림 수신 동의 여부.
+     * 전화번호
      */
-    @ApiModelProperty(value = "알림 수신 동의 여부", example = "true")
-    private boolean consent;
+    @ApiModelProperty(value = "전화번호", example = "010-1111-2222")
+    private String phone;
+
+
+    //주소 부분 --> 제거할 수도
+//    /**
+//     * 기본주소
+//     */
+//    @ApiModelProperty(value = "기본주소", example = "서울시 광진구 광진 동양파라곤 1단지")
+//    private String baseAddress;
+//
+//    /**
+//     * 상세주소 - 동
+//     */
+//    @ApiModelProperty(value = "동", example = "101동")
+//    private String building;
+//
+//    /**
+//     * 상세주소 - 호수
+//     */
+//    @ApiModelProperty(value = "호수", example = "1001호")
+//    private String unit;
 
     /**
      * SignUp DTO를 Member VO로 변환합니다.
@@ -152,14 +198,14 @@ public class AuthRequest {
               memberId,
               request.getEmail(),
               encodedPassword,
-              null,
+              request.getPhone(),
               request.getNickname(),
               request.getIdentity(),
               MemberEnum.ROLE_MEMBER,
               request.getBirth(),
-              null,
+              request.getName(),
               request.isConsent(),
-              null
+              request.getTelecom()
       );
     }
   }
@@ -196,39 +242,40 @@ public class AuthRequest {
     private String nickname;
   }
 
+  //필요없을 듯 삭제 예정
   /**
    * 본인인증 요청을 위한 DTO (Pass 앱 등 사용).
    */
-  @Getter
-  @NoArgsConstructor
-  @AllArgsConstructor
-  @ApiModel(description = "본인인증 요청 DTO")
-  public static class VerifyRequest {
-
-    /**
-     * 사용자 이름.
-     */
-    @ApiModelProperty(value = "이름", example = "김철수")
-    private String name;       // 이름
-
-    /**
-     * 사용자 주민등록번호.
-     */
-    @ApiModelProperty(value = "주민번호", example = "401234")
-    private String identity;   // 주민등록번호
-
-    /**
-     * 사용자 휴대폰 번호.
-     */
-    @ApiModelProperty(value = "휴대폰 번호", example = "01012345678")
-    private String phone;      // 휴대폰 번호
-
-    /**
-     * 사용자 이메일 (비밀번호 재설정 시 요청에만 사용).
-     */
-    @ApiModelProperty(value = "이메일", example = "example.zangbu.com")
-    private String email;      // 이메일 -> 비밀번호 재설정 시 요청에만 사용
-  }
+//  @Getter
+//  @NoArgsConstructor
+//  @AllArgsConstructor
+//  @ApiModel(description = "본인인증 요청 DTO")
+//  public static class VerifyRequest {
+//
+//    /**
+//     * 사용자 이름.
+//     */
+//    @ApiModelProperty(value = "이름", example = "김철수")
+//    private String name;       // 이름
+//
+//    /**
+//     * 사용자 주민등록번호.
+//     */
+//    @ApiModelProperty(value = "주민번호", example = "401234")
+//    private String identity;   // 주민등록번호
+//
+//    /**
+//     * 사용자 휴대폰 번호.
+//     */
+//    @ApiModelProperty(value = "휴대폰 번호", example = "01012345678")
+//    private String phone;      // 휴대폰 번호
+//
+//    /**
+//     * 사용자 이메일 (비밀번호 재설정 시 요청에만 사용).
+//     */
+//    @ApiModelProperty(value = "이메일", example = "example.zangbu.com")
+//    private String email;      // 이메일 -> 비밀번호 재설정 시 요청에만 사용
+//  }
 
   /**
    * CODEF 주민등록 진위인증 요청을 위한 DTO.
@@ -252,7 +299,8 @@ public class AuthRequest {
     /**
      * 주민등록번호 뒷 7자리.
      */
-    @ApiModelProperty(value = "주민번호", example = "4012345")
+//    @ApiModelProperty(value = "주민번호", example = "4012345")
+    @ApiModelProperty(value = "주민번호", example = "RSA 암호화된 주민번호")
     private String identity;   // 주민등록번호 뒷 7자리
     /**
      * 휴대폰 번호.
