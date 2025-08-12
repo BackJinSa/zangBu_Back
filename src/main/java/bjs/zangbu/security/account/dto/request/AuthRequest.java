@@ -21,6 +21,7 @@ public class AuthRequest {
   /**
    * 로그인 요청을 위한 DTO.
    */
+  @Setter
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
@@ -59,6 +60,7 @@ public class AuthRequest {
   /**
    * 이메일 찾기 요청을 위한 DTO.
    */
+  @Setter
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
@@ -81,6 +83,7 @@ public class AuthRequest {
   /**
    * 비밀번호 재설정 요청을 위한 DTO.
    */
+  @Setter
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
@@ -213,6 +216,7 @@ public class AuthRequest {
   /**
    * 이메일 중복 확인 요청을 위한 DTO.
    */
+  @Setter
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
@@ -229,6 +233,7 @@ public class AuthRequest {
   /**
    * 닉네임 중복 확인 요청을 위한 DTO.
    */
+  @Setter
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor

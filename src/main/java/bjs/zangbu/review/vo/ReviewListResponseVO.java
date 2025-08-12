@@ -25,25 +25,27 @@ public class ReviewListResponseVO {
     /**
      * ReviewListResponse DTO를 VO로 변환하는 정적 팩토리 메서드
      */
-//    public static ReviewListResponseVO from(ReviewListResponse dto) {
-//        return new ReviewListResponseVO(
-//                dto.getReviewId(),
-//                dto.getReviewerNickName(),
-//                dto.getContent(),
-//                dto.getRank(),
-//                dto.getFloor(),
-//                dto.getCreatedAt());
-//    }
+    public static ReviewListResponseVO to(ReviewListResponse dto) {
+        return new ReviewListResponseVO(
+                dto.getReviewId(),
+                dto.getReviewerNickName(),
+                dto.getContent(),
+                dto.getRank(),
+                dto.getFloor(),
+                dto.getCreatedAt());
+    }
 
     /**
      * ReviewListResponse DTO 리스트를 VO 리스트로 변환하는 정적 팩토리 메서드
      */
-//    public static java.util.List<ReviewListResponseVO> fromList(java.util.List<ReviewListResponse> dtoList) {
-//        if (dtoList == null) {
-//            return new java.util.ArrayList<>();
-//        }
-//        return dtoList.stream()
-//                .map(ReviewListResponseVO::from)
-//                .collect(java.util.stream.Collectors.toList());
-//    }
+
+    public static java.util.List<ReviewListResponseVO> toList(java.util.List<ReviewListResponse> dtoList) {
+        if (dtoList == null) {
+            return new java.util.ArrayList<>();
+        }
+        return dtoList.stream()
+                .map(ReviewListResponseVO::to)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
 }

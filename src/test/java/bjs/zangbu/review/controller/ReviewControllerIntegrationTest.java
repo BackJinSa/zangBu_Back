@@ -62,7 +62,7 @@ class ReviewControllerIntegrationTest {
         ReviewService reviewService = new ReviewServiceImpl(reviewMapper, notificationService);
         reviewController = new ReviewController(reviewService);
         mockMvc = MockMvcBuilders.standaloneSetup(reviewController)
-                .defaultRequest(get("/").characterEncoding("UTF-8"))
+                .addPlaceholderValue("", "")
                 .build();
         objectMapper = new ObjectMapper();
 
