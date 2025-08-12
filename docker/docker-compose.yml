@@ -1,49 +1,83 @@
-version: '3.8'
-
 services:
   nginx:
-    build: nginx
+    build:
+      context: ./nginx
     ports:
       - "80:80"
       - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
     depends_on:
-      - tomcat
-    restart: always
+      tomcat:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - zangbu-net
+    healthcheck:
+      # nginx가 80에서 응답하는지 확인 (alpine의 busybox wget 사용)
+      test: [ "CMD-SHELL", "wget -qO- http://localhost || exit 1" ]
+      interval: 15s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  tomcat:
+    build:
+      context: ./tomcat
+    # 개발 중 외부에서 8080 접근이 필요하면 주석 해제
+    # ports:
+    #   - "8080:8080"
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Seoul
     networks:
       - zangbu-net
 
+
+    # DB가 열릴 때까지 대기 후 Tomcat 기동
+    # bash의 /dev/tcp 를 써서 별도 패키지 설치 없이 체크
+    command: >
+      bash -lc '
+        until exec 3<>/dev/tcp/10.0.0.6/3306; do
+          echo "[tomcat] waiting for MySQL 10.0.0.6:3306 ...";
+          sleep 2;
+        done;
+        echo "[tomcat] MySQL is up. starting Tomcat...";
+        exec catalina.sh run
+      '
+
+    healthcheck:
+      # bash 내장 /dev/tcp 로 포트 열림 체크 (추가 패키지 불필요)
+      test: [ "CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/8080'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
   redis:
     image: redis:7.4.5-alpine
-    ports:
-      - "6379:6379"
+    # 운영에서는 외부 노출 불필요. 로컬 테스트만 필요하면 127.0.0.1 바인딩 사용.
+    # ports:
+    #   - "127.0.0.1:6379:6379"
     volumes:
       - redis-data:/data
-      - ./redis.conf:/usr/local/etc/redis/redis.conf
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
-    restart: always
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+    restart: unless-stopped
     networks:
       - zangbu-net
 
   rabbitmq:
     image: rabbitmq:3.10-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     environment:
-      - RABBITMQ_DEFAULT_USER=zangbumq
-      - RABBITMQ_DEFAULT_PASS=Zangzangbumq@0821
-    restart: always
-    networks:
-      - zangbu-net
-
-  tomcat:
-    build: tomcat
-    ports:
-      - "8080:8080"
-    depends_on:
-      - redis
-      - rabbitmq
-    restart: always
+      RABBITMQ_DEFAULT_USER: "zangbumq"
+      RABBITMQ_DEFAULT_PASS: "Zangzangbumq@0821"
+    # 운영에서는 외부 노출 불필요. 로컬 관리(UI)만 필요하면 127.0.0.1 바인딩 사용.
+    # ports:
+    #   - "127.0.0.1:5672:5672"
+    #   - "127.0.0.1:15672:15672"
+    restart: unless-stopped
     networks:
       - zangbu-net
 
