@@ -264,7 +264,7 @@ public class AuthServiceImpl implements AuthService {
 
     // 3. 비밀번호 인코딩 후 새 비밀번호로 업데이트
     String encodedPassword = passwordEncoder.encode(request.getNewPassword());
-    mapper.updatePassword(member.getEmail(), encodedPassword);
+
     int result = mapper.updatePassword(member.getEmail(), encodedPassword);
     if (result == 0) {
       throw new IllegalStateException("비밀번호를 변경하는데 실패했습니다.");

@@ -13,6 +13,9 @@ public interface FcmMapper {
     // 디바이스 토큰 등록
     int insertFcmToken(Fcm fcm);
 
+    // 현재 디바이스 토큰 삭제
+    int deleteTokenByMemberIdAndToken(@Param("memberId") String memberId, @Param("token") String token);
+
     // 유저 id로 디바이스 토큰 모두 삭제
     int deleteAllTokensByMemberId(String memberId);
 
