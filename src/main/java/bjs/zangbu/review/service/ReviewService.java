@@ -20,6 +20,6 @@ public interface ReviewService {
     // 리뷰 삭제 기능
     void deleteReview(Long reviewId);
 
-    // 최근 리뷰 3개 조회 (아파트 상세보기용)
+    // 최근 리뷰 조회 (아파트 상세보기용)
     List<ReviewListResponse> getRecentReviews(Long buildingId, int limit);
 }

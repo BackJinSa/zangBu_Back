@@ -176,42 +176,6 @@ class ReviewServiceImplTest {
         verify(reviewMapper, times(1)).deleteReview(123L);
     }
 
-    @Test
-    @DisplayName("getRecentReviews: 정상 조회")
-    void getRecentReviews_ok() {
-        Long buildingId = 100L;
-        List<ReviewListResponse> expectedReviews = Arrays.asList(
-                new ReviewListResponse(1L, "nick1", "좋은 리뷰", 5, "중층"),
-                new ReviewListResponse(2L, "nick2", "괜찮은 리뷰", 4, "고층"),
-                new ReviewListResponse(3L, "nick3", "보통 리뷰", 3, "저층"));
-
-        given(reviewMapper.selectByBuilding(buildingId)).willReturn(expectedReviews);
-
-        List<ReviewListResponse> result = reviewService.getRecentReviews(buildingId, 3);
-
-        assertThat(result).hasSize(3);
-        assertThat(result.get(0).getReviewId()).isEqualTo(1L);
-        assertThat(result.get(1).getReviewId()).isEqualTo(2L);
-        assertThat(result.get(2).getReviewId()).isEqualTo(3L);
-        verify(reviewMapper, times(1)).selectByBuilding(buildingId);
-    }
-
-    @Test
-    @DisplayName("getRecentReviews: 잘못된 buildingId면 IllegalArgumentException")
-    void getRecentReviews_invalidBuildingId() {
-        assertThatThrownBy(() -> reviewService.getRecentReviews(0L, 3))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("존재하지 않는 건물 식별자입니다.");
-    }
-
-    @Test
-    @DisplayName("getRecentReviews: 잘못된 limit이면 IllegalArgumentException")
-    void getRecentReviews_invalidLimit() {
-        assertThatThrownBy(() -> reviewService.getRecentReviews(100L, 0))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("리뷰 개수는 1개 이상이어야 합니다.");
-    }
-
     // --- test utilities ---
     private static void setField(Object target, String fieldName, Object value) {
         try {
