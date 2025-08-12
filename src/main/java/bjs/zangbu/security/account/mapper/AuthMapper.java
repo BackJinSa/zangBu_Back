@@ -1,6 +1,7 @@
 package bjs.zangbu.security.account.mapper;
 
 import bjs.zangbu.security.account.vo.Member;
+import org.apache.ibatis.annotations.Param;
 
 public interface AuthMapper {
 
@@ -8,7 +9,7 @@ public interface AuthMapper {
     Member findByEmail(String email);
 
     //2. 아이디(이메일) 찾기 - 이름, 전화번호로 아이디 찾기
-    String findEmailByNameAndPhone(String name, String phone);
+    String findEmailByNameAndPhone(@Param("name") String name, @Param("phone") String phone);
 
     //3. 회원가입
     //3-1. 이메일 중복 체크
@@ -19,5 +20,5 @@ public interface AuthMapper {
     int insertMember(Member member);
 
     //4. 비밀번호 재설정 - 로그인 전이므로 email로
-    int updatePassword(String email, String newPassword);
+    int updatePassword(@Param("email") String email, @Param("newPassword") String newPassword);
 }

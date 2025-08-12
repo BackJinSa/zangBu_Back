@@ -215,8 +215,8 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
     parameterMap.put("loginUserName", request.getName());
     parameterMap.put("loginBirthDate", request.getBirth());
     parameterMap.put("birthDate", request.getBirth());
-    parameterMap.put("loginIdentity", URLEncoder.encode(rsaEncryption.encrypt(request.getIdentity()), StandardCharsets.UTF_8));
-    parameterMap.put("identity", URLEncoder.encode(rsaEncryption.encrypt(request.getIdentity()), StandardCharsets.UTF_8));
+    parameterMap.put("loginIdentity", request.getIdentity());
+    parameterMap.put("identity", request.getIdentity());
     parameterMap.put("userName", request.getName());
     parameterMap.put("issueDate", request.getIssueDate());
     parameterMap.put("identityEncYn", "Y");
@@ -252,47 +252,4 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
     // 2차 인증이 필요 없으면 바로 결과 반환
     return firstResponse;
   }
-
-  /**
-   * 지방세 납부증명서 발급
-   * - 필수 파라미터로 CODEF 지방세 납세증명 API 호출
-   */
-  /*임시 비활성화*/
-//    @Override
-//    public String localTaxProof(Object request)
-//            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-//        String productUrl = "/v1/kr/public/mw/localtax-payment-certificate/inquiry";
-//        List<CodefThread> threadList = new ArrayList<>();
-//        for (int i = 0; i < 2; i++) {
-//            // 지방세 납부증명서 API 파라미터
-//            HashMap<String, Object> parameterMap = new HashMap<>();
-//            parameterMap.put("organization", "0001");
-//            parameterMap.put("loginType", "6");         // 인증유형
-//            parameterMap.put("userName", );             // 사용자 성명
-//            parameterMap.put("identity", );             // 주민번호 등
-//            parameterMap.put("identityEncYn", "Y");     // 암호화 여부
-//            parameterMap.put("birthDate", );            // 생년월일
-//            parameterMap.put("loginTypeLevel", );       // 인증레벨
-//            parameterMap.put("phoneNo", );              // 휴대폰번호
-//            parameterMap.put("address", );              // 주소(일부 인증상품 필요)
-//            parameterMap.put("phoneNo1", );             // 추가 휴대폰번호
-//
-//            CodefThread t = new CodefThread(codef, parameterMap, i, productUrl);
-//            t.start();
-//            threadList.add(t);
-//            Thread.sleep(10000);
-//        }
-//
-//        StringBuilder sb = new StringBuilder();
-//        for (CodefThread t : threadList) {
-//            t.join();
-//            if (t.getSecondResponse() != null) {
-//                sb.append(t.getSecondResponse());
-//            } else if (t.getFirstResponse() != null) {
-//                sb.append(t.getFirstResponse());
-//            }
-//            sb.append("\n");
-//        }
-//        return sb.toString();
-//    }
 }
