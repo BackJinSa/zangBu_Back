@@ -28,7 +28,6 @@ public class FcmController {
 
   /* -------------------------------------------------
    * 디바이스 토큰 등록
-   *
    * ------------------------------------------------- */
   @ApiOperation(value = "FCM 디바이스 토큰 등록", notes = "현재 로그인한 사용자의 디바이스 FCM 토큰을 등록합니다.")
   @ApiResponses({
@@ -39,11 +38,11 @@ public class FcmController {
   @PostMapping("/register")
   public ResponseEntity<?> registerToken(
             @ApiIgnore
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal CustomUser userDetails,
             @RequestBody FcmRegisterRequest request) {
     try {
       // 유저 ID를 받아온다.
-      String memberId = userDetails.getUsername();
+      String memberId = userDetails.getMember().getMemberId();
 
       fcmService.registerToken(memberId, request);
       return ResponseEntity.status(HttpStatus.OK).body("토큰 등록 성공.");
@@ -53,35 +52,47 @@ public class FcmController {
   }
 
   /* -------------------------------------------------
-   * 디바이스 토큰 삭제
-   *
+   * 현재 기기의 디바이스 토큰 삭제
    * ------------------------------------------------- */
-//     @Operation(
-//  summary ="FCM 디바이스 토큰 삭제",
-//  description ="현재 로그인한 사용자의 모든 디바이스 FCM 토큰을 삭제합니다."
-//      )
-// 
-//   @ApiResponses({
-//       @ApiResponse(responseCode = "200", description = "토큰 삭제 성공",
-//          content = @Content(schema = @Schema(implementation = String.class))),
-//       @ApiResponse(responseCode = "400", description = "잘못된 요청 (삭제 실패)",
-//          content = @Content(schema = @Schema(implementation = String.class))),
-//       @ApiResponse(responseCode = "500", description = "서버 오류")
-//  })
-  @ApiOperation(value = "FCM 디바이스 토큰 삭제", notes = "현재 로그인한 사용자의 모든 디바이스 FCM 토큰을 삭제합니다.")
+  @ApiOperation(value = "현재 기기의 FCM 디바이스 토큰 삭제", notes = "현재 로그인한 사용자의 현재 기기의 디바이스 FCM 토큰을 삭제합니다.")
   @ApiResponses({
           @ApiResponse(code = 200, message = "토큰 삭제 성공"),
           @ApiResponse(code = 400, message = "잘못된 요청 (삭제 실패)"),
           @ApiResponse(code = 500, message = "서버 오류")
   })
   @DeleteMapping("/remove")
-  public ResponseEntity<?> deleteTokens(
+  public ResponseEntity<?> deleteToken(
           @ApiIgnore
-          @AuthenticationPrincipal UserDetails userDetails,
+          @AuthenticationPrincipal CustomUser userDetails,
           @RequestBody FcmRemoveRequest request) {
     try {
       // 유저 ID를 받아온다.
-      String memberId = userDetails.getUsername();
+      String memberId = userDetails.getMember().getMemberId();
+
+      fcmService.deleteTokenByMemberIdAndToken(memberId, request);
+      return ResponseEntity.status(HttpStatus.OK).body("토큰 삭제 성공");
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("토큰 삭제 실패.");
+    }
+  }
+
+  /* -------------------------------------------------
+   * 모든 디바이스 토큰 삭제
+   * ------------------------------------------------- */
+  @ApiOperation(value = "모든 FCM 디바이스 토큰 삭제", notes = "현재 로그인한 사용자의 모든 디바이스 FCM 토큰을 삭제합니다.")
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "토큰 삭제 성공"),
+          @ApiResponse(code = 400, message = "잘못된 요청 (삭제 실패)"),
+          @ApiResponse(code = 500, message = "서버 오류")
+  })
+  @DeleteMapping("/remove/all")
+  public ResponseEntity<?> deleteTokens(
+          @ApiIgnore
+          @AuthenticationPrincipal CustomUser userDetails
+          ) {
+    try {
+      // 유저 ID를 받아온다.
+      String memberId = userDetails.getMember().getMemberId();
 
       fcmService.deleteAllTokensByMemberId(memberId);
       return ResponseEntity.status(HttpStatus.OK).body("토큰 삭제 성공");
