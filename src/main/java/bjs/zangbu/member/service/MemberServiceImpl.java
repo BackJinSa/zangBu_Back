@@ -50,7 +50,7 @@ public class MemberServiceImpl implements MemberService{
     //마이페이지에 뜰 정보
     @Override
     public EditMyPage getMyPageInfo(String email) {
-        Member member = memberMapper.get(email);
+        Member member = memberMapper.findByEmail(email);
 
         //회원 존재하지 않을 때
         if(member == null){
