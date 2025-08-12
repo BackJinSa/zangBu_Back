@@ -43,8 +43,6 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @ExtendWith(SpringExtension.class) // JUnit5 + Spring TestContext Framework 통합
 @ContextConfiguration(classes = NotificationServiceImplTest.MyBatisTestConfig.class) // MyBatis 전용 설정 클래스 로드
-//@Transactional // 각 테스트 실행 후 롤백 (DB 변경 사항 테스트 간 독립성 유지)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class) // @Order로 테스트 실행 순서 고정
 @Log4j2
 class NotificationServiceImplTest {
 
