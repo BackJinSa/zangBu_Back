@@ -138,7 +138,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewListResponseVO> getRecentReviews(Long buildingId, int limit) {
+    public List<ReviewListResponse> getRecentReviews(Long buildingId, int limit) {
         if (buildingId == null || buildingId <= 0) {
             throw new IllegalArgumentException("존재하지 않는 건물 식별자입니다.");
         }
@@ -150,7 +150,6 @@ public class ReviewServiceImpl implements ReviewService {
         PageHelper.startPage(1, limit);
         List<ReviewListResponse> recentReviews = reviewMapper.selectByBuilding(buildingId);
 
-        // DTO를 VO로 변환하여 반환
-        return ReviewListResponseVO.fromList(recentReviews);
+        return recentReviews;
     }
 }

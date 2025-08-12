@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 
 import java.util.List;
+import bjs.zangbu.review.dto.response.ReviewListResponse;
 
 @SpringJUnitConfig(TestConfig.class)
 @Transactional
@@ -147,6 +148,19 @@ class ReviewServiceIntegrationTest {
         int page = 0;
         int size = 10;
 
+        // 디버깅: 실제 데이터 확인
+        System.out.println("=== 테스트 데이터 확인 ===");
+        List<ReviewListResponse> directQuery = reviewMapper.selectByBuilding(buildingId);
+        System.out.println("직접 조회한 리뷰 수: " + directQuery.size());
+        directQuery.forEach(review -> System.out.println("리뷰 ID: " + review.getReviewId() +
+                ", 평점: " + review.getRank() +
+                ", 작성자: " + review.getReviewerNickName() +
+                ", 제목: " + review.getTitle() +
+                ", 층수: " + review.getFloor()));
+
+        Integer latestRank = reviewMapper.selectLatestReviewRank(buildingId);
+        System.out.println("최신 리뷰 평점: " + latestRank);
+
         // When
         ReviewListResult result = reviewService.listReviews(buildingId, page, size);
 
@@ -158,9 +172,8 @@ class ReviewServiceIntegrationTest {
         result.getReviews().forEach(review -> System.out.println("리뷰 ID: " + review.getReviewId() +
                 ", 평점: " + review.getRank() +
                 ", 작성자: " + review.getReviewerNickName() +
-                ", 내용: " + review.getContent() +
-                ", 층수: " + review.getFloor() +
-                ", 작성일: " + review.getCreatedAt()));
+                ", 제목: " + review.getTitle() +
+                ", 층수: " + review.getFloor()));
 
         // Then
         assertThat(result.getReviews()).hasSize(2);
@@ -328,7 +341,7 @@ class ReviewServiceIntegrationTest {
         int limit = 3;
 
         // When
-        List<ReviewListResponseVO> result = reviewService.getRecentReviews(buildingId, limit);
+        List<ReviewListResponse> result = reviewService.getRecentReviews(buildingId, limit);
 
         // 디버깅: 결과 확인
         System.out.println("=== 최근 리뷰 조회 결과 ===");
@@ -336,9 +349,8 @@ class ReviewServiceIntegrationTest {
         result.forEach(review -> System.out.println("리뷰 ID: " + review.getReviewId() +
                 ", 평점: " + review.getRank() +
                 ", 작성자: " + review.getReviewerNickName() +
-                ", 내용: " + review.getContent() +
-                ", 층수: " + review.getFloor() +
-                ", 작성일: " + review.getCreatedAt()));
+                ", 제목: " + review.getTitle() +
+                ", 층수: " + review.getFloor()));
 
         // Then
         assertThat(result).isNotEmpty();
