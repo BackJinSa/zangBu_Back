@@ -10,6 +10,7 @@ import bjs.zangbu.complexList.service.ComplexListService;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import bjs.zangbu.deal.dto.request.EstateRegistrationRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.codef.api.EasyCodef;
 import io.codef.api.EasyCodefMessageConstant;
 import io.codef.api.EasyCodefServiceType;
@@ -109,6 +110,7 @@ public class CodefServiceImpl implements CodefService {
     } catch (Exception e) {
       throw new RuntimeException("RSA 암호화 실패", e);
     }
+    System.out.println("encryptedPassword = " + encryptedPassword); //지워야됌
 
     // 건물번호 로직 todo: 항상 주소 마지막에 띄어쓰기 번호 되어있어야 함 ex. 오부자로 14
     String address_tmp = request.getAddress();
@@ -116,32 +118,33 @@ public class CodefServiceImpl implements CodefService {
     String bN = parts[parts.length - 1];
 
     // 등기부 등본 발급 파라미터 생성 (실제 값은 request에서 추출)
-    HashMap<String, Object> map = new HashMap<>();
-    map.put("organization", "0002");
-    map.put("phoneNo", request.getPhone());
-    map.put("password", encryptedPassword);
-    map.put("inquiryType", "3");
-    map.put("realtyType", "1");
-    map.put("addr_sido", request.getSido());
-    map.put("address", request.getAddress());
-    map.put("dong", request.getDong());
-    map.put("ho", request.getHo());
-    map.put("addr_buildingNumber", bN);
-    map.put("jointMortgageJeonseYN", "1");
-    map.put("registerSummaryYN", "1");
-    map.put("tradingYN", "1");
-    map.put("ePrepayNo", ePrepayNo);
-    map.put("ePrepayPass", ePrepayPass);
-    map.put("issueType", "0");
-    map.put("registerSummaryYN", "1");
-    map.put("addr_sigungu", request.getSigungu());
-    map.put("addr_roadName", request.getRoadName());
+    HashMap<String, Object> parameterMap = new HashMap<>();
+    parameterMap.put("organization", "0002");
+    parameterMap.put("phoneNo", request.getPhone());
+    parameterMap.put("password", encryptedPassword);
+    parameterMap.put("inquiryType", "3");
+    parameterMap.put("realtyType", "1");
+    parameterMap.put("addr_sido", request.getSido());
+    parameterMap.put("address", request.getAddress());
+    parameterMap.put("dong", request.getDong());
+    parameterMap.put("ho", request.getHo());
+    parameterMap.put("addr_buildingNumber", bN);
+    parameterMap.put("jointMortgageJeonseYN", "1");
+    parameterMap.put("tradingYN", "1");
+    parameterMap.put("ePrepayNo", ePrepayNo);
+    parameterMap.put("ePrepayPass", ePrepayPass);
+    parameterMap.put("issueType", "0");
+    parameterMap.put("originDataYN", "1");
+    parameterMap.put("registerSummaryYN", "1");
+    parameterMap.put("addr_sigungu", request.getSigungu());
+    parameterMap.put("addr_roadName", request.getRoadName());
 
-    String url = "/v1/kr/public/ck/real-estate-register/status";
+    String productUrl = "/v1/kr/public/ck/real-estate-register/status";
 
-    String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
+    // 2. 1차 인증 요청
+    String firstResponse = codef.requestProduct(productUrl, EasyCodefServiceType.DEMO, parameterMap);
 
-    return response;
+    return firstResponse;
   }
 
   /**
@@ -162,41 +165,6 @@ public class CodefServiceImpl implements CodefService {
     map.put("identity", "");
 
     String url = "/v1/kr/public/ck/real-estate-register/identity-matching";
-
-    String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
-
-    return response;
-  }
-
-  /**
-   * 건축물대장을 발급하는 절차를 수행합니다. 파라미터 맵을 구성하여 증명서 발급 CODEF API를 호출하고 JSON 응답을 반환합니다.
-   *
-   * @param request 건축물대장 발급 요청 DTO
-   * @return CODEF API로부터 받은 응답 JSON 문자열
-   * @throws UnsupportedEncodingException 인코딩 지원되지 않을 때 발생하는 예외
-   * @throws JsonProcessingException      JSON 처리 중 발생하는 예외
-   * @throws InterruptedException         API 호출 지연 시 발생하는 예외
-   */
-  @Override
-  public String callBuildingRegister(BuildingRegisterRequest request)
-      throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-    // codef api 주소
-    final String url = "/v1/kr/public/mw/building-register/colligation";
-    // 1차 요청 파라미터
-    HashMap<String, Object> map = new HashMap<>();
-    map.put("organization", "0001");
-    map.put("loginType", "5");
-    map.put("loginTypeLevel", "1");
-    map.put("userName", request.getUserName());
-    map.put("birthDate", request.getBirthDate());
-    map.put("phoneNo", request.getPhoneNo());
-    map.put("identity", request.getIdentity());
-    map.put("identityEncYn", "Y");
-    map.put("telecom", "0");
-    map.put("address", request.getAddress());
-    map.put("zipCode", request.getZipCode());
-    map.put("originDataYN", "1");
-    map.put("secureNoTimeout", "170");
 
     String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
 
