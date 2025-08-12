@@ -7,7 +7,6 @@ import bjs.zangbu.deal.dto.response.DealResponse;
 import bjs.zangbu.deal.dto.response.DealResponse.Download;
 import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
-import bjs.zangbu.deal.dto.response.EstateRegistrationResponse;
 import bjs.zangbu.deal.service.ContractService;
 import bjs.zangbu.deal.service.DealService;
 import bjs.zangbu.deal.vo.DocumentType;
@@ -259,10 +258,9 @@ public class DealController {
     // TODO: dealId -> buildingId 로 수정 Controller 는 수정헀으나 서비스 수정 필요
     // TODO: 중복 로직 정리 해야 함 , 그 후 스웨거 적용
     if (type == DocumentType.ESTATE) {
-      EstateRegistrationResponse rsp = contractService.getEstateRegistrationPdf(buildingId);
-      return ResponseEntity.ok(new DealResponse.Download(rsp.getResOriginalData()));
+      return ResponseEntity.ok(contractService.getEstateRegisternPdf(buildingId));
     } else if (type == DocumentType.BUILDING_REGISTER) {
-      return ResponseEntity.ok(contractService.generateRegisterPdf(buildingId));
+      return ResponseEntity.ok(contractService.getBuildingRegisterPdf(buildingId));
     }
     return null;
   }

@@ -1,14 +1,12 @@
 package bjs.zangbu.deal.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Builder
 public class EstateRegistrationRequest {
 
   private Long dealId;

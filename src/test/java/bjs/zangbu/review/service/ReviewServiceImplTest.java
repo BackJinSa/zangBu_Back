@@ -50,8 +50,8 @@ class ReviewServiceImplTest {
     void listReviews_ok() {
         Long buildingId = 100L;
         List<ReviewListResponse> rows = Arrays.asList(
-                new ReviewListResponse(1L, "nick1", 5, "2024-01-01T12:00:00"),
-                new ReviewListResponse(2L, "nick2", 4, "2024-01-02T12:00:00"));
+                new ReviewListResponse(1L, "nick1", "좋은 리뷰", 5, "중층"),
+                new ReviewListResponse(2L, "nick2", "괜찮은 리뷰", 4, "고층"));
 
         // PageHelper는 내부에서 limit/offset만 주입하므로 여기서는 목록만 스텁
         given(reviewMapper.selectByBuilding(buildingId)).willReturn(rows);

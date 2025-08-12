@@ -35,7 +35,7 @@
     <update id="updatePassword">
         update member
         set password = #{newPassword}
-        where member_id = #{memberId}
+        where email = #{email}
     </update>
 
     <!--로그인 - 회원 정보 조회하기-->
