@@ -69,18 +69,24 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, JwtUsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(authenticationErrorFilter, JwtAuthenticationFilter.class)
 
-                // CORS 설정
-                .cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
-                    CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("https://www.zangbu.site", "http://localhost:8080",
-                            "http://localhost:61613", "http://localhost:5500",  "http://127.0.0.1:5500",
-                            "http://localhost:5173","http://127.0.0.1:5173", "http://localhost:5174","http://127.0.0.1:5174"));
-                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                    config.setAllowedHeaders(List.of("*"));
-                    config.setAllowCredentials(true);
-                    config.setMaxAge(3600L);
-                    return config;
-                }))
+        // CORS 설정
+        .cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
+          CorsConfiguration config = new CorsConfiguration();
+          config.setAllowedOrigins(List.of(
+              "https://zangbu.site",
+              "https://www.zangbu.site",
+              "https://api.zangbu.site",
+              "http://localhost:3000",
+              "http://localhost:5173",
+              "http://localhost:8080",
+              "http://localhost:61613"
+          ));
+          config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+          config.setAllowedHeaders(List.of("*"));
+          config.setAllowCredentials(true);
+          config.setMaxAge(3600L);
+          return config;
+        }))
 
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
@@ -105,6 +111,7 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
 
+
                         // auth 엔트 포인트
                         .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
                         // 보안 API 경로 설정
@@ -112,6 +119,7 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
                         .requestMatchers(new AntPathRequestMatcher("/security/member"))
                         .hasAnyRole("ADMIN", "MEMBER")
+
 
                         // 테스트용: /chat/** 전체 허용
                         .requestMatchers(new AntPathRequestMatcher("/chat/**")).permitAll()
