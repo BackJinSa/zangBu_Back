@@ -5,11 +5,13 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public class MemberRequest {
 
   //비밀번호 변경
   // /member/mypage/edit/password
+  @Setter
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
@@ -25,6 +27,7 @@ public class MemberRequest {
 
   //닉네임 중복 확인
   // /member/mypage/edit/nickname/check
+  @Setter
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
@@ -37,6 +40,7 @@ public class MemberRequest {
 
   //닉네임 변경 요청
   // /member/mypage/edit/nickname Request
+  @Setter
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
@@ -51,6 +55,7 @@ public class MemberRequest {
   }
 
   // /member/mypage/edit/notification/consent
+  @Setter
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
