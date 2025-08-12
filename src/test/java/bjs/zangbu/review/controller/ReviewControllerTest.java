@@ -44,26 +44,26 @@ class ReviewControllerTest {
         objectMapper = new ObjectMapper();
     }
 
-//    @Test
-//    @DisplayName("GET /review/list/{buildingId} 200")
-//    void list_ok() throws Exception {
-//        Long buildingId = 100L;
-//        ReviewListResult result = new ReviewListResult(
-//                2L,
-//                List.of(
-//                        new ReviewListResponse(1L, "nick1", 5, "2024-01-01T12:00:00"),
-//                        new ReviewListResponse(2L, "nick2", 4, "2024-01-02T12:00:00")),
-//                false,
-//                5);
-//
-//        given(reviewService.listReviews(buildingId, 0, 10)).willReturn(result);
-//
-//        mockMvc.perform(get("/review/list/{buildingId}", buildingId))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.total").value(2))
-//                .andExpect(jsonPath("$.reviews[0].reviewId").value(1))
-//                .andExpect(jsonPath("$.latestReviewRank").value(5));
-//    }
+    @Test
+    @DisplayName("GET /review/list/{buildingId} 200")
+    void list_ok() throws Exception {
+        Long buildingId = 100L;
+        ReviewListResult result = new ReviewListResult(
+                2L,
+                List.of(
+                        new ReviewListResponse(1L, "nick1", 5, "2024-01-01T12:00:00"),
+                        new ReviewListResponse(2L, "nick2", 4, "2024-01-02T12:00:00")),
+                false,
+                5);
+
+        given(reviewService.listReviews(buildingId, 0, 10)).willReturn(result);
+
+        mockMvc.perform(get("/review/list/{buildingId}", buildingId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(2))
+                .andExpect(jsonPath("$.reviews[0].reviewId").value(1))
+                .andExpect(jsonPath("$.latestReviewRank").value(5));
+    }
 
     @Test
     @DisplayName("GET /review/{reviewId} 200")

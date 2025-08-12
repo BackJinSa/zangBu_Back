@@ -1,6 +1,7 @@
 package bjs.zangbu.fcm.dto.request;
 
 import bjs.zangbu.fcm.vo.Fcm;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
@@ -14,7 +15,8 @@ public class FcmRequest {
    */
   @Getter
   @NoArgsConstructor
-  public class FcmRegisterRequest {
+  @AllArgsConstructor
+  public static class FcmRegisterRequest {
     @NotBlank
     private String token;        // FCM 디바이스 토큰 (필수)
     private String deviceType;   // 예: WEB_CHROME, WEB_FIREFOX, ANDROID, IOS (선택)
@@ -26,7 +28,8 @@ public class FcmRequest {
    */
   @Getter
   @NoArgsConstructor
-  public class FcmRemoveRequest {
+  @AllArgsConstructor
+  public static class FcmRemoveRequest {
     @NotBlank
     private String token;        // FCM 디바이스 토큰 (필수)
   }

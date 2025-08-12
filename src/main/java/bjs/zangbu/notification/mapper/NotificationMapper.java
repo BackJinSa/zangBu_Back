@@ -31,4 +31,16 @@ public interface NotificationMapper {
                                              @Param("type") String type,
                                              @Param("price") int price);
 
+    /**
+     * 특정 사용자(memberId)가 특정 건물(buildingId)에 대해
+     * 알림(Notification)이 존재하는지 여부를 반환한다.
+     *
+     * @param memberId  사용자 ID
+     * @param buildingId 건물 ID
+     * @return 존재하면 true, 없으면 false
+     */
+//    boolean existsNotificationByMemberIdAndBuildingId(
+//            @Param("memberId") String memberId,
+//            @Param("buildingId") Long buildingId
+//    );
 }

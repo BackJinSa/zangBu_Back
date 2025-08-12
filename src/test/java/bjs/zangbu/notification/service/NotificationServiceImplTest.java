@@ -16,6 +16,7 @@ import bjs.zangbu.review.mapper.ReviewMapper;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.*;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
@@ -93,9 +94,9 @@ class NotificationServiceImplTest {
     @Resource FcmSender fcmSender;
     @Resource ReviewMapper reviewMapper;
 
-    @org.junit.jupiter.api.BeforeEach
+    @BeforeEach
     void setUp() {
-        // 필요한 의존성만 추가해서 클래스 생성할 수 있음
+        // 필요한 의존성만 추가해서 클래스 생성
         sutNotificationServiceImpl = new NotificationServiceImpl(
                 notificationMapper, null, buildingMapper,
                 null, null, fcmMapper, null,

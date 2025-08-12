@@ -45,24 +45,24 @@ class ReviewServiceImplTest {
         reviewService = new ReviewServiceImpl(reviewMapper, notificationService);
     }
 
-//    @Test
-//    @DisplayName("listReviews: 페이지네이션/메타데이터 조립")
-//    void listReviews_ok() {
-//        Long buildingId = 100L;
-//        List<ReviewListResponse> rows = Arrays.asList(
-//                new ReviewListResponse(1L, "nick1", 5, "2024-01-01T12:00:00"),
-//                new ReviewListResponse(2L, "nick2", 4, "2024-01-02T12:00:00"));
-//
-//        // PageHelper는 내부에서 limit/offset만 주입하므로 여기서는 목록만 스텁
-//        given(reviewMapper.selectByBuilding(buildingId)).willReturn(rows);
-//        given(reviewMapper.selectLatestReviewRank(buildingId)).willReturn(5);
-//
-//        ReviewListResult result = reviewService.listReviews(buildingId, 0, 10);
-//
-//        assertThat(result.getReviews()).hasSize(2);
-//        assertThat(result.getTotal()).isGreaterThanOrEqualTo(2);
-//        assertThat(result.getLatestReviewRank()).isEqualTo(5);
-//    }
+    @Test
+    @DisplayName("listReviews: 페이지네이션/메타데이터 조립")
+    void listReviews_ok() {
+        Long buildingId = 100L;
+        List<ReviewListResponse> rows = Arrays.asList(
+                new ReviewListResponse(1L, "nick1", 5, "2024-01-01T12:00:00"),
+                new ReviewListResponse(2L, "nick2", 4, "2024-01-02T12:00:00"));
+
+        // PageHelper는 내부에서 limit/offset만 주입하므로 여기서는 목록만 스텁
+        given(reviewMapper.selectByBuilding(buildingId)).willReturn(rows);
+        given(reviewMapper.selectLatestReviewRank(buildingId)).willReturn(5);
+
+        ReviewListResult result = reviewService.listReviews(buildingId, 0, 10);
+
+        assertThat(result.getReviews()).hasSize(2);
+        assertThat(result.getTotal()).isGreaterThanOrEqualTo(2);
+        assertThat(result.getLatestReviewRank()).isEqualTo(5);
+    }
 
     @Test
     @DisplayName("getReviewDetail: 유효하지 않은 ID면 IllegalArgumentException")
