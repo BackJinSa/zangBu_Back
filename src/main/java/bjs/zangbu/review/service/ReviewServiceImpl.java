@@ -129,11 +129,27 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public void deleteReview(Long reviewId) {
         if (reviewId == null || reviewId <= 0) {
-            throw new IllegalArgumentException("리뷰 삭제에 실패했습니다.");
+            throw new IllegalArgumentException("존재하지 않는 리뷰 식별자입니다.");
         }
-        int deleted = reviewMapper.deleteReview(reviewId);
-        if (deleted == 0) {
+        int deletedRows = reviewMapper.deleteReview(reviewId);
+        if (deletedRows == 0) {
             throw new ReviewNotFoundException(reviewId);
         }
+    }
+
+    @Override
+    public List<ReviewListResponse> getRecentReviews(Long buildingId, int limit) {
+        if (buildingId == null || buildingId <= 0) {
+            throw new IllegalArgumentException("존재하지 않는 건물 식별자입니다.");
+        }
+        if (limit <= 0) {
+            throw new IllegalArgumentException("리뷰 개수는 1개 이상이어야 합니다.");
+        }
+
+        // PageHelper를 사용하여 최근 리뷰 limit개만 가져오기
+        PageHelper.startPage(1, limit);
+        List<ReviewListResponse> recentReviews = reviewMapper.selectByBuilding(buildingId);
+
+        return recentReviews;
     }
 }
