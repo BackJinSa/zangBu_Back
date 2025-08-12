@@ -97,7 +97,7 @@ class AuthServiceImplTest {
                 }
                 @Override
                 public String generateRefreshToken(String email) {
-                    return "REF:" + email;
+                    return "REF_NEW:" + email + ":" + UUID.randomUUID();
                 }
                 @Override
                 public long getRefreshTokenExpiration() {
@@ -319,7 +319,7 @@ class AuthServiceImplTest {
     @DisplayName("reissue: 유효한 refresh → 저장값 일치 → 신규 access, refresh 토큰 발급하고 저장")
     void reissue_success() {
         String email = "re_" + UUID.randomUUID().toString().substring(0,8) + "@t.com";
-        insertMember(email, "Pw1!", "01011112299", "n", "950101", "길동홍", true, "SKT", "1234567");
+        insertMember(email, "Pw1!", "01011112299", "n", "950101", "길동홍홍", true, "SKT", "1234567");
 
         // 로그인 과정 없이 그냥 refresh 저장
         String oldRefresh = "REF:" + email;
