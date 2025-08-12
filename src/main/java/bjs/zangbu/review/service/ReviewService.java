@@ -5,6 +5,7 @@ import bjs.zangbu.review.dto.response.ReviewCreateResponse;
 import bjs.zangbu.review.dto.response.ReviewDetailResponse;
 import bjs.zangbu.review.dto.response.ReviewListResult;
 import bjs.zangbu.review.dto.response.ReviewListResponse;
+import bjs.zangbu.review.vo.ReviewListResponseVO;
 
 import java.util.List;
 
@@ -23,5 +24,5 @@ public interface ReviewService {
     void deleteReview(Long reviewId);
 
     // 최근 리뷰 조회 (아파트 상세보기용)
-    List<ReviewListResponse> getRecentReviews(Long buildingId, int limit);
+    List<ReviewListResponseVO> getRecentReviews(Long buildingId, int limit);
 }

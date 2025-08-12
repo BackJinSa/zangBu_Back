@@ -40,7 +40,9 @@ class ReviewControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(reviewController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(reviewController)
+                .addPlaceholderValue("", "")
+                .build();
         objectMapper = new ObjectMapper();
     }
 

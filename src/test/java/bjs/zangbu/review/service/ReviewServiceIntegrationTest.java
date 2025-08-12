@@ -155,7 +155,7 @@ class ReviewServiceIntegrationTest {
         directQuery.forEach(review -> System.out.println("리뷰 ID: " + review.getReviewId() +
                 ", 평점: " + review.getRank() +
                 ", 작성자: " + review.getReviewerNickName() +
-                ", 제목: " + review.getTitle() +
+                ", 내용: " + review.getContent() +
                 ", 층수: " + review.getFloor()));
 
         Integer latestRank = reviewMapper.selectLatestReviewRank(buildingId);
@@ -172,7 +172,7 @@ class ReviewServiceIntegrationTest {
         result.getReviews().forEach(review -> System.out.println("리뷰 ID: " + review.getReviewId() +
                 ", 평점: " + review.getRank() +
                 ", 작성자: " + review.getReviewerNickName() +
-                ", 제목: " + review.getTitle() +
+                ", 내용: " + review.getContent() +
                 ", 층수: " + review.getFloor()));
 
         // Then
@@ -341,7 +341,7 @@ class ReviewServiceIntegrationTest {
         int limit = 3;
 
         // When
-        List<ReviewListResponse> result = reviewService.getRecentReviews(buildingId, limit);
+        List<ReviewListResponseVO> result = reviewService.getRecentReviews(buildingId, limit);
 
         // 디버깅: 결과 확인
         System.out.println("=== 최근 리뷰 조회 결과 ===");
@@ -349,8 +349,9 @@ class ReviewServiceIntegrationTest {
         result.forEach(review -> System.out.println("리뷰 ID: " + review.getReviewId() +
                 ", 평점: " + review.getRank() +
                 ", 작성자: " + review.getReviewerNickName() +
-                ", 제목: " + review.getTitle() +
-                ", 층수: " + review.getFloor()));
+                ", 내용: " + review.getContent() +
+                ", 층수: " + review.getFloor() +
+                ", 작성일: " + review.getCreatedAt()));
 
         // Then
         assertThat(result).isNotEmpty();
