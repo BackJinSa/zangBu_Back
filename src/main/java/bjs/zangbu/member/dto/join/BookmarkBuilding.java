@@ -3,8 +3,12 @@ package bjs.zangbu.member.dto.join;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 // /user/mypage/favorites?page={page}&size={size} Response
+@Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,11 +21,11 @@ public class BookmarkBuilding {
     private Integer price;
     private Long deposit;
     private Integer bookmarkCount;
-    private String createdAt;
+    private LocalDateTime createdAt;
     private String buildingName;
     private String sellerType;
     private String propertyType;
-    private String moveDate;
+    private LocalDateTime moveDate;
     private String infoOneLine;
     private String infoBuilding;
     private String imageUrl;

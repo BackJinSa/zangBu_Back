@@ -35,8 +35,6 @@ public interface CodefService {
     String realEstateRegistrationLeader(EstateRegistrationRequest request)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 
-    // 건축물 대장 열람 및 발급
-    String callBuildingRegister(BuildingRegisterRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
     /**
      * 3차 인증(보안문자/캡차 등) 처리
      * @param sessionKey 2차 인증까지 완료된 인증/세션 식별자(프론트가 전달)

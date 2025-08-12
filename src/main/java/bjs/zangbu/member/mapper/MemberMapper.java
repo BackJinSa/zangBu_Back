@@ -3,6 +3,7 @@ package bjs.zangbu.member.mapper;
 import bjs.zangbu.member.dto.join.BookmarkBuilding;
 import bjs.zangbu.security.account.vo.Member;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.security.core.parameters.P;
 
 import java.util.List;
 
@@ -15,23 +16,29 @@ public interface MemberMapper {
     List<BookmarkBuilding> getBookmarksByMemberId(String memberId);
 
     //3. 북마크 삭제하기
-    int deleteBookMark(String memberId, Long buildingId);
+    int deleteBookMark(@Param("memberId") String memberId, @Param("buildingId") Long buildingId);
 
     //4. member id 받고 닉네임 가져오기
     String getNicknameByMemberId(String memberId);
+
+    //5. birth(생년월일) 가져오기
+    String getBirthByMemberId(String memberId);
+
+    //6. identity(주민번호 뒷자리) 가져오기
+    String getIdentityByMemberId(String memberId);
 
     //회원 정보 수정----------------------------------------------------------------------
     //1. 비밀번호 변경
     //1-1. 기존 비밀번호 가져오기
     String findPasswordByMemberId(String memberId);
     //1-2. 새 비밀번호로 변경
-    int updatePassword(String memberId, String newPassword);
+    int updatePassword(@Param("memberId") String memberId, @Param("newPassword") String newPassword);
 
     //2. 닉네임 변경
     //2-1. 닉네임 중복 확인
     int countByNickname(String nickname);
     //2-2. 새 닉네임으로 변경
-    int updateNickname(String memberId, String newNickname);
+    int updateNickname(@Param("memberId") String memberId, @Param("newNickname") String newNickname);
 
     //3. 회원 탈퇴
     int deleteMemberId(String memberId);
