@@ -11,7 +11,7 @@ import java.util.List;
 public interface ChatService {
 
     //메시지 전송
-    ChatResponse.SendMessageResponse sendMessage(String chatRoomId, ChatRequest.SendMessageRequest request);
+    ChatResponse.SendMessageResponse sendMessage(String senderId, String chatRoomId, ChatRequest.SendMessageRequest request);
 
     //chatRoomId로 해당 채팅방의 메시지들 limit개 불러오기
     List<ChatMessage> getMessages(String chatRoomId, Long lastMessageId, int limit);

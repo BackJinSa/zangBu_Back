@@ -11,6 +11,8 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -65,32 +67,66 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         reg.interceptors(new ChannelInterceptor() {
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
-                var acc = StompHeaderAccessor.wrap(message);
+                // wrap() 대신 getAccessor()가 더 안전
+                StompHeaderAccessor acc = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+                if (acc == null) return message;
 
-                if (StompCommand.CONNECT.equals(acc.getCommand())) {
-                    System.out.println("[WS] CONNECT native headers = " + acc.toNativeHeaderMap());
-                    // ↓ Authorization / authorization 둘 다 시도
-                    String auth = acc.getFirstNativeHeader("Authorization");
-                    if (auth == null) auth = acc.getFirstNativeHeader("authorization");
+                StompCommand cmd = acc.getCommand();
+                if (cmd == null) return message;
 
-                    if (auth != null && auth.startsWith("Bearer ")) {
-                        String token = auth.substring(7);
-                        // 임시: 토큰 앞 16자만 로깅(전부 찍지 말기)
-                        System.out.println("[WS] token prefix = " + token.substring(0, Math.min(16, token.length())));
-                        if (jwtProcessor.validateToken(token)) {
-                            String userId = jwtProcessor.getEmail(token);
-                            acc.setUser(new UsernamePasswordAuthenticationToken(userId, null, java.util.Collections.emptyList()));
-                            return message;
+                switch (cmd) {
+                    case CONNECT: {
+                        System.out.println("[WS][CONNECT] native headers = " + acc.toNativeHeaderMap());
+
+                        String auth = acc.getFirstNativeHeader("Authorization");
+                        if (auth == null) auth = acc.getFirstNativeHeader("authorization");
+
+                        if (auth != null && auth.startsWith("Bearer ")) {
+                            String token = auth.substring(7);
+                            System.out.println("[WS][CONNECT] token prefix = " + token.substring(0, Math.min(16, token.length())));
+                            if (jwtProcessor.validateToken(token)) {
+                                // 네 구현에 맞게: email이 userId로 쓰인다면 그대로 사용
+                                String userId = jwtProcessor.getEmail(token);
+
+                                // ★ Principal 주입
+                                UsernamePasswordAuthenticationToken authentication =
+                                        new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+                                acc.setUser(authentication);
+
+                                // ★ 수정된 헤더로 메시지 재생성 (중요)
+                                acc.setLeaveMutable(true);
+                                Message<?> newMsg = MessageBuilder.createMessage(message.getPayload(), acc.getMessageHeaders());
+                                System.out.println("[WS][CONNECT] authenticated user = " + userId);
+                                return newMsg;
+                            } else {
+                                System.out.println("[WS][CONNECT] validateToken = false");
+                            }
                         } else {
-                            System.out.println("[WS] validateToken=false");
+                            System.out.println("[WS][CONNECT] Authorization header missing or bad format: " + auth);
                         }
-                    } else {
-                        System.out.println("[WS] Authorization header missing or bad format: " + auth);
+                        throw new IllegalArgumentException("Invalid or missing JWT");
                     }
-                    throw new IllegalArgumentException("Invalid or missing JWT");
+                    case SEND: {
+                        // 디버그: SEND 프레임에 Principal 붙었는지 확인
+                        System.out.println("[WS][SEND] user = " + (acc.getUser() != null ? acc.getUser().getName() : "null")
+                                + ", dest = " + acc.getDestination());
+                        return message;
+                    }
+                    case SUBSCRIBE: {
+                        // 디버그: 구독 시점 사용자
+                        System.out.println("[WS][SUBSCRIBE] user = " + (acc.getUser() != null ? acc.getUser().getName() : "null")
+                                + ", dest = " + acc.getDestination());
+                        return message;
+                    }
+                    case DISCONNECT: {
+                        System.out.println("[WS][DISCONNECT] user = " + (acc.getUser() != null ? acc.getUser().getName() : "null"));
+                        return message;
+                    }
+                    default:
+                        return message;
                 }
-                return message;
             }
         });
     }
+
 }

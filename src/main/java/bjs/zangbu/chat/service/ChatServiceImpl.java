@@ -34,14 +34,29 @@ public class ChatServiceImpl implements ChatService{
 
     //메시지 전송
     @Override
-    public ChatResponse.SendMessageResponse sendMessage(String senderId, ChatRequest.SendMessageRequest request){
+    public ChatResponse.SendMessageResponse sendMessage(String senderId, String chatRoomId, ChatRequest.SendMessageRequest request){
         LocalDateTime createdAt = LocalDateTime.now();
+
+        ChatRoom room = chatMapper.selectChatRoomById(chatRoomId);
+        if (room == null) {
+            throw new IllegalArgumentException(chatRoomId + "에 해당하는 채팅방이 존재하지 않습니다.");
+        }
 
         if (request == null) {
             throw new NullPointerException("request(SendMessageRequest)의 값이 null입니다.");
         }
 
-        ChatMessage message = request.toEntity(senderId, createdAt);
+        ChatMessage message = ChatMessage.builder()
+                .chatRoomId(chatRoomId)
+                .buildingId(room.getBuildingId())
+                .senderId(senderId)
+                .complexId(room.getComplexId())
+                .message(request.getMessage())
+                .createdAt(createdAt)
+                .isRead(false)
+                .build();
+
+       //db에 메시지 저장
         int result = chatMapper.insertMessage(message);
         if (result == 0) {
             throw new IllegalStateException("메시지 저장에 실패했습니다.");

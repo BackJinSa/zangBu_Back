@@ -7,8 +7,8 @@
 
     <!-- 메시지 전송 시 db에 메시지 저장 -->
     <insert id="insertMessage">
-        INSERT INTO chat_message (chat_room_id, building_id, member_id, complex_id, message, created_at)
-        VALUES (#{chatRoomId}, #{buildingId}, #{senderId}, #{complexId}, #{message}, NOW())
+        INSERT INTO chat_message (chat_room_id, building_id, member_id, complex_id, message, created_at, is_read)
+        VALUES (#{chatRoomId}, #{buildingId}, #{senderId}, #{complexId}, #{message}, NOW(), false)
         <selectKey resultType="long" keyProperty="chatMessageId" keyColumn="chat_message_id" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>

@@ -14,8 +14,8 @@ public class jwtTest {
     // 예: jwt.secret=ThisIsADevOnlySecretKeyWithEnoughLength1234567890
     private static final String SECRET = "P3BW7gQhgGH0Y6eoDnbHWPair83UCGug";
 
-    // 만료 시간(Access 30분, Refresh 14일)
-    private static final long ACCESS_VALID_MS  = 1000L * 60 * 30;   //테스트 위해 길게 잡음
+    // 만료 시간(Access 100분, Refresh 14일)
+    private static final long ACCESS_VALID_MS  = 1000L * 60 * 100;   //테스트 위해 길게 잡음
     private static final long REFRESH_VALID_MS = 1000L * 60 * 60 * 24 * 14;
 
     // JwtProcessor.init()과 동일한 키 생성 방식
@@ -31,19 +31,50 @@ public class jwtTest {
      */
     @Test
     void makeDevAccessToken() {
-        String email = "user2@local.test";
+        String email1 = "user-001";
+        String email2 = "user-002";
+        String email3 = "user-003";
+        String email4 = "user-004";
+
         String role  = "ROLE_MEMBER";
 
-        String token = Jwts.builder()
-                .setSubject(email)                                    // ✅ subject = email
+        String token1 = Jwts.builder()
+                .setSubject(email1)                                    // ✅ subject = email
                 .claim("role", role)                                  // ✅ role 클레임
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMi
-                        llis() + ACCESS_VALID_MS))
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_VALID_MS))
                 .signWith(key())                                      // ✅ JwtProcessor와 동일한 키 방식
                 .compact();
 
-        System.out.println("\n=== DEV ACCESS TOKEN ===\n" + token + "\n");
+
+        String token2 = Jwts.builder()
+                .setSubject(email2)                                    // ✅ subject = email
+                .claim("role", role)                                  // ✅ role 클레임
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_VALID_MS))
+                .signWith(key())                                      // ✅ JwtProcessor와 동일한 키 방식
+                .compact();
+
+        String token3 = Jwts.builder()
+                .setSubject(email3)                                    // ✅ subject = email
+                .claim("role", role)                                  // ✅ role 클레임
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_VALID_MS))
+                .signWith(key())                                      // ✅ JwtProcessor와 동일한 키 방식
+                .compact();
+
+        String token4 = Jwts.builder()
+                .setSubject(email4)                                    // ✅ subject = email
+                .claim("role", role)                                  // ✅ role 클레임
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_VALID_MS))
+                .signWith(key())                                      // ✅ JwtProcessor와 동일한 키 방식
+                .compact();
+
+        System.out.println("\n=== user1: DEV ACCESS TOKEN ===\n" + token1 + "\n");
+        System.out.println("\n=== user2: DEV ACCESS TOKEN ===\n" + token2 + "\n");
+        System.out.println("\n=== user3: DEV ACCESS TOKEN ===\n" + token3 + "\n");
+        System.out.println("\n=== user4: DEV ACCESS TOKEN ===\n" + token4 + "\n");
     }
 
     /**

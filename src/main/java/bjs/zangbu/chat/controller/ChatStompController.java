@@ -31,15 +31,15 @@ public class ChatStompController {  //WebSocket 메시지 수신 컨트롤러
             //클라이언트가 보낸 채팅 메시지(JSON 형식) -> @Payload로 역직렬화됨.
             //@Payload는 메시지 본문 추출
             @Payload ChatRequest.SendMessageRequest request,
-            SimpMessageHeaderAccessor headerAccessor
+            Principal principal
     ) {
-        String senderId = (String) headerAccessor.getSessionAttributes().get("userId");
-        if (senderId == null) {
+        if (principal == null) {
             throw new IllegalArgumentException("인증된 사용자 정보가 없습니다.");
         }
+        String senderId = principal.getName();
 
         // 받은 메시지 DB에 저장 -> 클라이언트에게 보낼 메시지 형태인 응답 DTO(SendMessageResponse)로 가공
-        ChatResponse.SendMessageResponse response = chatService.sendMessage(senderId, request);
+        ChatResponse.SendMessageResponse response = chatService.sendMessage(senderId, roomId, request);
 
         //알림 메소드 추후에 추가
         //chatRoomId : @DestinationVariable String roomId
@@ -57,8 +57,8 @@ public class ChatStompController {  //WebSocket 메시지 수신 컨트롤러
         }
 
 
-        // 채팅방 구독자(/topic/chat/{roomId}를 구독하고 있는 모든 클라이언트)에게 메시지 브로드캐스트(response를 실시간 전송)
-        messagingTemplate.convertAndSend("/topic/chat.room." + roomId, response);
+        // 채팅방 구독자(/topic/chat.room.{roomId}를 구독하고 있는 모든 클라이언트)에게 메시지 브로드캐스트(response를 실시간 전송)
+        messagingTemplate.convertAndSend("/topic/chat." + roomId, response);
     }
 
 }
