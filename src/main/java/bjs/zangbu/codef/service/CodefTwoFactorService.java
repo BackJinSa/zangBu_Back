@@ -45,16 +45,4 @@ public interface CodefTwoFactorService {
      */
     String residentRegistrationAuthenticityConfirmation(AuthRequest.VerifyCodefRequest request)
             throws Exception;
-
-    /**
-     * 지방세 납세증명서(증명서/납부내역) 조회
-     * @param request  지방세 증명서를 위한 요청 DTO/파라미터 객체
-     * @return         CODEF API 응답(JSON 문자열)
-     * @throws UnsupportedEncodingException
-     * @throws JsonProcessingException
-     * @throws InterruptedException
-     */
-    /*임시 비활성화*/
-//    String localTaxProof(Object request)
-//            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
-}
+    }
