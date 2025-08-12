@@ -3,6 +3,7 @@ package bjs.zangbu.codef.service;
 import bjs.zangbu.addressChange.dto.request.ResRegisterCertRequest;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import bjs.zangbu.global.config.RootConfig;
+import bjs.zangbu.security.account.dto.request.AuthRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,9 @@ public class CodefTwoFactorServiceImplTest {
 
     @Autowired
     private CodefTwoFactorService codefTwoFactorService;
+    @Autowired
+    private CodefService codefService;
+
 
     @BeforeEach
     public void setUp() {
@@ -64,6 +68,33 @@ public class CodefTwoFactorServiceImplTest {
         assertTrue(result != null && !result.isEmpty(), "응답 문자열은 비어 있지 않아야 합니다.");
         assertTrue(result.contains("result"), "응답에 'result' 필드가 포함되어야 합니다.");
         System.out.println("통합 테스트 성공! Codef API 응답:\n" + result);
+
+    }
+
+    @Test
+    void residentRegistrationAuthenticityConfirmation() throws Exception {
+        AuthRequest.VerifyCodefRequest request = AuthRequest.VerifyCodefRequest.builder()
+                .name("전경환")
+                .birth("981207")
+                .identity("bQvUpPc1lO+khOzXaUXUwIZXddmE+dSpOT7JErdq11yUgpSoqte9/lG+HQZk7G1KPL5CTuywcUqPfHLHo7KmmPW47Rf7fUXWjbojl5ax1K7JTYYIq0dv0RAfRfNLVqR5EPYAbMXjOVN3zwLFdbELKEfs2c7BzFWyxt4mxXe3O8Srtjo0HgHmrzwuhcrfZIeAa/gH5FUyOoILyG7SfvvvipQqtLzCPwoIRUGUIscEZI78c8o9GUvdBEliPVapKzHZTgiEYYia45IL2Lq5giG0qrgmSthXU/HlO/eFjATE7dqzxEIbb85tScMyDiMC5oUqfB/c3RFAlV4gE3snl6I9Tg==")
+                .phone("01093687950")
+                .telecom("0")
+                .issueDate("20161207")
+                .build();
+
+        String result = codefTwoFactorService.residentRegistrationAuthenticityConfirmation(request);
+
+        System.out.println("result = " + result);
+    }
+
+    @Test
+    void processSecureNo() throws Exception {
+        String SessionKey = "identity:eb06546e-aa59-4d57-81b3-cad36caf6b53";
+        String SecureNo = "601221";
+
+        String result = codefService.processSecureNo(SessionKey, SecureNo);
+
+        System.out.println("result = " + result);
 
     }
 }
