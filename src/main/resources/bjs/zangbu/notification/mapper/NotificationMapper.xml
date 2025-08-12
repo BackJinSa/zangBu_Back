@@ -29,8 +29,9 @@
     <!-- 알림 읽음 처리 -->
     <update id="updateIsRead">
         UPDATE notification
-        SET is_read = TRUE
+        SET is_read = true
         WHERE member_id = #{memberId}
+          AND is_read = false
           AND notification_id = #{notificationId}
     </update>
 
@@ -75,5 +76,12 @@
         )
     </select>
 
-
+    <!-- 특정 멤버 + 매물에 대한 알림 존재 여부 -->
+<!--    <select id="existsNotificationByMemberIdAndBuildingId" resultType="boolean">-->
+<!--        SELECT-->
+<!--            CASE WHEN COUNT(*) > 0 THEN TRUE ELSE FALSE END-->
+<!--        FROM notification-->
+<!--        WHERE member_id = #{memberId}-->
+<!--          AND building_id = #{buildingId}-->
+<!--    </select>-->
 </mapper>
