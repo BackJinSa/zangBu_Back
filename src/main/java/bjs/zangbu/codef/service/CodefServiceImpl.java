@@ -190,16 +190,20 @@ public class CodefServiceImpl implements CodefService {
     }
 
     // 기존 파라미터(1~2차 인증까지 모든 값)에 3차 인증용 추가값 합치기
-    HashMap<String, Object> param = new HashMap<>(session.getParameterMap());
-    param.put("jobIndex", session.getJobIndex());
-    param.put("threadIndex", session.getThreadIndex());
-    param.put("jti", session.getJti());
-    param.put("twoWayTimestamp", session.getTwoWayTimestamp());
-    param.put("secureNo", secureNo); // 사용자가 입력한 보안문자 값 추가
+    HashMap<String, Object> lastRequest = new HashMap<>(session.getParameterMap());
+
+    HashMap<String, Object> twoWayParams = new HashMap<>();
+    twoWayParams.put("jobIndex", session.getJobIndex());
+    twoWayParams.put("threadIndex", session.getThreadIndex());
+    twoWayParams.put("jti",session.getJti());
+    twoWayParams.put("twoWayTimestamp", session.getTwoWayTimestamp());
+
+    lastRequest.put("twoWayInfo", twoWayParams);
+    lastRequest.put("secureNo", secureNo); // 사용자가 입력한 보안문자 값 추가
 
     try {
-      String result = codef.requestProduct(session.getProductUrl(), EasyCodefServiceType.DEMO,
-          param);
+      String result = codef.requestCertification(
+              session.getProductUrl(), EasyCodefServiceType.DEMO, lastRequest);
       // 인증 처리 후 Redis 세션 데이터 삭제 (보안/메모리 관리)
       redisTemplate.delete(sessionKey);
       return result;
