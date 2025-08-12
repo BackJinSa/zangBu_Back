@@ -6,6 +6,7 @@ import bjs.zangbu.review.dto.request.ReviewCreateRequest;
 import bjs.zangbu.review.dto.response.ReviewCreateResponse;
 import bjs.zangbu.review.dto.response.ReviewDetailResponse;
 import bjs.zangbu.review.dto.response.ReviewListResult;
+import bjs.zangbu.review.vo.ReviewListResponseVO;
 import bjs.zangbu.review.exception.ReviewNotFoundException;
 import bjs.zangbu.review.mapper.ReviewMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -163,35 +164,24 @@ class ReviewServiceIntegrationTest {
         // When
         ReviewListResult result = reviewService.listReviews(buildingId, page, size);
 
-        // 디버깅: 서비스 결과 확인
-        System.out.println("=== 서비스 결과 확인 ===");
-        System.out.println("총 리뷰 수: " + result.getTotal());
-        System.out.println("페이지 리뷰 수: " + result.getReviews().size());
+        // 디버깅: 결과 확인
+        System.out.println("=== 리뷰 목록 조회 결과 ===");
+        System.out.println("조회된 리뷰 수: " + result.getReviews().size());
+        System.out.println("전체 리뷰 수: " + result.getTotal());
         System.out.println("최신 리뷰 평점: " + result.getLatestReviewRank());
-        System.out.println("다음 페이지 존재: " + result.getHasNext());
-
-        result.getReviews().forEach(review -> System.out.println("결과 리뷰 ID: " + review.getReviewId() +
+        result.getReviews().forEach(review -> System.out.println("리뷰 ID: " + review.getReviewId() +
                 ", 평점: " + review.getRank() +
                 ", 작성자: " + review.getReviewerNickName() +
                 ", 제목: " + review.getTitle() +
                 ", 층수: " + review.getFloor()));
 
-        // Then - 기본적인 검증만 수행
-        assertThat(result.getReviews()).isNotEmpty();
-        assertThat(result.getTotal()).isGreaterThan(0);
-
-        // 최신 리뷰 평점 확인 (실제 데이터 기반)
-        if (latestRank != null) {
-            assertThat(result.getLatestReviewRank()).isEqualTo(latestRank);
-        }
-
-        // 최신순 정렬 확인 (PageHelper가 작동하지 않을 경우를 대비)
-        if (result.getReviews().size() >= 2) {
-            // created_at 기준으로 정렬되어야 함 (XML에서 ORDER BY created_at DESC)
-            // 테스트 데이터: review_id=2가 review_id=1보다 최신
-            assertThat(result.getReviews().get(0).getReviewId()).isEqualTo(2L);
-            assertThat(result.getReviews().get(1).getReviewId()).isEqualTo(1L);
-        }
+        // Then
+        assertThat(result.getReviews()).hasSize(2);
+        assertThat(result.getTotal()).isEqualTo(2);
+        assertThat(result.getLatestReviewRank()).isEqualTo(4); // 최신 리뷰의 평점
+        // 최신순 정렬 확인
+        assertThat(result.getReviews().get(0).getReviewId()).isEqualTo(2L);
+        assertThat(result.getReviews().get(1).getReviewId()).isEqualTo(1L);
     }
 
     @Test
@@ -341,6 +331,38 @@ class ReviewServiceIntegrationTest {
         assertThatThrownBy(() -> reviewService.createReview(request, memberId, nickname))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("리뷰 작성에 실패했습니다");
+    }
+
+    @Test
+    @DisplayName("getRecentReviews - 실제 DB 연동")
+    void getRecentReviews_withRealDB() {
+        // Given
+        Long buildingId = 1L;
+        int limit = 3;
+
+        // When
+        List<ReviewListResponse> result = reviewService.getRecentReviews(buildingId, limit);
+
+        // 디버깅: 결과 확인
+        System.out.println("=== 최근 리뷰 조회 결과 ===");
+        System.out.println("조회된 리뷰 수: " + result.size());
+        result.forEach(review -> System.out.println("리뷰 ID: " + review.getReviewId() +
+                ", 평점: " + review.getRank() +
+                ", 작성자: " + review.getReviewerNickName() +
+                ", 제목: " + review.getTitle() +
+                ", 층수: " + review.getFloor()));
+
+        // Then
+        assertThat(result).isNotEmpty();
+        assertThat(result.size()).isLessThanOrEqualTo(limit);
+
+        // 최신순 정렬 확인 (PageHelper가 작동하지 않을 경우를 대비)
+        if (result.size() >= 2) {
+            // created_at 기준으로 정렬되어야 함 (XML에서 ORDER BY created_at DESC)
+            // 테스트 데이터: review_id=2가 review_id=1보다 최신
+            assertThat(result.get(0).getReviewId()).isEqualTo(2L);
+            assertThat(result.get(1).getReviewId()).isEqualTo(1L);
+        }
     }
 
     // Helper method for creating review request

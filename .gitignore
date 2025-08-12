@@ -47,9 +47,12 @@ database.sql
 dummy.sql
 application.properties
 application.yml
+application-pub.yml
+
 
 # Firebase 인증 키
 firebase-key.json
 src/main/resources/firebase-key.json
 
 src/test/resources/
+docker/tomcat/ROOT.war
