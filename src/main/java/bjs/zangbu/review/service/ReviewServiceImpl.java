@@ -6,12 +6,12 @@ import bjs.zangbu.review.dto.response.ReviewCreateResponse;
 import bjs.zangbu.review.dto.response.ReviewDetailResponse;
 import bjs.zangbu.review.dto.response.ReviewListResponse;
 import bjs.zangbu.review.dto.response.ReviewListResult;
+import bjs.zangbu.review.vo.ReviewListResponseVO;
 import bjs.zangbu.review.exception.ReviewNotFoundException;
 import bjs.zangbu.review.mapper.ReviewInsertParam;
 import bjs.zangbu.review.mapper.ReviewMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
@@ -138,7 +138,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewListResponse> getRecentReviews(Long buildingId, int limit) {
+    public List<ReviewListResponseVO> getRecentReviews(Long buildingId, int limit) {
         if (buildingId == null || buildingId <= 0) {
             throw new IllegalArgumentException("존재하지 않는 건물 식별자입니다.");
         }
@@ -150,6 +150,7 @@ public class ReviewServiceImpl implements ReviewService {
         PageHelper.startPage(1, limit);
         List<ReviewListResponse> recentReviews = reviewMapper.selectByBuilding(buildingId);
 
-        return recentReviews;
+        // DTO를 VO로 변환하여 반환
+        return ReviewListResponseVO.fromList(recentReviews);
     }
 }

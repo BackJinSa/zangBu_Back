@@ -18,7 +18,9 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
+import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
@@ -84,6 +86,21 @@ public class TestConfig {
     @Bean
     public NotificationService notificationService() {
         return Mockito.mock(NotificationService.class);
+    }
+
+    @PostConstruct
+    public void initPageHelper() {
+        // PageHelper 설정
+        System.setProperty("pagehelper.helperDialect", "mysql");
+        System.setProperty("pagehelper.reasonable", "true");
+        System.setProperty("pagehelper.supportMethodsArguments", "true");
+        System.setProperty("pagehelper.params", "count=countSql");
+        System.setProperty("pagehelper.pageSizeZero", "true");
+
+        // 추가 설정
+        System.setProperty("pagehelper.defaultCount", "true");
+        System.setProperty("pagehelper.autoRuntimeDialect", "true");
+        System.setProperty("pagehelper.closeConn", "true");
     }
 
 }

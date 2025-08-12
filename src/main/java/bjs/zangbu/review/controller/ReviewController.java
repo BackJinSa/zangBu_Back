@@ -9,7 +9,9 @@ import bjs.zangbu.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 import java.util.Map;
+import bjs.zangbu.review.dto.response.ReviewListResponse;
 
 @RestController
 @RequestMapping("/review")
@@ -22,8 +24,7 @@ public class ReviewController {
     public ResponseEntity<?> list(
             @PathVariable Long buildingId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         try {
             ReviewListResult result = reviewService.listReviews(buildingId, page, size);
             return ResponseEntity.ok(result);
@@ -32,7 +33,6 @@ public class ReviewController {
                     .body("서버에서 리뷰 목록을 불러오는 중 오류가 발생했습니다.");
         }
     }
-
 
     // GET /review/{reviewId}
     @GetMapping("/{reviewId}")
@@ -56,18 +56,16 @@ public class ReviewController {
         }
     }
 
-
     // POST /review
     @PostMapping
     public ResponseEntity<?> create(@RequestBody ReviewCreateRequest req,
-                                    @RequestHeader(value = "Authorization", required = false) String bearerToken) {
+            @RequestHeader(value = "Authorization", required = false) String bearerToken) {
 
         try {
             // 추후 토큰부 개발 시 수정
-            //String memberId   = TokenUtil.getMemberId(bearerToken);
-            //String nickname = TokenUtil.getNickname(bearerToken);
-            ReviewCreateResponse resp =
-                    reviewService.createReview(req, "임시 아이디(memberId)", "임시 닉네임(nickname)");
+            // String memberId = TokenUtil.getMemberId(bearerToken);
+            // String nickname = TokenUtil.getNickname(bearerToken);
+            ReviewCreateResponse resp = reviewService.createReview(req, "임시 아이디(memberId)", "임시 닉네임(nickname)");
 
             return ResponseEntity.status(201).body(resp);
         } catch (IllegalArgumentException e) {
@@ -78,7 +76,6 @@ public class ReviewController {
                     .body(Map.of("message", "서버에서 리뷰 작성 중 오류가 발생했습니다."));
         }
     }
-
 
     // DELETE /review/{reviewId}
     @DeleteMapping("/{reviewId}")

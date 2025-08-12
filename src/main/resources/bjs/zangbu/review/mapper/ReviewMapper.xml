@@ -7,18 +7,20 @@
     <resultMap id="ReviewListResponseMap" type="bjs.zangbu.review.dto.response.ReviewListResponse">
         <id column="reviewId" property="reviewId"/>
         <result column="reviewerNickName" property="reviewerNickName"/>
-        <result column="title" property="title"/>
+        <result column="content" property="content"/>
         <result column="rank" property="rank"/>
         <result column="floor" property="floor"/>
+        <result column="createdAt" property="createdAt"/>
     </resultMap>
 
     <select id="selectByBuilding" resultMap="ReviewListResponseMap">
         SELECT
             review_id         AS reviewId,
             reviewer_nickname AS reviewerNickName,
-            content          AS title,
+            LEFT(content, 15) AS content,
             `rank`,
-            '중층'           AS floor
+            '중층'            AS floor,
+            created_at        AS createdAt
         FROM review
         WHERE building_id = #{buildingId}
         ORDER BY created_at DESC
