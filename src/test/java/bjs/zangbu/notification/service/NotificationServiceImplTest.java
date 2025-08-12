@@ -110,11 +110,6 @@ class NotificationServiceImplTest {
     private static final Long NOTIFICATION_ID = 6L;
     private static final Long DUMMY_BUILDING_ID = 5L;
 
-    // 수정해야됨
-    private static final Long   EXISTING_DEAL_ID = 999L;          // DB에 존재하고 매핑된 dealId
-    private static final Long   EXISTING_BUILDING_ID = 123L;      // DB에 존재하는 buildingId
-
-
     /*
     * 유저의 모든 알림 조회
     * */
@@ -282,31 +277,35 @@ class NotificationServiceImplTest {
     @Test
     void sendNotificationIfNotExists_type_review() {
 
+        // [1] 매물 정보 가져오기
         Building building = buildingMapper.getBuildingById(DUMMY_BUILDING_ID);
         int price = building.getPrice();
-        Integer rank = Optional.ofNullable(
-                reviewMapper.selectLatestReviewRank(building.getBuildingId())
-        ).orElse(0);
+        Integer rank = Optional.ofNullable(reviewMapper.selectLatestReviewRank(building.getBuildingId())).orElse(0);
 
+        // 매물 정보, 매물 가격, 매물 평점
+        log.info("building : {} ========= price : {} ========= rank : {}", building, price, rank);
+
+        // [2] 메세지 생성
         String message1 = "관심 매물 " + building.getBuildingName() + "에 새로운 리뷰가 등록되었습니다. (평점 " + rank + "점)";
         String message2 = "관심 매물 " + building.getBuildingName() + "에 새로운 리뷰가 등록되었습니다. (평점 " + rank + "점)";
 
-        // Act 1) 첫 저장
+        // [3] 첫 저장
         sutNotificationServiceImpl.sendNotificationIfNotExists(
                 MEMBER_ID, building, Type.REVIEW, "[리뷰 등록 알림]", message1, price);
 
-        // Assert: 1건 저장 (REVIEW는 중복 방지 로직 없음)
+        // [4] 1건 저장됨 (REVIEW는 중복 방지 로직 없음)
         List<Notification> saved = notificationMapper.selectAllByMemberId(MEMBER_ID);
         assertEquals(Type.REVIEW, saved.get(0).getType());
 
-        // Act 2) 같은 조건 재호출 → REVIEW는 중복 허용
+        // [5] 두번째 저장 -> 중복 가능이라 또 저장됨
         sutNotificationServiceImpl.sendNotificationIfNotExists(
                 MEMBER_ID, building, Type.REVIEW, "[리뷰 등록 알림]", message2, price);
 
-        // Assert: 2건
+        // [6] 1건 추가 저장됨
         saved = notificationMapper.selectAllByMemberId(MEMBER_ID);
         assertTrue(saved.stream().allMatch(n -> n.getType() == Type.REVIEW));
 
+        // [7] 알림 저장 및 전송
         fcmSender.send("dp50yXn_wTDuFLWE0ORoPE:APA91bH0CF44UE552qPkzNeKYA5Y-XqAMnrZkmEuQVCxlpPyEO5UIvCtNU_kz5NUHYNccHQOBvFW3IN_6vcZ-wI3FCXLXyxdsB88rIQfe_LpxTIssqKHFTU",
                 "[리뷰 등록 알림]",
                 message1,

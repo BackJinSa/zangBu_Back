@@ -1,5 +1,6 @@
 package bjs.zangbu.fcm.service;
 
+import bjs.zangbu.fcm.dto.request.FcmRequest;
 import bjs.zangbu.fcm.dto.request.FcmRequest.FcmRegisterRequest;
 import bjs.zangbu.fcm.mapper.FcmMapper;
 import lombok.extern.log4j.Log4j2;
@@ -71,6 +72,9 @@ class FcmServiceImplTest {
         // 필요한 의존성만 추가해서 클래스 생성
     }
 
+    /*
+    * 토큰 등록 테스트
+    * */
     @Test
     void registerToken() {
 
@@ -95,6 +99,27 @@ class FcmServiceImplTest {
         assertEquals(afterSecond + 1, afterThird, "다른 토큰 등록은 1건 증가해야 함");
     }
 
+    /*
+    * 현재 기기의 토큰 삭제 테스트
+    * */
+    @Test
+    void deleteTokenByMemberIdAndToken() {
+        // [1] 토큰 1개 등록
+        fcmService.registerToken(MEMBER_ID, new FcmRegisterRequest(TOKEN1, null, null));
+
+        // [3] 토큰이 존재하는지 확인
+        assertTrue(fcmMapper.existsByMemberIdAndToken(MEMBER_ID, TOKEN1));
+
+        // [2] MEMBER_ID의 토큰 삭제
+        fcmService.deleteTokenByMemberIdAndToken(MEMBER_ID, new FcmRequest.FcmRemoveRequest(TOKEN1));
+
+        // [3] 토큰이 존재하는지 확인 -> 삭제했기 때문에 존재하지 않아야됨
+        assertFalse(fcmMapper.existsByMemberIdAndToken(MEMBER_ID, TOKEN1));
+    }
+
+    /*
+    * 토큰 모두 삭제 테스트
+    * */
     @Test
     void deleteAllTokensByMemberId() {
 

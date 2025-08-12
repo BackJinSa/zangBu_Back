@@ -12,6 +12,13 @@
         VALUES (#{memberId}, #{token}, #{deviceType}, #{deviceName}, NOW())
     </insert>
 
+    <!-- 현재 디바이스 토큰만 삭제 -->
+    <delete id="deleteTokenByMemberIdAndToken">
+        DELETE FROM fcm_tokens
+        WHERE member_id = #{memberId}
+          AND token = #{token}
+    </delete>
+
     <!-- 디바이스 토큰 모두 삭제 -->
     <delete id="deleteAllTokensByMemberId">
         DELETE FROM fcm_tokens
