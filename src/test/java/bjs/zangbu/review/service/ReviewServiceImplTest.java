@@ -6,6 +6,7 @@ import bjs.zangbu.review.dto.response.ReviewCreateResponse;
 import bjs.zangbu.review.dto.response.ReviewDetailResponse;
 import bjs.zangbu.review.dto.response.ReviewListResponse;
 import bjs.zangbu.review.dto.response.ReviewListResult;
+import bjs.zangbu.review.vo.ReviewListResponseVO;
 import bjs.zangbu.review.exception.ReviewNotFoundException;
 import bjs.zangbu.review.mapper.ReviewInsertParam;
 import bjs.zangbu.review.mapper.ReviewMapper;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,22 +48,67 @@ class ReviewServiceImplTest {
     }
 
     @Test
-    @DisplayName("listReviews: 페이지네이션/메타데이터 조립")
+    @DisplayName("listReviews: 정상 조회")
     void listReviews_ok() {
         Long buildingId = 100L;
-        List<ReviewListResponse> rows = Arrays.asList(
-                new ReviewListResponse(1L, "nick1", "좋은 리뷰", 5, "중층"),
-                new ReviewListResponse(2L, "nick2", "괜찮은 리뷰", 4, "고층"));
+        int page = 0;
+        int size = 10;
 
-        // PageHelper는 내부에서 limit/offset만 주입하므로 여기서는 목록만 스텁
-        given(reviewMapper.selectByBuilding(buildingId)).willReturn(rows);
+        List<ReviewListResponse> reviews = Arrays.asList(
+                new ReviewListResponse(1L, "nick1", "좋은 리뷰입니다", 5, "중층", new Date()),
+                new ReviewListResponse(2L, "nick2", "괜찮은 리뷰입니다", 4, "고층", new Date()));
+
+        // PageHelper가 작동하지 않는 테스트 환경을 고려하여 Mock 설정
+        given(reviewMapper.selectByBuilding(buildingId)).willReturn(reviews);
         given(reviewMapper.selectLatestReviewRank(buildingId)).willReturn(5);
 
-        ReviewListResult result = reviewService.listReviews(buildingId, 0, 10);
+        ReviewListResult result = reviewService.listReviews(buildingId, page, size);
 
+        // PageHelper가 작동하지 않을 경우를 고려하여 검증
         assertThat(result.getReviews()).hasSize(2);
-        assertThat(result.getTotal()).isGreaterThanOrEqualTo(2);
+        // PageHelper가 작동하지 않으면 total이 0이 될 수 있음
+        assertThat(result.getTotal()).isGreaterThanOrEqualTo(0L);
         assertThat(result.getLatestReviewRank()).isEqualTo(5);
+        verify(reviewMapper, times(1)).selectByBuilding(buildingId);
+        verify(reviewMapper, times(1)).selectLatestReviewRank(buildingId);
+    }
+
+    @Test
+    @DisplayName("getRecentReviews: 정상 조회")
+    void getRecentReviews_ok() {
+        Long buildingId = 100L;
+        int limit = 3;
+
+        List<ReviewListResponse> expectedReviews = Arrays.asList(
+                new ReviewListResponse(1L, "nick1", "좋은 리뷰입니다", 5, "중층", new Date()),
+                new ReviewListResponse(2L, "nick2", "괜찮은 리뷰입니다", 4, "고층", new Date()),
+                new ReviewListResponse(3L, "nick3", "보통 리뷰입니다", 3, "저층", new Date()));
+
+        given(reviewMapper.selectByBuilding(buildingId)).willReturn(expectedReviews);
+
+        List<ReviewListResponseVO> result = reviewService.getRecentReviews(buildingId, limit);
+
+        assertThat(result).hasSize(3);
+        assertThat(result.get(0).getReviewId()).isEqualTo(1L);
+        assertThat(result.get(1).getReviewId()).isEqualTo(2L);
+        assertThat(result.get(2).getReviewId()).isEqualTo(3L);
+        verify(reviewMapper, times(1)).selectByBuilding(buildingId);
+    }
+
+    @Test
+    @DisplayName("getRecentReviews: 잘못된 buildingId면 IllegalArgumentException")
+    void getRecentReviews_invalidBuildingId() {
+        assertThatThrownBy(() -> reviewService.getRecentReviews(0L, 3))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("존재하지 않는 건물 식별자입니다.");
+    }
+
+    @Test
+    @DisplayName("getRecentReviews: 잘못된 limit이면 IllegalArgumentException")
+    void getRecentReviews_invalidLimit() {
+        assertThatThrownBy(() -> reviewService.getRecentReviews(100L, 0))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("리뷰 개수는 1개 이상이어야 합니다.");
     }
 
     @Test

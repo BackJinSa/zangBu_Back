@@ -6,12 +6,12 @@ import bjs.zangbu.review.dto.response.ReviewCreateResponse;
 import bjs.zangbu.review.dto.response.ReviewDetailResponse;
 import bjs.zangbu.review.dto.response.ReviewListResponse;
 import bjs.zangbu.review.dto.response.ReviewListResult;
+import bjs.zangbu.review.vo.ReviewListResponseVO;
 import bjs.zangbu.review.exception.ReviewNotFoundException;
 import bjs.zangbu.review.mapper.ReviewInsertParam;
 import bjs.zangbu.review.mapper.ReviewMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;

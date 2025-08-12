@@ -72,8 +72,15 @@ public class SecurityConfig {
         // CORS 설정
         .cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
           CorsConfiguration config = new CorsConfiguration();
-          config.setAllowedOrigins(List.of("https://www.zangbu.site", "http://localhost:8080",
-              "http://localhost:61613"));
+          config.setAllowedOrigins(List.of(
+              "https://zangbu.site",
+              "https://www.zangbu.site",
+              "https://api.zangbu.site",
+              "http://localhost:3000",
+              "http://localhost:5173",
+              "http://localhost:8080",
+              "http://localhost:61613"
+          ));
           config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
           config.setAllowedHeaders(List.of("*"));
           config.setAllowCredentials(true);
@@ -105,7 +112,7 @@ public class SecurityConfig {
             .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
 
             // auth 엔트 포인트
-                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
             // 보안 API 경로 설정
             .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")

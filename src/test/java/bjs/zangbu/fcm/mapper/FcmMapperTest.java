@@ -30,8 +30,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 @ExtendWith(SpringExtension.class) // JUnit5 + Spring TestContext Framework 통합
 @ContextConfiguration(classes = FcmMapperTest.MyBatisTestConfig.class) // MyBatis 전용 설정 클래스 로드
-//@Transactional // 각 테스트 실행 후 롤백 (DB 변경 사항 테스트 간 독립성 유지)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class) // @Order로 테스트 실행 순서 고정
 @Log4j2
 class FcmMapperTest {
 
@@ -82,7 +80,6 @@ class FcmMapperTest {
      * 1) FCM 토큰 등록 테스트
      */
     @Test
-    @Order(1)
     @DisplayName("insertFcmToken: 신규 FCM 토큰 등록")
     void insertFcmToken() {
         Fcm fcm = new Fcm(
@@ -102,7 +99,6 @@ class FcmMapperTest {
      * 2) 존재 여부 테스트
      */
     @Test
-    @Order(2)
     @DisplayName("existsByMemberIdAndToken: 멤버/토큰 존재 여부")
     void existsByMemberIdAndToken() {
         boolean test1 = fcmMapper.existsByMemberIdAndToken(MEMBER_ID, TOKEN);
@@ -116,7 +112,6 @@ class FcmMapperTest {
      * 3) 토큰 목록 조회 테스트
      */
     @Test
-    @Order(3)
     @DisplayName("selectTokensByMemberId: 멤버의 모든 토큰 조회")
     void selectTokensByMemberId() {
         List<String> tokens = fcmMapper.selectTokensByMemberId(MEMBER_ID);
@@ -127,13 +122,20 @@ class FcmMapperTest {
         log.info("토큰 목록: {}", tokens);
     }
 
+    /*
+    * 4) 현재 기기 토큰 삭제 테스트
+    * */
+    @Test
+    @DisplayName("deleteTokenByMemberIdAndToken : 현재 사용중인 기기의 토큰 삭제")
+    void deleteTokenByMemberIdAndToken() {
+        int deleted = fcmMapper.deleteTokenByMemberIdAndToken(MEMBER_ID, TOKEN);
+        assertTrue(deleted == 1, "삭제된 행이 1 이어야 함");
+    }
+
     /**
-     * 4) 모든 토큰 삭제 테스트
-     * - deleteAllTokensByMemberId(String memberId) → int (삭제 행수) 가정
-     * - 삭제 후 exists/select로 빈 상태 검증
+     * 5) 모든 토큰 삭제 테스트
      */
     @Test
-    @Order(4)
     @DisplayName("deleteAllTokensByMemberId: 멤버 토큰 전체 삭제")
     void deleteAllTokensByMemberId() {
         int deleted = fcmMapper.deleteAllTokensByMemberId(MEMBER_ID);
