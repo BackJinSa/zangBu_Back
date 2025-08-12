@@ -77,7 +77,7 @@
                bd.seller_type,
                bd.property_type,
                bd.move_date,
-               bd.info_one_line,
+               bd.info_oneline AS info_one_line,
                bd.info_building,
                img.image_url,
                bd.contact_name,
@@ -87,21 +87,16 @@
                  /*북마크된 매물 id와 전체 매물 id 기준으로 조인 -> 북마크된 매물의 상세 정보를 가져오기*/
                  INNER JOIN building bd ON b.building_id = bd.building_id
 
-                /*building과 가장 최신 이미지 정보를 LEFT JOIN*/
-                /*이미지 없더라도 누락되지 않게 left join*/
-                 LEFT JOIN (
-                    /*building_id별 최신 created_at 시간과 일치하는 이미지 행만 필터링 -> 1개만 가져옴*/
-                    SELECT il1.building_id, il1.image_url
-                    FROM image_list il1
-                        INNER JOIN (
-                        /*각 building_id(매물)마다 가장 최근에 등록된 이미지 시간(MAX(created_at)) 가져오기*/
-                        SELECT building_id, MAX(created_at) AS max_created_at
-                        FROM image_list
-                        GROUP BY building_id
-                        ) il2
-                        ON il1.building_id = il2.building_id
-                        AND il1.created_at = il2.max_created_at
-                    ) img ON bd.building_id = img.building_id
+            /*building과 가장 최신 이미지 정보를 LEFT JOIN*/
+            /*이미지 없더라도 누락되지 않게 left join*/
+                 LEFT JOIN (SELECT il1.building_id, il1.image_url
+                            FROM image_list il1
+                                     INNER JOIN (SELECT building_id, MAX(image_id) AS max_id
+                                                 FROM image_list
+                                                 GROUP BY building_id) il2
+                                                ON il1.building_id = il2.building_id
+                                                    AND il1.image_id = il2.max_id
+        ) img ON bd.building_id = img.building_id
         /*로그인한 사용자가 북마크한 매물만 가져옴*/
         WHERE b.member_id = #{memberId}
         /*매물 생성일 최신순으로*/
@@ -121,8 +116,23 @@
         FROM member
         WHERE member_id = #{memberId}
     </select>
+
     <select id="findByEmail" resultType="bjs.zangbu.security.account.vo.Member">
         SELECT * FROM member WHERE email = #{email}
+    </select>
+
+    <!--생년월일 조회-->
+    <select id="getBirthByMemberId" resultType="java.lang.String">
+        select birth
+        from member
+        where member_id = #{memberId}
+    </select>
+
+    <!--주민번호 뒷자리 조회-->
+    <select id="getIdentityByMemberId" resultType="java.lang.String">
+        select identity
+        from member
+        where member_id = #{memberId}
     </select>
 
     <!--  getBookmarksByMemberId join 한 결과값 -->
