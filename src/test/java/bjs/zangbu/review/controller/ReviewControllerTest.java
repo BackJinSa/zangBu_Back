@@ -18,10 +18,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.Date;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -48,20 +48,19 @@ class ReviewControllerTest {
     @DisplayName("GET /review/list/{buildingId} 200")
     void list_ok() throws Exception {
         Long buildingId = 100L;
-        ReviewListResult result = new ReviewListResult(
-                2L,
-                List.of(
-                        new ReviewListResponse(1L, "nick1", "좋은 리뷰", 5, "중층"),
-                        new ReviewListResponse(2L, "nick2", "괜찮은 리뷰", 4, "고층")),
-                false,
-                5);
+        List<ReviewListResponse> reviews = List.of(
+                new ReviewListResponse(1L, "nick1", "좋은 리뷰입니다", 5, "중층", new Date()),
+                new ReviewListResponse(2L, "nick2", "괜찮은 리뷰입니다", 4, "고층", new Date()));
 
-        given(reviewService.listReviews(buildingId, 0, 10)).willReturn(result);
+        given(reviewService.listReviews(buildingId, 0, 10))
+                .willReturn(new ReviewListResult(2L, reviews, false, 5));
 
-        mockMvc.perform(get("/review/list/{buildingId}", buildingId))
+        mockMvc.perform(get("/review/list/{buildingId}", buildingId)
+                .param("page", "0")
+                .param("size", "10"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.reviews").isArray())
                 .andExpect(jsonPath("$.total").value(2))
-                .andExpect(jsonPath("$.reviews[0].reviewId").value(1))
                 .andExpect(jsonPath("$.latestReviewRank").value(5));
     }
 

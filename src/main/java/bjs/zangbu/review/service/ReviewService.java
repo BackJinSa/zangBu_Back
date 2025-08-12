@@ -9,6 +9,8 @@ import bjs.zangbu.review.dto.response.ReviewListResponse;
 import java.util.List;
 
 public interface ReviewService {
+
+    // 리뷰 목록 조회 (페이징)
     ReviewListResult listReviews(Long buildingId, int page, int size);
 
     // 리뷰 상세보기 기능
