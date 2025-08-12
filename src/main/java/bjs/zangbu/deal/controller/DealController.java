@@ -3,12 +3,10 @@ package bjs.zangbu.deal.controller;
 
 import bjs.zangbu.deal.dto.request.DealRequest.IntentRequest;
 import bjs.zangbu.deal.dto.request.DealRequest.Status;
-import bjs.zangbu.deal.dto.response.BuildingRegisterResponse;
 import bjs.zangbu.deal.dto.response.DealResponse;
 import bjs.zangbu.deal.dto.response.DealResponse.Download;
 import bjs.zangbu.deal.dto.response.DealResponse.Notice;
 import bjs.zangbu.deal.dto.response.DealWaitingListResponse.WaitingList;
-import bjs.zangbu.deal.dto.response.EstateRegistrationResponse;
 import bjs.zangbu.deal.service.ContractService;
 import bjs.zangbu.deal.service.DealService;
 import bjs.zangbu.deal.vo.DocumentType;
@@ -27,7 +25,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -88,9 +85,9 @@ public class DealController {
   /**
    * 사용자의 전체 거래 대기 매물 조회
    *
-   * @param userDetails 로그인 사용자 정보
-   * @param page        요청 페이지 (1부터 시작)
-   * @param size        페이지당 항목 수
+   * @param user 로그인 사용자 정보
+   * @param page 요청 페이지 (1부터 시작)
+   * @param size 페이지당 항목 수
    * @return 전체 거래 대기 매물 목록
    */
   @ApiOperation(
@@ -134,9 +131,9 @@ public class DealController {
   /**
    * 사용자의 구매 진행 중인 매물 목록 조회
    *
-   * @param userDetails 로그인 사용자 정보
-   * @param page        요청 페이지 (1부터 시작)
-   * @param size        페이지당 항목 수
+   * @param user 로그인 사용자 정보
+   * @param page 요청 페이지 (1부터 시작)
+   * @param size 페이지당 항목 수
    * @return 구매 진행 중인 거래 대기 매물 목록
    */
   @ApiOperation(
@@ -151,19 +148,19 @@ public class DealController {
   @GetMapping("/waitinglist/purchase")
   public ResponseEntity<?> getPurchaseWaitingList(
       @ApiIgnore
-      @AuthenticationPrincipal UserDetails userDetails,
+      @AuthenticationPrincipal CustomUser user,
       @ApiParam(value = "페이지 번호", example = "1")
       @RequestParam(defaultValue = "1") int page,
       @ApiParam(value = "페이지당 항목 수", example = "10")
       @RequestParam(defaultValue = "10") int size) {
     try {
 
-      String userId = userDetails.getUsername();
-      String nickname = memberService.getNickname(userId); // 닉네임 추출
+      String memberId = user.getMember().getMemberId();
+      String nickname = memberService.getNickname(memberId); // 닉네임 추출
 
       // PageHelper 페이지네이션 시작
       PageHelper.startPage(page, size);
-      WaitingList response = dealService.getPurchaseWaitingList(userId, nickname);
+      WaitingList response = dealService.getPurchaseWaitingList(memberId, nickname);
       return ResponseEntity.status(HttpStatus.OK).body(response);
 
     } catch (Exception e) {
@@ -175,9 +172,9 @@ public class DealController {
   /**
    * 사용자의 판매 중인 거래 대기 매물 목록 조회
    *
-   * @param userDetails 로그인 사용자 정보
-   * @param page        요청 페이지 번호 (1부터 시작)
-   * @param size        페이지당 항목 수
+   * @param user 로그인 사용자 정보
+   * @param page 요청 페이지 번호 (1부터 시작)
+   * @param size 페이지당 항목 수
    * @return 판매 중인 거래 대기 매물 목록
    */
   @ApiOperation(
@@ -192,18 +189,18 @@ public class DealController {
   @GetMapping("/waitinglist/onsale")
   public ResponseEntity<?> getOnSaleWaitingList(
       @ApiIgnore
-      @AuthenticationPrincipal UserDetails userDetails,
+      @AuthenticationPrincipal CustomUser user,
       @ApiParam(value = "페이지 번호", example = "1")
       @RequestParam(defaultValue = "1") int page,
       @ApiParam(value = "페이지당 항목 수", example = "10")
       @RequestParam(defaultValue = "10") int size) {
     try {
-      String userId = userDetails.getUsername();
-      String nickname = memberService.getNickname(userId); // 닉네임 추출
+      String memberId = user.getMember().getMemberId();
+      String nickname = memberService.getNickname(memberId); // 닉네임 추출
 
       // PageHelper 페이지네이션 시작
       PageHelper.startPage(page, size);
-      WaitingList response = dealService.getOnSaleWaitingList(userId, nickname);
+      WaitingList response = dealService.getOnSaleWaitingList(memberId, nickname);
       return ResponseEntity.status(HttpStatus.OK).body(response);
 
     } catch (Exception e) {
@@ -229,7 +226,7 @@ public class DealController {
       @ApiParam(value = "거래 ID", example = "123")
       @PathVariable Long dealId) {
     try {
-
+      // TODO : 거래 취소하는 당사자가 판매자, 구매자 인지 check 로직 추가
       if (dealService.deleteDealById(dealId)) {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body("거래 취소에 성공했습니다.");
       } else {
@@ -261,10 +258,9 @@ public class DealController {
     // TODO: dealId -> buildingId 로 수정 Controller 는 수정헀으나 서비스 수정 필요
     // TODO: 중복 로직 정리 해야 함 , 그 후 스웨거 적용
     if (type == DocumentType.ESTATE) {
-      EstateRegistrationResponse rsp = contractService.getEstateRegistrationPdf(buildingId);
-      return ResponseEntity.ok(new DealResponse.Download(rsp.getResOriginalData()));
+      return ResponseEntity.ok(contractService.getEstateRegisternPdf(buildingId));
     } else if (type == DocumentType.BUILDING_REGISTER) {
-      return ResponseEntity.ok(contractService.generateRegisterPdf(buildingId));
+      return ResponseEntity.ok(contractService.getBuildingRegisterPdf(buildingId));
     }
     return null;
   }

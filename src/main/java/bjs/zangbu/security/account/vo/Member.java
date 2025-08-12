@@ -1,6 +1,7 @@
 package bjs.zangbu.security.account.vo;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@Data
 public class Member {
     //유저 식별 id
     private String memberId;

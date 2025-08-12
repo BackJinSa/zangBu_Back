@@ -132,4 +132,16 @@ public class MemberServiceImpl implements MemberService{
             throw new RuntimeException();
         }
     }
+
+    //생년월일 조회
+    @Override
+    public String getBirth(String memberId) {
+        return memberMapper.getBirthByMemberId(memberId);
+    }
+
+    //주민번호 가져오기
+    @Override
+    public String getIdentity(String memberId) {
+        return memberMapper.getIdentityByMemberId(memberId);
+    }
 }

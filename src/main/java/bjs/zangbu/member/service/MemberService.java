@@ -31,6 +31,12 @@ public interface MemberService {
     //닉네임 가져오기
     String getNickname(String memberId);
 
+    //생년월일 가져오기
+    String getBirth(String memberId);
+
+    //주민번호 뒷자리 가져오기
+    String getIdentity(String memberId);
+
     //알림 수신 여부 변경
     void updateFcmConsent(String memberId, boolean consent);
 
