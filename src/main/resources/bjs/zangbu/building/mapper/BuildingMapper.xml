@@ -45,16 +45,6 @@
         #{memberId},
         #{complexId}
         )
-
-<!--        &lt;!&ndash; Auto increment된 building_id 반환 &ndash;&gt;-->
-<!--        <selectKey-->
-<!--                resultType="Long"-->
-<!--                keyProperty="buildingId"-->
-<!--                keyColumn="building_id"-->
-<!--                order="AFTER"-->
-<!--        >-->
-<!--            SELECT LAST_INSERT_ID()-->
-<!--        </selectKey>-->
     </insert>
 
     <!-- 찜 수 증가 -->
@@ -115,6 +105,7 @@
         SELECT price FROM building WHERE building_id = #{buildingId}
     </select>
 
+    <!-- 필터 조건에 맞는 매물 조회 -->
     <select id="selectFilteredBuildings"
             resultType="bjs.zangbu.building.dto.response.BuildingResponse$FilteredResponse$Filtered">
         SELECT
@@ -125,7 +116,7 @@
         FALSE AS is_bookMarked
         FROM building b
         LEFT JOIN (
-        SELECT building_id, AVG(rank) AS avg_rank
+        SELECT building_id, AVG(`rank`) AS avg_rank
         FROM review
         GROUP BY building_id
         ) r ON b.building_id = r.building_id
@@ -152,25 +143,31 @@
     <!-- 필터 조건에 맞는 매물 총 개수 조회 -->
     <select id="countFilteredBuildings" resultType="long">
         SELECT COUNT(*)
-        FROM building
+        FROM building b
+        LEFT JOIN (
+        SELECT building_id, AVG(`rank`) AS avg_rank
+        FROM review
+        GROUP BY building_id
+        ) r ON b.building_id = r.building_id
         <where>
             <if test="buildingName != null and buildingName != ''">
-                AND building_name LIKE CONCAT('%', #{buildingName}, '%')
+                AND b.building_name LIKE CONCAT('%', #{buildingName}, '%')
             </if>
             <if test="saleType != null and saleType != ''">
-                AND sale_type = #{saleType}
+                AND b.sale_type = #{saleType}
             </if>
             <if test="startPrice != null">
-                AND price &gt;= #{startPrice}
+                AND b.price &gt;= #{startPrice}
             </if>
             <if test="endPrice != null">
-                AND price &lt;= #{endPrice}
+                AND b.price &lt;= #{endPrice}
             </if>
             <if test="propertyType != null and propertyType != ''">
-                AND property_type = #{propertyType}
+                AND b.property_type = #{propertyType}
             </if>
         </where>
     </select>
+
 
     <!-- 리뷰 많은 매물 Top 3 조회 -->
     <select id="selectTopReviewedBuildings" resultType="bjs.zangbu.building.dto.response.MainResponse$BuildingInfo">
