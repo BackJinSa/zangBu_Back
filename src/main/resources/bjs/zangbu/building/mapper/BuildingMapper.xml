@@ -63,21 +63,21 @@
     <update id="updateBuilding">
         UPDATE building
         <set>
-            <if test="sellerNickname != null">seller_nickname = #{sellerNickname},</if>
-            <if test="saleType != null">sale_type = #{saleType},</if>
-            <if test="price != null">price = #{price},</if>
-            <if test="deposit != null">deposit = #{deposit},</if>
-            <if test="buildingName != null">building_name = #{buildingName},</if>
-            <if test="sellerType != null">seller_type = #{sellerType},</if>
-            <if test="propertyType != null">property_type = #{propertyType},</if>
-            <if test="moveDate != null">move_date = #{moveDate},</if>
-            <if test="infoOneline != null">info_oneline = #{infoOneline},</if>
-            <if test="infoBuilding != null">info_building = #{infoBuilding},</if>
-            <if test="contactName != null">contact_name = #{contactName},</if>
-            <if test="contactPhone != null">contact_phone = #{contactPhone},</if>
-            <if test="facility != null">facility = #{facility},</if>
+            <if test="building.sellerNickname != null">seller_nickname = #{building.sellerNickname},</if>
+            <if test="building.saleType != null">sale_type = #{building.saleType},</if>
+            <if test="building.price != null">price = #{building.price},</if>
+            <if test="building.deposit != null">deposit = #{building.deposit},</if>
+            <if test="building.buildingName != null">building_name = #{building.buildingName},</if>
+            <if test="building.sellerType != null">seller_type = #{building.sellerType},</if>
+            <if test="building.propertyType != null">property_type = #{building.propertyType},</if>
+            <if test="building.moveDate != null">move_date = #{building.moveDate},</if>
+            <if test="building.infoOneline != null">info_oneline = #{building.infoOneline},</if>
+            <if test="building.infoBuilding != null">info_building = #{building.infoBuilding},</if>
+            <if test="building.contactName != null">contact_name = #{building.contactName},</if>
+            <if test="building.contactPhone != null">contact_phone = #{building.contactPhone},</if>
+            <if test="building.facility != null">facility = #{building.facility},</if>
         </set>
-        WHERE building_id = #{buildingId} AND member_id = #{memberId}
+        WHERE building_id = #{building.buildingId} AND member_id = #{memberId}
     </update>
 
     <!-- building_id로 매물 삭제 -->
