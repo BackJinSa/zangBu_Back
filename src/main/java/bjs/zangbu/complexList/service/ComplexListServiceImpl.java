@@ -30,7 +30,7 @@ public class ComplexListServiceImpl implements ComplexListService {
   }
 
   @Override
-  public Long getComplexNoByBuildingId(long buildingId) {
+  public String getComplexNoByBuildingId(long buildingId) {
     return complexListMapper.getComplexNoByBuildingId(buildingId);
   }
 }

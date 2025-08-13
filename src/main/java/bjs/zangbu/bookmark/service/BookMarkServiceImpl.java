@@ -24,8 +24,8 @@ public class BookMarkServiceImpl implements BookMarkService {
      * @param buildingId 찜할 건물 ID
      */
     @Override
-    public void insertBookMark(String memberId, Long buildingId) {
-        bookMarkMapper.insertBookMark(memberId, buildingId);
+    public void insertBookMark(String memberId, Long buildingId, Long complexId, Integer price) {
+        bookMarkMapper.insertBookMark(memberId, buildingId, complexId, price);
     }
 
     /**
@@ -92,5 +92,10 @@ public class BookMarkServiceImpl implements BookMarkService {
     @Override
     public List<String> selectUserIdsByBuildingId(Long buildingId) {
         return bookMarkMapper.selectUserIdsByBuildingId(buildingId);
+    }
+
+    @Override
+    public boolean isBookmarked(Long buildingId, String memberId) {
+        return bookMarkMapper.isBookmarked(memberId, buildingId);
     }
 }

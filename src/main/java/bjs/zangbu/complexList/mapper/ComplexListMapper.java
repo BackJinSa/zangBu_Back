@@ -17,5 +17,5 @@ public interface ComplexListMapper {
    */
   int createComplexList(ComplexList complexList);
 
-  Long getComplexNoByBuildingId(long buildingId);
+  String getComplexNoByBuildingId(long buildingId);
 }

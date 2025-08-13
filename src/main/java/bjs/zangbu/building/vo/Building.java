@@ -4,8 +4,6 @@ import bjs.zangbu.notification.vo.SaleType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Getter

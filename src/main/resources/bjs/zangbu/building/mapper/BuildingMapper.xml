@@ -5,186 +5,237 @@
 
 <mapper namespace="bjs.zangbu.building.mapper.BuildingMapper">
 
-  <!-- 매물 등록 및 building_id 반환 -->
-  <insert id="createBuilding" parameterType="bjs.zangbu.building.vo.Building"
-    useGeneratedKeys="false">
-    INSERT INTO building (
-    seller_nickname, sale_type, price, deposit, bookmark_count, created_at,
-    building_name, seller_type, property_type, move_date,
-    info_oneline, info_building, contact_name, contact_phone, facility,
-    member_id, complex_id
-    )
-    VALUES (
-    #{sellerNickname}, #{saleType}, #{price}, #{deposit}, #{bookmarkCount}, #{createdAt},
-    #{buildingName}, #{sellerType}, #{propertyType}, #{moveDate},
-    #{infoOneline}, #{infoBuilding}, #{contactName}, #{contactPhone}, #{facility},
-    #{memberId}, #{complexId}
-    )
+    <!-- 매물 등록 및 building_id 반환 -->
+    <insert id="createBuilding">
+        INSERT INTO building (
+        seller_nickname,
+        sale_type,
+        price,
+        deposit,
+        bookmark_count,
+        created_at,
+        building_name,
+        seller_type,
+        property_type,
+        move_date,
+        info_oneline,
+        info_building,
+        contact_name,
+        contact_phone,
+        facility,
+        member_id,
+        complex_id
+        )
+        VALUES (
+        #{sellerNickname},
+        #{saleType},
+        #{price},
+        #{deposit},
+        #{bookmarkCount},
+        NOW(),
+        #{buildingName},
+        #{sellerType},
+        #{propertyType},
+        #{moveDate},
+        #{infoOneline},
+        #{infoBuilding},
+        #{contactName},
+        #{contactPhone},
+        #{facility},
+        #{memberId},
+        #{complexId}
+        )
 
-    <!-- Auto increment된 building_id 반환 -->
-    <!--    <selectKey-->
-    <!--      resultType="Long"-->
-    <!--      keyProperty="buildingId"-->
-    <!--      keyColumn="building_id"-->
-    <!--      order="AFTER"-->
-    <!--    >-->
-    <!--      SELECT LAST_INSERT_ID()-->
-    <!--    </selectKey>-->
-  </insert>
-  <!-- 방금 INSERT한 auto-increment 키 조회 -->
-  <select id="selectLastInsertId" resultType="long">
-    SELECT LAST_INSERT_ID()
-  </select>
-  <!-- 찜 수 증가 -->
-  <update id="incrementBookmarkCount">
-    UPDATE building
-    SET bookmark_count = IFNULL(bookmark_count, 0) + 1
-    WHERE building_id = #{buildingId}
-  </update>
+<!--        &lt;!&ndash; Auto increment된 building_id 반환 &ndash;&gt;-->
+<!--        <selectKey-->
+<!--                resultType="Long"-->
+<!--                keyProperty="buildingId"-->
+<!--                keyColumn="building_id"-->
+<!--                order="AFTER"-->
+<!--        >-->
+<!--            SELECT LAST_INSERT_ID()-->
+<!--        </selectKey>-->
+    </insert>
 
-  <!-- 찜 수 감소 -->
-  <update id="decrementBookmarkCount">
-    UPDATE building
-    SET bookmark_count = IFNULL(bookmark_count, 0) - 1
-    WHERE building_id = #{buildingId}
-  </update>
+    <!-- 찜 수 증가 -->
+    <update id="incrementBookmarkCount">
+        UPDATE building
+        SET bookmark_count = IFNULL(bookmark_count, 0) + 1
+        WHERE building_id = #{buildingId}
+    </update>
 
-  <!-- building_id로 매물 삭제 -->
-  <delete id="deleteBuilding">
-    DELETE
-    FROM building
-    WHERE building_id = #{buildingId}
-  </delete>
+    <!-- 찜 수 감소 -->
+    <update id="decrementBookmarkCount">
+        UPDATE building
+        SET bookmark_count = IFNULL(bookmark_count, 0) - 1
+        WHERE building_id = #{buildingId}
+    </update>
+    <update id="updateBuilding">
+        UPDATE building
+        <set>
+            <if test="sellerNickname != null">seller_nickname = #{sellerNickname},</if>
+            <if test="saleType != null">sale_type = #{saleType},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="deposit != null">deposit = #{deposit},</if>
+            <if test="buildingName != null">building_name = #{buildingName},</if>
+            <if test="sellerType != null">seller_type = #{sellerType},</if>
+            <if test="propertyType != null">property_type = #{propertyType},</if>
+            <if test="moveDate != null">move_date = #{moveDate},</if>
+            <if test="infoOneline != null">info_oneline = #{infoOneline},</if>
+            <if test="infoBuilding != null">info_building = #{infoBuilding},</if>
+            <if test="contactName != null">contact_name = #{contactName},</if>
+            <if test="contactPhone != null">contact_phone = #{contactPhone},</if>
+            <if test="facility != null">facility = #{facility},</if>
+        </set>
+        WHERE building_id = #{buildingId} AND member_id = #{memberId}
+    </update>
 
-  <!-- 건물 존재 여부 확인 -->
-  <select id="isBuildingExists" resultType="java.lang.Boolean">
-    SELECT COUNT(*) > 0
-    FROM building
-    WHERE building_id = #{buildingId}
-  </select>
+    <!-- building_id로 매물 삭제 -->
+    <delete id="deleteBuilding">
+        DELETE FROM building
+        WHERE building_id = #{buildingId}
+    </delete>
 
-  <!-- building_id로 매물 정보 조회 -->
-  <select id="getBuildingById" resultType="bjs.zangbu.building.vo.Building">
-    SELECT *
-    FROM building
-    WHERE building_id = #{buildingId}
-  </select>
+    <!-- 건물 존재 여부 확인 -->
+    <select id="isBuildingExists" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0
+        FROM building
+        WHERE building_id = #{buildingId}
+    </select>
 
-  <!-- 현재 가격 조회 -->
-  <select id="selectCurrentPrice" resultType="int">
-    SELECT price
-    FROM building
-    WHERE building_id = #{buildingId}
-  </select>
+    <!-- building_id로 매물 정보 조회 -->
+    <select id="getBuildingById" resultType="bjs.zangbu.building.vo.Building">
+        SELECT *
+        FROM building
+        WHERE building_id = #{buildingId}
+    </select>
 
-  <select id="selectFilteredBuildings"
-    resultType="bjs.zangbu.building.dto.response.BuildingResponse$FilteredResponse$Filtered">
-    SELECT
-    b.building_id,
-    b.building_name,
-    b.price,
-    IFNULL(r.avg_rank, 0) AS rank_average,
-    FALSE AS is_bookMarked
-    FROM building b
-    LEFT JOIN (
-    SELECT building_id, AVG(rank) AS avg_rank
-    FROM review
-    GROUP BY building_id
-    ) r ON b.building_id = r.building_id
-    <where>
-      <if test="buildingName != null and buildingName != ''">
-        AND b.building_name LIKE CONCAT('%', #{buildingName}, '%')
-      </if>
-      <if test="saleType != null and saleType != ''">
-        AND b.sale_type = #{saleType}
-      </if>
-      <if test="startPrice != null">
-        AND b.price &gt;= #{startPrice}
-      </if>
-      <if test="endPrice != null">
-        AND b.price &lt;= #{endPrice}
-      </if>
-      <if test="propertyType != null and propertyType != ''">
-        AND b.property_type = #{propertyType}
-      </if>
-    </where>
-    ORDER BY b.created_at DESC
-  </select>
+    <!-- 현재 가격 조회 -->
+    <select id="selectCurrentPrice" resultType="int">
+        SELECT price FROM building WHERE building_id = #{buildingId}
+    </select>
 
-  <!-- 필터 조건에 맞는 매물 총 개수 조회 -->
-  <select id="countFilteredBuildings" resultType="long">
-    SELECT COUNT(*)
-    FROM building
-    <where>
-      <if test="buildingName != null and buildingName != ''">
-        AND building_name LIKE CONCAT('%', #{buildingName}, '%')
-      </if>
-      <if test="saleType != null and saleType != ''">
-        AND sale_type = #{saleType}
-      </if>
-      <if test="startPrice != null">
-        AND price &gt;= #{startPrice}
-      </if>
-      <if test="endPrice != null">
-        AND price &lt;= #{endPrice}
-      </if>
-      <if test="propertyType != null and propertyType != ''">
-        AND property_type = #{propertyType}
-      </if>
-    </where>
-  </select>
+    <select id="selectFilteredBuildings"
+            resultType="bjs.zangbu.building.dto.response.BuildingResponse$FilteredResponse$Filtered">
+        SELECT
+        b.building_id,
+        b.building_name,
+        b.price,
+        IFNULL(r.avg_rank, 0) AS rank_average,
+        FALSE AS is_bookMarked
+        FROM building b
+        LEFT JOIN (
+        SELECT building_id, AVG(rank) AS avg_rank
+        FROM review
+        GROUP BY building_id
+        ) r ON b.building_id = r.building_id
+        <where>
+            <if test="buildingName != null and buildingName != ''">
+                AND b.building_name LIKE CONCAT('%', #{buildingName}, '%')
+            </if>
+            <if test="saleType != null and saleType != ''">
+                AND b.sale_type = #{saleType}
+            </if>
+            <if test="startPrice != null">
+                AND b.price &gt;= #{startPrice}
+            </if>
+            <if test="endPrice != null">
+                AND b.price &lt;= #{endPrice}
+            </if>
+            <if test="propertyType != null and propertyType != ''">
+                AND b.property_type = #{propertyType}
+            </if>
+        </where>
+        ORDER BY b.created_at DESC
+    </select>
 
-  <!-- 리뷰 많은 매물 Top 3 조회 -->
-  <select id="selectTopReviewedBuildings"
-    resultType="bjs.zangbu.building.dto.response.MainResponse$BuildingInfo">
-    SELECT b.building_id                                               AS buildingId,
-           b.price                                                     AS price,
-           b.building_name                                             AS buildingName,
-           b.image_url                                                 AS imageUrl,
-           IFNULL(AVG(r.rank), 0)                                      AS rank,
-           CASE WHEN bm.member_id IS NOT NULL THEN TRUE ELSE FALSE END AS isBookmarked
-    FROM building b
-           LEFT JOIN review r ON b.building_id = r.building_id
-           LEFT JOIN bookmark bm ON b.building_id = bm.building_id AND bm.member_id = #{memberId}
-    GROUP BY b.building_id
-    ORDER BY COUNT(r.review_id) DESC LIMIT 3
-  </select>
+    <!-- 필터 조건에 맞는 매물 총 개수 조회 -->
+    <select id="countFilteredBuildings" resultType="long">
+        SELECT COUNT(*)
+        FROM building
+        <where>
+            <if test="buildingName != null and buildingName != ''">
+                AND building_name LIKE CONCAT('%', #{buildingName}, '%')
+            </if>
+            <if test="saleType != null and saleType != ''">
+                AND sale_type = #{saleType}
+            </if>
+            <if test="startPrice != null">
+                AND price &gt;= #{startPrice}
+            </if>
+            <if test="endPrice != null">
+                AND price &lt;= #{endPrice}
+            </if>
+            <if test="propertyType != null and propertyType != ''">
+                AND property_type = #{propertyType}
+            </if>
+        </where>
+    </select>
 
-  <!-- 찜 수 많은 매물 Top 3 조회 -->
-  <select id="selectTopLikedBuildings"
-    resultType="bjs.zangbu.building.dto.response.MainResponse$BuildingInfo">
-    SELECT b.building_id                                               AS buildingId,
-           b.price                                                     AS price,
-           b.building_name                                             AS buildingName,
-           b.image_url                                                 AS imageUrl,
-           IFNULL(AVG(r.rank), 0)                                      AS rank,
-           CASE WHEN bm.member_id IS NOT NULL THEN TRUE ELSE FALSE END AS isBookmarked
-    FROM building b
-           LEFT JOIN bookmark bm ON b.building_id = bm.building_id AND bm.member_id = #{memberId}
-           LEFT JOIN review r ON b.building_id = r.building_id
-    ORDER BY bc.count DESC LIMIT 3
-  </select>
+    <!-- 리뷰 많은 매물 Top 3 조회 -->
+    <select id="selectTopReviewedBuildings" resultType="bjs.zangbu.building.dto.response.MainResponse$BuildingInfo">
+        SELECT
+            b.building_id AS buildingId,
+            b.price AS price,
+            b.building_name AS buildingName,
+            MIN(il.image_url) AS imageUrl,
+            IFNULL(AVG(r.rank), 0) AS `rank`,
+            CASE WHEN bm.member_id IS NOT NULL THEN TRUE ELSE FALSE END AS isBookmarked
+        FROM building b
+                 LEFT JOIN review r ON b.building_id = r.building_id
+                 LEFT JOIN bookmark bm ON b.building_id = bm.building_id AND bm.member_id = #{memberId}
+                 LEFT JOIN image_list il ON b.building_id = il.building_id
+        GROUP BY b.building_id
+        ORDER BY COUNT(r.review_id) DESC
+            LIMIT 3
+    </select>
 
-  <!-- 최신 등록된 매물 Top 3 조회 -->
-  <select id="selectNewRooms"
-    resultType="bjs.zangbu.building.dto.response.MainResponse$BuildingInfo">
-    SELECT b.building_id                                               AS buildingId,
-           b.price                                                     AS price,
-           b.building_name                                             AS buildingName,
-           b.image_url                                                 AS imageUrl,
-           IFNULL(AVG(r.rank), 0)                                      AS rank,
-           CASE WHEN bm.member_id IS NOT NULL THEN TRUE ELSE FALSE END AS isBookmarked
-    FROM building b
-           LEFT JOIN bookmark bm ON b.building_id = bm.building_id AND bm.member_id = #{memberId}
-           LEFT JOIN review r ON b.building_id = r.building_id
-    ORDER BY b.created_at DESC LIMIT 3
-  </select>
-  <!--보증금 조회-->
-  <select id="getDeposit" resultType="java.lang.Integer">
-    select b.deposit
-    from building b
-    where b.building_id = #{buildingId}
-  </select>
+    <!-- 찜 수 많은 매물 Top 3 조회 -->
+    <select id="selectTopLikedBuildings" resultType="bjs.zangbu.building.dto.response.MainResponse$BuildingInfo">
+        SELECT
+            b.building_id AS buildingId,
+            b.price AS price,
+            b.building_name AS buildingName,
+            MIN(il.image_url) AS imageUrl,
+            IFNULL(AVG(r.rank), 0) AS `rank`,
+            CASE WHEN bm.member_id IS NOT NULL THEN TRUE ELSE FALSE END AS isBookmarked
+        FROM building b
+                 LEFT JOIN bookmark bm ON b.building_id = bm.building_id AND bm.member_id = #{memberId}
+                 LEFT JOIN review r ON b.building_id = r.building_id
+                 LEFT JOIN image_list il ON b.building_id = il.building_id
+        GROUP BY b.building_id
+        ORDER BY b.bookmark_count DESC
+            LIMIT 3
+    </select>
+
+    <!-- 최신 등록된 매물 Top 3 조회 -->
+    <select id="selectNewRooms" resultType="bjs.zangbu.building.dto.response.MainResponse$BuildingInfo">
+        SELECT
+            b.building_id AS buildingId,
+            b.price AS price,
+            b.building_name AS buildingName,
+            MIN(il.image_url) AS imageUrl,
+            IFNULL(AVG(r.rank), 0) AS `rank`,
+            CASE WHEN bm.member_id IS NOT NULL THEN TRUE ELSE FALSE END AS isBookmarked
+        FROM building b
+                 LEFT JOIN bookmark bm ON b.building_id = bm.building_id AND bm.member_id = #{memberId}
+                 LEFT JOIN review r ON b.building_id = r.building_id
+                 LEFT JOIN image_list il ON b.building_id = il.building_id
+        GROUP BY b.building_id
+        ORDER BY b.created_at DESC
+            LIMIT 3
+    </select>
+<!--보증금 조회-->
+    <select id="getDeposit" resultType="java.lang.Integer">
+        select b.deposit
+        from building b
+        where b.building_id = #{buildingId}
+    </select>
+
+    <!--대해인-->
+    <select id="selectLastInsertId" resultType="long">
+        SELECT LAST_INSERT_ID()
+    </select>
 
 
 </mapper>
