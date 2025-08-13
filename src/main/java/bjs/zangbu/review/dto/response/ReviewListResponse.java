@@ -3,6 +3,7 @@ package bjs.zangbu.review.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -13,5 +14,5 @@ public class ReviewListResponse {
     private String content; // 리뷰 내용
     private Integer rank; // 평점
     private String floor; // 층수
-    private Date createdAt; // 리뷰 작성일시
+    private LocalDateTime createdAt; // 리뷰 작성일시
 }
