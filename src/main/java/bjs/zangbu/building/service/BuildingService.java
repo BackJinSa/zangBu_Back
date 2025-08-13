@@ -1,4 +1,5 @@
 package bjs.zangbu.building.service;
+import bjs.zangbu.building.dto.request.BuildingRequest;
 import bjs.zangbu.building.dto.request.BuildingRequest.*;
 import bjs.zangbu.building.dto.response.BuildingResponse.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,17 +10,6 @@ import java.io.UnsupportedEncodingException;
  * 매물 상세 조회, 찜 추가/삭제, 등록, 삭제, 목록 조회 기능을 정의한다.
  */
 public interface BuildingService {
-
-    /**
-     * 매물 상세 정보를 조회한다.
-     *
-     * @param request 매물 상세 조회 요청 DTO
-     * @return 매물 상세 조회 응답 DTO
-     * @throws UnsupportedEncodingException 인코딩 예외
-     * @throws JsonProcessingException JSON 처리 예외
-     * @throws InterruptedException API 호출 지연 예외
-     */
-    ViewDetailResponse viewDetailFilterService(ViewDetailRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 
     /**
      * 매물 찜하기 서비스 (찜 추가)
@@ -43,7 +33,7 @@ public interface BuildingService {
      * @param request 매물 등록 요청 DTO
      * @param memberId 매물 등록자 회원 ID
      */
-    void SaleRegistration(SaleRegistrationRequest request, String memberId);
+    void SaleRegistration(SaleRegistrationRequest request, String memberId) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 
     /**
      * 필터 조건과 페이징 정보를 기반으로 매물 목록을 조회한다.
@@ -67,5 +57,9 @@ public interface BuildingService {
      */
     void removeBuilding(Long buildingId);
 
-    ViewDetailResponse viewDetailService(Long buildingId) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
+    ViewDetailResponse BuildingDetail(Long buildingId, String memberId) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
+
+    ViewDetailResponse BuildingDetailWithoutMemberId(Long buildingId) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
+
+    void updateBuilding(UpdateBuilding request, String memberId);
 }

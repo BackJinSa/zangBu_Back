@@ -11,9 +11,13 @@ import bjs.zangbu.building.vo.PropertyType;
 import bjs.zangbu.building.vo.SellerType;
 import bjs.zangbu.global.config.RootConfig;
 import bjs.zangbu.notification.vo.SaleType;
+
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import javax.sql.DataSource;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,9 +49,11 @@ class BuildingServiceTest {
 
   @Test
   @DisplayName("png로 업로더 우회: complex/building/image 모두 INSERT (image_url은 NULL)")
-  void saleRegistration_png_flow_ok() {
+  void saleRegistration_png_flow_ok() throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
     // given
     String memberId = insertMember("seller_nick");
+
+    String identity = "0110203018419";
 
     // 요청 DTO (네 DTO 구조 그대로 사용)
     BuildingRequest.BuildingDetails b =
@@ -59,7 +65,7 @@ class BuildingServiceTest {
 
     BuildingRequest.ComplexDetails c =
         new BuildingRequest.ComplexDetails(
-            "APT", "테스트단지", 123456L, "서울", "강남구", "11110",
+            "APT", "테스트단지", "11230103001448265", "서울", "강남구", "11110",
             "역삼동", "TX-001", "서울 강남구 역삼동 1-1", "06234",
             "래미안", "역삼동", "101동", "1001호", "테헤란로"
         );
@@ -71,7 +77,7 @@ class BuildingServiceTest {
         new BuildingRequest.ImageDetails(file);
 
     SaleRegistrationRequest req =
-        new SaleRegistrationRequest(b, c, img);
+        new SaleRegistrationRequest(b, c, img, identity);
 
     int c1 = count("complex_list");
     int b1 = count("building");

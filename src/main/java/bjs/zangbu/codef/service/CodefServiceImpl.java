@@ -1,6 +1,7 @@
 package bjs.zangbu.codef.service;
 
 import bjs.zangbu.building.dto.request.BuildingRequest;
+import bjs.zangbu.building.dto.request.BuildingRequest.SaleRegistrationRequest;
 import bjs.zangbu.codef.dto.request.CodefRequest.AddressRequest;
 import bjs.zangbu.codef.encryption.CodefEncryption;
 import bjs.zangbu.codef.encryption.RSAEncryption;
@@ -60,25 +61,22 @@ public class CodefServiceImpl implements CodefService {
   /**
    * 아파트 단지(건물) 실거래 시세정보를 조회합니다. 요청 DTO를 기반으로 파라미터 맵을 생성한 후, CODEF API에 요청하여 JSON 응답을 반환합니다.
    *
-   * @param request 매물 상세 조회 요청 DTO
+   * @param buildingId 매물 상세 조회 요청 DTO
    * @return CODEF API로부터 받은 응답 JSON 문자열
    * @throws UnsupportedEncodingException 인코딩 지원되지 않을 때 발생하는 예외
    * @throws JsonProcessingException      JSON 처리 중 발생하는 예외
    * @throws InterruptedException         API 호출 지연 시 발생하는 예외
    */
   @Override
-  public String FilterpriceInformation(BuildingRequest.ViewDetailRequest request)
+  public String getBuildingDetail(Long buildingId)
       throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
     // 단일 건물 정보 매핑을 위한 map 구성
     HashMap<String, Object> map = new HashMap<>();
     map.put("organization", "0011"); // CODEF 공공부동산기관 코드
     map.put("searchGbn", "1");       // 검색 구분 ("1": 면적별 시세정보)
-    map.put("complexNo",
-        complexListService.getComplexNoByBuildingId(request.getBuildingId())); // 단지번호(필수)
-    map.put("dong", request.getDong());
-    map.put("dong", request.getHo()); // <-- 주의: 'dong' 키가 덮어쓰여지는 오류가 있습니다.
-    // 'ho'에 대한 별도 키를 사용해야 합니다.
+    map.put("complexNo", complexListService.getComplexNoByBuildingId(buildingId)); // 단지번호(필수)
 
+    System.out.println(map);
     // CODEF 시세조회 상품 URL
     String url = "/v1/kr/public/lt/real-estate-board/market-price-information";
 
@@ -150,19 +148,20 @@ public class CodefServiceImpl implements CodefService {
   /**
    * 부동산 등기부 실명 일치(소유자 인증) 검사를 수행합니다. 부동산 실명 일치 여부를 확인하는 CODEF API를 호출하여 결과를 반환합니다.
    *
-   * @param request 요청 데이터 객체
+   * @param uniqueNo 부동산 번호
+   * @param identity 주민등록번호 원문
    * @return CODEF API로부터 받은 응답 JSON 문자열
    * @throws UnsupportedEncodingException 인코딩 지원되지 않을 때 발생하는 예외
    * @throws JsonProcessingException      JSON 처리 중 발생하는 예외
    * @throws InterruptedException         API 호출 지연 시 발생하는 예외
    */
   @Override
-  public String RealEstateRegistrationRegister(Object request)
+  public String RealEstateRegistrationRegister(String uniqueNo, String identity)
       throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
     HashMap<String, Object> map = new HashMap<>();
     map.put("organization", "0002");
-    map.put("uniqueNo", "");
-    map.put("identity", "");
+    map.put("uniqueNo", uniqueNo);
+    map.put("identity", identity);
 
     String url = "/v1/kr/public/ck/real-estate-register/identity-matching";
 
@@ -190,16 +189,20 @@ public class CodefServiceImpl implements CodefService {
     }
 
     // 기존 파라미터(1~2차 인증까지 모든 값)에 3차 인증용 추가값 합치기
-    HashMap<String, Object> param = new HashMap<>(session.getParameterMap());
-    param.put("jobIndex", session.getJobIndex());
-    param.put("threadIndex", session.getThreadIndex());
-    param.put("jti", session.getJti());
-    param.put("twoWayTimestamp", session.getTwoWayTimestamp());
-    param.put("secureNo", secureNo); // 사용자가 입력한 보안문자 값 추가
+    HashMap<String, Object> lastRequest = new HashMap<>(session.getParameterMap());
+
+    HashMap<String, Object> twoWayParams = new HashMap<>();
+    twoWayParams.put("jobIndex", session.getJobIndex());
+    twoWayParams.put("threadIndex", session.getThreadIndex());
+    twoWayParams.put("jti",session.getJti());
+    twoWayParams.put("twoWayTimestamp", session.getTwoWayTimestamp());
+
+    lastRequest.put("twoWayInfo", twoWayParams);
+    lastRequest.put("secureNo", secureNo); // 사용자가 입력한 보안문자 값 추가
 
     try {
-      String result = codef.requestProduct(session.getProductUrl(), EasyCodefServiceType.DEMO,
-          param);
+      String result = codef.requestCertification(
+              session.getProductUrl(), EasyCodefServiceType.DEMO, lastRequest);
       // 인증 처리 후 Redis 세션 데이터 삭제 (보안/메모리 관리)
       redisTemplate.delete(sessionKey);
       return result;
@@ -256,4 +259,22 @@ public class CodefServiceImpl implements CodefService {
     return response;
   }
 
+  @Override
+  public String realEstateRegistrationAddressSearch(SaleRegistrationRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+    HashMap<String, Object> map = new HashMap<>();
+    map.put("organization", "0002");
+    map.put("searchGbn", "3");
+    map.put("realtyType", "1");
+    map.put("addrSido", request.getComplexList().getSido());
+    map.put("addrSigungu",request.getComplexList().getSigungu());
+    map.put("addrRoadName",request.getComplexList().getRoadName());
+    map.put("addrBuildingNumber", request.getComplexList().getAddress().substring(18));
+    map.put("electronicClosedYN", "0");
+    map.put("dong", request.getComplexList().getDong());
+    map.put("ho",  request.getComplexList().getHo());
+    System.out.println(map);
+    String url = "/v1/kr/public/ck/real-estate/address";
+    String response = codef.requestProduct(url, EasyCodefServiceType.DEMO, map);
+    return response;
+  }
 }

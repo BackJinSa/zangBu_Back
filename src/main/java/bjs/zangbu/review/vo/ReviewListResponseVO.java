@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 /**
@@ -20,7 +21,7 @@ public class ReviewListResponseVO {
     private String content; // 리뷰 내용
     private Integer rank; // 평점
     private String floor; // 층수
-    private Date createdAt; // 리뷰 작성일시
+    private LocalDateTime createdAt; // 리뷰 작성일시
 
     /**
      * ReviewListResponse DTO를 VO로 변환하는 정적 팩토리 메서드

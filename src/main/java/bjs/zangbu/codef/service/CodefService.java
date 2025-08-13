@@ -1,6 +1,6 @@
 package bjs.zangbu.codef.service;
 import bjs.zangbu.building.dto.request.BuildingRequest;
-import bjs.zangbu.codef.dto.request.CodefRequest;
+import bjs.zangbu.building.dto.request.BuildingRequest.SaleRegistrationRequest;
 import bjs.zangbu.codef.dto.request.CodefRequest.AddressRequest;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import bjs.zangbu.deal.dto.request.EstateRegistrationRequest;
@@ -15,13 +15,13 @@ public interface CodefService {
 
     /**
      * (아파트/오피스텔 등) 시세 정보 조회
-     * @param request   단지/동/호 등 상세 입력 정보를 담는 DTO
+     * @param buildingId   단지/동/호 등 상세 입력 정보를 담는 DTO
      * @return          CODEF API에서 반환하는 응답(JSON 문자열)
      * @throws UnsupportedEncodingException 인코딩 처리 오류
      * @throws JsonProcessingException      JSON 파싱/변환 오류
      * @throws InterruptedException         스레드 중단 등 내부 오류
      */
-    String FilterpriceInformation(BuildingRequest.ViewDetailRequest request)
+    String getBuildingDetail(Long buildingId)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 
     /**
@@ -51,7 +51,7 @@ public interface CodefService {
      * @throws JsonProcessingException
      * @throws InterruptedException
      */
-    String RealEstateRegistrationRegister(Object request)
+    String RealEstateRegistrationRegister(String uniqueNo, String identity)
             throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 
     /**
@@ -71,4 +71,6 @@ public interface CodefService {
 
     String priceInformation(Long buildingId) throws
             UnsupportedEncodingException, JsonProcessingException, InterruptedException;
+
+    String realEstateRegistrationAddressSearch(SaleRegistrationRequest request) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException;
 }

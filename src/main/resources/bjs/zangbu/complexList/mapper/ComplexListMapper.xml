@@ -54,7 +54,7 @@
     </selectKey>
 </insert>
     <!-- 단지 정보 삽입 쿼리 -->
-    <select id="getComplexNoByBuildingId" resultType="java.lang.Long">
+    <select id="getComplexNoByBuildingId" resultType="java.lang.String">
         SELECT cl.complex_no
         FROM complex_list cl
                  JOIN building b ON cl.complex_id = b.complex_id

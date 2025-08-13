@@ -15,5 +15,5 @@ public interface ComplexListService {
      */
     Long createComplexList(ComplexList complexList);
 
-    Long getComplexNoByBuildingId(long buildingId);
+    String getComplexNoByBuildingId(long buildingId);
 }
