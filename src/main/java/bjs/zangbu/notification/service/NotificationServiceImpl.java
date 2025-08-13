@@ -282,7 +282,7 @@ public class NotificationServiceImpl implements NotificationService {
 
             // (1) 찜 정보에서 필요한 값 꺼내기
             Long buildingId = bookmark.getBuildingId();   // 어떤 건물인지
-            String memberId = bookmark.getUserId();       // 누가 찜했는지
+            String memberId = bookmark.getMemberId();       // 누가 찜했는지
             int oldPrice = bookmark.getPrice();           // 찜 당시 매물 가격
 
             // (2). [DB] building 테이블에서 해당 매물(buildingId)의 정보를 가져온다.

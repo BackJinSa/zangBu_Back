@@ -8,7 +8,7 @@
     <!-- 회원이 특정 매물을 찜했을 때 bookmark 테이블에 기록 -->
     <insert id="insertBookMark">
         INSERT INTO bookmark (member_id, building_id, complex_id, price)
-        VALUES (#{memberId}, #{buildingId}, #{complex_id}. #{price})
+        VALUES (#{memberId}, #{buildingId}, #{complex_id}, #{price})
     </insert>
 
     <!-- 건물의 찜 개수(bookmark_count) 1 증가 -->
@@ -57,6 +57,13 @@
         SELECT building_id
         FROM bookmark
         WHERE member_id = #{memberId}
+    </select>
+    <select id="isBookmarked" resultType="java.lang.Boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM bookmark
+            WHERE member_id = #{memberId} AND building_id = #{buildingId}
+        )
     </select>
 
 </mapper>

@@ -1,5 +1,7 @@
 package bjs.zangbu.building.mapper;
 
+import bjs.zangbu.building.dto.request.BuildingRequest;
+import bjs.zangbu.building.dto.request.BuildingRequest.UpdateBuilding;
 import bjs.zangbu.building.dto.response.BuildingResponse.FilteredResponse.Filtered;
 import bjs.zangbu.building.dto.response.MainResponse.BuildingInfo;
 import bjs.zangbu.building.vo.Building;
@@ -131,4 +133,5 @@ public interface BuildingMapper {
 
   Integer getDeposit(Long buildingId);
 
+  void updateBuilding(UpdateBuilding building, String memberId);
 }
