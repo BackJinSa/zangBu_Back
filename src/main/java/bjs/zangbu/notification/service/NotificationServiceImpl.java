@@ -50,7 +50,6 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationAll getAllNotifications(String memberId, String type) {
         // type = null/공백/ALL → 필터 없음, 그 외는 enum 매칭 실패 시 필터 없음(전체)
         String normalized = normalizeTypeOrNull(type);
-        log.info("==================== normalized : {} ==================" , normalized);
 
         // 1. 알림 VO 리스트 조회
         List<Notification> notifications = notificationMapper.selectAllByMemberId(memberId, normalized);
