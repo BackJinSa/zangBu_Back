@@ -14,6 +14,7 @@ import bjs.zangbu.ncp.service.BinaryUploaderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,7 +51,7 @@ class ContractServiceImplTest {
     public void setUp() {
     }
 
-
+    @Disabled("테스트 남용 방지")
     @DisplayName("건축물대장 api 테스트")
     public String getBuildingRegisterPdf() throws Exception {
         BuildingRegisterRequest request = BuildingRegisterRequest.builder()
@@ -71,7 +72,7 @@ class ContractServiceImplTest {
         System.out.println("통합 테스트 성공! Codef API 응답:\n");
         return result;
     }
-
+    @Disabled("테스트 남용 방지")
     @Test
     @DisplayName("건축물대장 response to ncp pdf url")
     public void brToNcp() throws Exception {
@@ -103,6 +104,7 @@ class ContractServiceImplTest {
         System.out.println("url = " + url);
     }
 //-------------------------------------------------------------------------------------------------------
+    @Disabled("테스트 남용 방지")
     @Test
     @DisplayName("등기부등본 api 테스트")
     public void getEstateRegisterPdf() throws Exception {
@@ -155,6 +157,7 @@ class ContractServiceImplTest {
     }
 
 
+    @Disabled("테스트 남용 방지")
     @Test
     @DisplayName("목업 데이터로 pdf 업로드 테스트")
     void erToNcp() throws Exception {
