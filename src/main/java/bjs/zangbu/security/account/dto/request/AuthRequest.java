@@ -7,10 +7,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import lombok.*;
 import org.springframework.security.authentication.BadCredentialsException;
 
 /**
@@ -289,6 +287,7 @@ public class AuthRequest {
   @NoArgsConstructor
   @AllArgsConstructor
   @ApiModel(description = "Codef 주민등록 진위인증 요청 DTO")
+  @Builder
   public static class VerifyCodefRequest {
 
     /**

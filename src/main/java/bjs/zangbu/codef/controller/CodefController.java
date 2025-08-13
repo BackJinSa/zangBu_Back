@@ -5,6 +5,8 @@ import bjs.zangbu.codef.dto.request.CodefRequest.AddressRequest;
 import bjs.zangbu.codef.dto.request.CodefRequest.secureNoRequest;
 import bjs.zangbu.codef.dto.response.CodefResponse.ComplexResponse;
 import bjs.zangbu.codef.service.CodefService;
+import bjs.zangbu.codef.service.CodefTwoFactorService;
+import bjs.zangbu.security.account.dto.request.AuthRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -15,7 +17,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
+
+import lombok.*;
+import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,6 +37,30 @@ import org.springframework.web.bind.annotation.RestController;
 public class CodefController {
 
   private final CodefService codefService;
+  private final CodefTwoFactorService codefTwoFactorService;
+
+  @PostMapping(
+          path = "/captcha",
+          consumes = MediaType.APPLICATION_JSON_VALUE,
+          produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ApiOperation(value = "캡차(보안문자) 받기", notes = "2-Way 완료 후 캡차 이미지와 세션키를 반환합니다.")
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "성공"),
+          @ApiResponse(code = 400, message = "요청 파라미터 오류"),
+          @ApiResponse(code = 502, message = "CODEF 응답 비정상"),
+          @ApiResponse(code = 504, message = "2차 인증 타임아웃")
+  })
+  public ResponseEntity<String> requestCaptcha(
+          @ApiParam(value = "CODEF 주민등록 진위확인 요청", required = true)
+          @RequestBody AuthRequest.VerifyCodefRequest request
+  ) throws Exception {
+    // 서비스가 JSON 문자열을 반환하도록 구현되어 있으므로 그대로 패스스루
+    String json = codefTwoFactorService.residentRegistrationAuthenticityConfirmation(request);
+    return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json);
+  }
 
   /**
    * 보안인증 요청 처리. {@code POST /codef/secure} 엔드포인트를 통해 세션키와 보안번호를 사용하여 보안인증을 진행합니다.
@@ -52,8 +81,10 @@ public class CodefController {
   public ResponseEntity<?> secure(
           @ApiParam(value = "보안 인증 요청 DTO", required = true)
           @RequestBody secureNoRequest request) {
-    codefService.processSecureNo(request.getSessionKey(), request.getSecureNo());
-    return ResponseEntity.ok().build();
+    String json = codefService.processSecureNo(request.getSessionKey(), request.getSecureNo());
+    return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json);
   }
 
   /**
