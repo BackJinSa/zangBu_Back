@@ -11,10 +11,11 @@ public interface BookMarkService {
     /**
      * 특정 사용자가 특정 건물을 찜 목록에 추가
      *
-     * @param memberId 찜한 사용자 ID
+     * @param memberId   찜한 사용자 ID
      * @param buildingId 찜할 건물 ID
+     * @param price
      */
-    void insertBookMark(String memberId, Long buildingId);
+    void insertBookMark(String memberId, Long buildingId, Long complexId, Integer price);
 
     /**
      * 특정 사용자가 특정 건물에 대해 찜 해제
@@ -63,4 +64,6 @@ public interface BookMarkService {
      * @return 해당 매물을 찜한 회원 ID 리스트
      */
     List<String> selectUserIdsByBuildingId(Long buildingId);
+
+    boolean isBookmarked(Long buildingId, String memberId);
 }

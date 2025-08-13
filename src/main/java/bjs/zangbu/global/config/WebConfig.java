@@ -11,7 +11,7 @@ import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatche
 
 public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitializer {
 
-  final String LOCATION = "c:/upload";
+  final String LOCATION = "C:\\Project Folder\\zangBu_Back\\src\\main\\resources\\upload";
   final long MAX_FILE_SIZE = 1024 * 1024 * 10L;
   final long MAX_REQUEST_SIZE = 1024 * 1024 * 20L;
   final int FILE_SIZE_THRESHOLD = 1024 * 1024 * 5;
