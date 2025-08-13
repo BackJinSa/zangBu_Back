@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static bjs.zangbu.notification.dto.response.NotificationResponse.*;
 import static bjs.zangbu.notification.dto.response.NotificationResponse.NotificationElement.formatMoney;
@@ -46,15 +47,31 @@ public class NotificationServiceImpl implements NotificationService {
     // ====================== API 전용 ======================
     // [API] 전체 알림 조회(DB select)
     @Override
-    public NotificationAll getAllNotifications(String memberId) {
+    public NotificationAll getAllNotifications(String memberId, String type) {
+        // type = null/공백/ALL → 필터 없음, 그 외는 enum 매칭 실패 시 필터 없음(전체)
+        String normalized = normalizeTypeOrNull(type);
+        log.info("==================== normalized : {} ==================" , normalized);
+
         // 1. 알림 VO 리스트 조회
-        List<Notification> notifications = notificationMapper.selectAllByMemberId(memberId);
+        List<Notification> notifications = notificationMapper.selectAllByMemberId(memberId, normalized);
 
         // 2. PageInfo로 감싸서 페이지 정보 획득
         PageInfo<Notification> pageInfo = new PageInfo<>(notifications);
 
         // 3. DTO로 변환
         return NotificationAll.toDto(pageInfo);
+    }
+
+    private String normalizeTypeOrNull(String type) {
+        if (type == null || type.isBlank()) return null;
+        String up = type.toUpperCase(Locale.ROOT);
+        if ("ALL".equals(up)) return null;          // 전체 탭
+        try {
+            Type.valueOf(up);                       // 검증만
+            return up;                              // BUILDING | TRADE | REVIEW
+        } catch (IllegalArgumentException e) {
+            return null; // 모르는 값이면 전체로 처리(혹은 400으로 바꾸고 싶으면 여기서 예외 던져도 됨)
+        }
     }
 
     // [API] 하나의 알림 읽음 처리 (DB update)

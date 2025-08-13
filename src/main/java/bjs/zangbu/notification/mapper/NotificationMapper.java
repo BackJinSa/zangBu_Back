@@ -9,7 +9,8 @@ public interface NotificationMapper {
     // ====================== API 전용 ======================
 
     // 전체 알림 조회
-    List<Notification> selectAllByMemberId(String memberId);
+    List<Notification> selectAllByMemberId(@Param("memberId") String memberId,
+                                           @Param("type") String type);
 
     // 하나의 알림 읽음 처리
     int updateIsRead(@Param("memberId") String memberId, @Param("notificationId") Long notificationId);

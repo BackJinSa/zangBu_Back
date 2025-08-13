@@ -23,6 +23,9 @@
             building_id AS buildingId
         FROM notification
         WHERE member_id = #{memberId}
+        <if test="type != null">
+            AND `type` = #{type}
+        </if>
         ORDER BY created_at DESC
     </select>
 

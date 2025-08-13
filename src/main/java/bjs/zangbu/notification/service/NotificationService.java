@@ -7,7 +7,7 @@ public interface NotificationService {
     // ====================== API 전용 ======================
 
     /** [API] 전체 알림 조회 */
-    NotificationAll getAllNotifications(String memberId);
+    NotificationAll getAllNotifications(String memberId, String type);
 
     /** [API] 하나의 알림 읽음 처리 */
     boolean markAsRead(String memberId, Long notificationId);
