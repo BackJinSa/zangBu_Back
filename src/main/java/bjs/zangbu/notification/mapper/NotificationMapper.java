@@ -1,5 +1,6 @@
 package bjs.zangbu.notification.mapper;
 
+import bjs.zangbu.notification.dto.response.NotificationResponse.*;
 import bjs.zangbu.notification.vo.Notification;
 import org.apache.ibatis.annotations.Param;
 
@@ -11,6 +12,9 @@ public interface NotificationMapper {
     // 전체 알림 조회
     List<Notification> selectAllByMemberId(@Param("memberId") String memberId,
                                            @Param("type") String type);
+
+    // 타입별 전체 카운트(항상 전체 기준, 회원별)
+    TypeCounts selectTypeCountsByMemberId(@Param("memberId") String memberId);
 
     // 하나의 알림 읽음 처리
     int updateIsRead(@Param("memberId") String memberId, @Param("notificationId") Long notificationId);

@@ -92,11 +92,11 @@ class NotificationMapperTest {
     @Order(1)
     @DisplayName("selectAllByMemberId: 회원 알림 목록 조회")
     void selectAllByMemberId() {
-        List<Notification> list = notificationMapper.selectAllByMemberId(MEMBER_ID);
+        List<Notification> list = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
         log.info("조회된 알림 개수 = {}", list.size());
 
         // 기대값: 알림이 최소 1건 이상
-        assertEquals(2, list.size());
+        assertEquals(19, list.size());
         // 모든 결과가 해당 MEMBER_ID를 가져야 함
         assertTrue(list.stream().allMatch(n -> MEMBER_ID.equals(n.getMemberId())));
     }
@@ -114,7 +114,7 @@ class NotificationMapperTest {
         assertTrue(updated >= 1);
 
         // 모든 알림이 읽음 상태인지 검증
-        List<Notification> list = notificationMapper.selectAllByMemberId(MEMBER_ID);
+        List<Notification> list = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
         assertTrue(list.stream().allMatch(Notification::isRead));
     }
 
@@ -127,12 +127,12 @@ class NotificationMapperTest {
     @DisplayName("updateIsRead: 단일 알림 읽음 처리")
     void updateIsRead() {
         // 1) 테스트 대상 알림 ID 가져오기
-        Long targetId = notificationMapper.selectAllByMemberId(MEMBER_ID).get(0).getNotificationId();
+        Long targetId = notificationMapper.selectAllByMemberId(MEMBER_ID, "").get(0).getNotificationId();
         // 2) 해당 알림 읽음 처리
         int updated = notificationMapper.updateIsRead(MEMBER_ID, targetId);
         assertEquals(1, updated);
         // 3) 다시 조회하여 isRead 값 검증
-        Notification after = notificationMapper.selectAllByMemberId(MEMBER_ID).stream()
+        Notification after = notificationMapper.selectAllByMemberId(MEMBER_ID, "").stream()
                 .filter(n -> n.getNotificationId().equals(targetId))
                 .findFirst().orElseThrow();
         assertTrue(after.isRead());
@@ -163,7 +163,7 @@ class NotificationMapperTest {
         assertEquals(1, inserted);
 
         // 삽입된 알림이 존재하는지 확인
-        boolean exists = notificationMapper.selectAllByMemberId(MEMBER_ID).stream()
+        boolean exists = notificationMapper.selectAllByMemberId(MEMBER_ID, "").stream()
                 .anyMatch(x -> "관심 매물의 시세가 변동되었습니다.".equals(x.getMessage()));
         assertTrue(exists);
     }
@@ -195,11 +195,11 @@ class NotificationMapperTest {
     @Order(6)
     @DisplayName("removeNotification: 단일 삭제")
     void removeNotification() {
-        Long targetId = notificationMapper.selectAllByMemberId(MEMBER_ID).get(0).getNotificationId();
+        Long targetId = notificationMapper.selectAllByMemberId(MEMBER_ID, "").get(0).getNotificationId();
         int deleted = notificationMapper.removeNotification(MEMBER_ID, targetId);
         assertEquals(1, deleted);
 
-        boolean stillThere = notificationMapper.selectAllByMemberId(MEMBER_ID).stream()
+        boolean stillThere = notificationMapper.selectAllByMemberId(MEMBER_ID, "").stream()
                 .anyMatch(n -> n.getNotificationId().equals(targetId));
         assertFalse(stillThere);
     }
