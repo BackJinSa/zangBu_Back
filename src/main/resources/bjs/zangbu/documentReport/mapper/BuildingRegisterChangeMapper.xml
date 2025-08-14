@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="bjs.zangbu.documentReport.mapper.BuildingRegisterChangeMapper">
+
+    <resultMap id="BRChangeMap" type="bjs.zangbu.documentReport.vo.BuildingRegisterChange">
+        <id column="id" property="id"/>
+        <result column="building_id" property="buildingId"/>
+        <result column="change_date" property="changeDate"/>
+        <result column="change_reason" property="changeReason"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="findByBuildingId" parameterType="long" resultMap="BRChangeMap">
+        SELECT *
+        FROM building_register_changes
+        WHERE building_id = #{buildingId}
+        ORDER BY change_date ASC, id ASC
+    </select>
+
+    <delete id="deleteByBuildingId" parameterType="long">
+        DELETE
+        FROM building_register_changes
+        WHERE building_id = #{buildingId}
+    </delete>
+
+    <insert id="batchInsert">
+        INSERT INTO building_register_changes (
+        building_id, change_date, change_reason, created_at
+        )
+        VALUES
+        <foreach collection="list" item="c" separator=",">
+            (#{c.buildingId}, #{c.changeDate}, #{c.changeReason}, NOW())
+        </foreach>
+    </insert>
+
+</mapper>
