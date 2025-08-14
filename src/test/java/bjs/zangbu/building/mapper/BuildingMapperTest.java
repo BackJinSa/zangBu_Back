@@ -65,6 +65,7 @@ class BuildingMapperTest {
         "담당자",                   // contactName
         "010-3333-4444",           // contactPhone
         "편의점, 주차장",           // facility
+        14.f,
         memberId,                  // memberId (FK)
         complexId                   // complexId (FK)
     );
