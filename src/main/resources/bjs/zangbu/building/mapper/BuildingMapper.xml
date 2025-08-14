@@ -45,16 +45,6 @@
         #{memberId},
         #{complexId}
         )
-
-<!--        &lt;!&ndash; Auto increment된 building_id 반환 &ndash;&gt;-->
-<!--        <selectKey-->
-<!--                resultType="Long"-->
-<!--                keyProperty="buildingId"-->
-<!--                keyColumn="building_id"-->
-<!--                order="AFTER"-->
-<!--        >-->
-<!--            SELECT LAST_INSERT_ID()-->
-<!--        </selectKey>-->
     </insert>
 
     <!-- 찜 수 증가 -->
@@ -73,21 +63,21 @@
     <update id="updateBuilding">
         UPDATE building
         <set>
-            <if test="sellerNickname != null">seller_nickname = #{sellerNickname},</if>
-            <if test="saleType != null">sale_type = #{saleType},</if>
-            <if test="price != null">price = #{price},</if>
-            <if test="deposit != null">deposit = #{deposit},</if>
-            <if test="buildingName != null">building_name = #{buildingName},</if>
-            <if test="sellerType != null">seller_type = #{sellerType},</if>
-            <if test="propertyType != null">property_type = #{propertyType},</if>
-            <if test="moveDate != null">move_date = #{moveDate},</if>
-            <if test="infoOneline != null">info_oneline = #{infoOneline},</if>
-            <if test="infoBuilding != null">info_building = #{infoBuilding},</if>
-            <if test="contactName != null">contact_name = #{contactName},</if>
-            <if test="contactPhone != null">contact_phone = #{contactPhone},</if>
-            <if test="facility != null">facility = #{facility},</if>
+            <if test="building.sellerNickname != null">seller_nickname = #{building.sellerNickname},</if>
+            <if test="building.saleType != null">sale_type = #{building.saleType},</if>
+            <if test="building.price != null">price = #{building.price},</if>
+            <if test="building.deposit != null">deposit = #{building.deposit},</if>
+            <if test="building.buildingName != null">building_name = #{building.buildingName},</if>
+            <if test="building.sellerType != null">seller_type = #{building.sellerType},</if>
+            <if test="building.propertyType != null">property_type = #{building.propertyType},</if>
+            <if test="building.moveDate != null">move_date = #{building.moveDate},</if>
+            <if test="building.infoOneline != null">info_oneline = #{building.infoOneline},</if>
+            <if test="building.infoBuilding != null">info_building = #{building.infoBuilding},</if>
+            <if test="building.contactName != null">contact_name = #{building.contactName},</if>
+            <if test="building.contactPhone != null">contact_phone = #{building.contactPhone},</if>
+            <if test="building.facility != null">facility = #{building.facility},</if>
         </set>
-        WHERE building_id = #{buildingId} AND member_id = #{memberId}
+        WHERE building_id = #{building.buildingId} AND member_id = #{memberId}
     </update>
 
     <!-- building_id로 매물 삭제 -->
@@ -115,6 +105,7 @@
         SELECT price FROM building WHERE building_id = #{buildingId}
     </select>
 
+    <!-- 필터 조건에 맞는 매물 조회 -->
     <select id="selectFilteredBuildings"
             resultType="bjs.zangbu.building.dto.response.BuildingResponse$FilteredResponse$Filtered">
         SELECT
@@ -125,7 +116,7 @@
         FALSE AS is_bookMarked
         FROM building b
         LEFT JOIN (
-        SELECT building_id, AVG(rank) AS avg_rank
+        SELECT building_id, AVG(`rank`) AS avg_rank
         FROM review
         GROUP BY building_id
         ) r ON b.building_id = r.building_id
@@ -152,25 +143,31 @@
     <!-- 필터 조건에 맞는 매물 총 개수 조회 -->
     <select id="countFilteredBuildings" resultType="long">
         SELECT COUNT(*)
-        FROM building
+        FROM building b
+        LEFT JOIN (
+        SELECT building_id, AVG(`rank`) AS avg_rank
+        FROM review
+        GROUP BY building_id
+        ) r ON b.building_id = r.building_id
         <where>
             <if test="buildingName != null and buildingName != ''">
-                AND building_name LIKE CONCAT('%', #{buildingName}, '%')
+                AND b.building_name LIKE CONCAT('%', #{buildingName}, '%')
             </if>
             <if test="saleType != null and saleType != ''">
-                AND sale_type = #{saleType}
+                AND b.sale_type = #{saleType}
             </if>
             <if test="startPrice != null">
-                AND price &gt;= #{startPrice}
+                AND b.price &gt;= #{startPrice}
             </if>
             <if test="endPrice != null">
-                AND price &lt;= #{endPrice}
+                AND b.price &lt;= #{endPrice}
             </if>
             <if test="propertyType != null and propertyType != ''">
-                AND property_type = #{propertyType}
+                AND b.property_type = #{propertyType}
             </if>
         </where>
     </select>
+
 
     <!-- 리뷰 많은 매물 Top 3 조회 -->
     <select id="selectTopReviewedBuildings" resultType="bjs.zangbu.building.dto.response.MainResponse$BuildingInfo">

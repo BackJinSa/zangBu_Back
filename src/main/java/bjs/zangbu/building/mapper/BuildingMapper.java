@@ -133,5 +133,6 @@ public interface BuildingMapper {
 
   Integer getDeposit(Long buildingId);
 
-  void updateBuilding(UpdateBuilding building, String memberId);
+  void updateBuilding(@Param("building") UpdateBuilding building,
+                      @Param("memberId") String memberId);
 }
