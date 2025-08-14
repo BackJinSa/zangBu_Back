@@ -81,7 +81,7 @@ public class SecurityConfig {
               "http://localhost:8080",
               "http://localhost:61613"
           ));
-          config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+          config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
           config.setAllowedHeaders(List.of("*"));
           config.setAllowCredentials(true);
           config.setMaxAge(3600L);

@@ -15,7 +15,7 @@ public class jwtTest {
     private static final String SECRET = "P3BW7gQhgGH0Y6eoDnbHWPair83UCGug";
 
     // 만료 시간(Access 100분, Refresh 14일)
-    private static final long ACCESS_VALID_MS  = 1000L * 60 * 100;   //테스트 위해 길게 잡음
+    private static final long ACCESS_VALID_MS  = 1000L * 60 * 1000;   //테스트 위해 길게 잡음
     private static final long REFRESH_VALID_MS = 1000L * 60 * 60 * 24 * 14;
 
     // JwtProcessor.init()과 동일한 키 생성 방식
@@ -31,10 +31,10 @@ public class jwtTest {
      */
     @Test
     void makeDevAccessToken() {
-        String email1 = "user-001";
-        String email2 = "user-002";
-        String email3 = "user-003";
-        String email4 = "user-004";
+        String email1 = "amanda.harris@example.com";
+        String email2 = "john.smith@example.com";
+        String email3 = "emily.jones@example.com";
+        String email4 = "michael.brown@example.com";
 
         String role  = "ROLE_MEMBER";
 

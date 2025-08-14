@@ -44,9 +44,9 @@ public class ChatController {
 
   @PostMapping(value = "/room/{buildingId}", produces = "application/json;charset=UTF-8")
   public ResponseEntity<ChatRoom> createChatRoom(@PathVariable Long buildingId) {
-//    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//    String consumerId = authentication.getName();  //TODO: 테스트용, 나중에 주석 취소
-    String consumerId = "094cb0e2-6cb9-4d8e-8359-5c337ef07653"; //user1
+    //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    //String consumerId = authentication.getName();  //TODO: 테스트용, 나중에 주석 취소
+    String consumerId = "7g8h9i0j-1111-2222-3333-444455556672"; //robert
 
     log.info("ChatController - createChatRoom");
     ChatRoom room = chatService.createChatRoom(buildingId, consumerId);
@@ -62,8 +62,8 @@ public class ChatController {
 //  })
 
   @GetMapping(value=  "/list",  produces = "application/json;charset=UTF-8")
-  public ResponseEntity<List<ChatResponse.ChatRoomListResponse>> getChatRoomList(
-//    @Parameter(description = "전체 or 구매 or 판매")
+  public  ResponseEntity<ChatResponse.ChatRoomListPage> getChatRoomList(
+//    @Parameter(description = "ALL" or "BUY" or "SELL")
       @RequestParam String type,
 //    @Parameter(description = "페이지 번호")
       @RequestParam int page,
@@ -73,10 +73,47 @@ public class ChatController {
 
     //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     //String userId = authentication.getName();  //TODO: 테스트하느라 주석처리함
-    String userId = "094cb0e2-6cb9-4d8e-8359-5c337ef07653"; //user1
-    List<ChatResponse.ChatRoomListResponse> roomList = chatService.getChatRoomList(userId, type,
+    String userId = "1a2b3c4d-1111-2222-3333-444455556666";
+
+    // 프론트 → 매퍼 타입 매핑
+    String mapped = switch (type) {
+      case "BUY"  -> "BUYER";
+      case "SELL" -> "SELLER";
+      default     -> "ALL";
+    };
+
+    List<ChatResponse.ChatRoomListResponse> roomList = chatService.getChatRoomList(userId, mapped,
         page, size);
-    return ResponseEntity.status(200).body(roomList);
+
+    // 전체 개수/hasNext
+    long total = chatService.countChatRoomList(userId, mapped);
+    boolean hasNext = (long) page * size < total;
+
+// 탭 카운트(선택이지만 프론트 UX 좋아짐)
+    ChatResponse.ChatRoomListPage.Counts counts = ChatResponse.ChatRoomListPage.Counts.builder()
+            .ALL(ChatResponse.ChatRoomListPage.SimpleCount.builder()
+                    .count((int) chatService.countChatRoomList(userId, "ALL"))
+                    .unread(chatService.countUnreadRooms(userId, "ALL"))
+                    .build())
+            .BUY(ChatResponse.ChatRoomListPage.SimpleCount.builder()
+                    .count((int) chatService.countChatRoomList(userId, "BUYER"))
+                    .unread(chatService.countUnreadRooms(userId, "BUYER"))
+                    .build())
+            .SELL(ChatResponse.ChatRoomListPage.SimpleCount.builder()
+                    .count((int) chatService.countChatRoomList(userId, "SELLER"))
+                    .unread(chatService.countUnreadRooms(userId, "SELLER"))
+                    .build())
+            .build();
+
+    ChatResponse.ChatRoomListPage body = ChatResponse.ChatRoomListPage.builder()
+            .items(roomList)
+            .total(total)
+            .hasNext(hasNext)
+            .counts(counts)
+            .build();
+
+
+    return ResponseEntity.ok(body);
   }
 
 // 채팅방 상세 정보 조회
@@ -131,9 +168,9 @@ public class ChatController {
   public ResponseEntity<Void> leaveChatRoom(
 //    @Parameter(description = "나갈 채팅방 id")
       @PathVariable String roomId) {
-//    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//    String userId = authentication.getName();
-    String userId = "094cb0e2-6cb9-4d8e-8359-5c337ef07653"; //user1
+    //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    //String userId = authentication.getName();
+    String userId = "1a2b3c4d-1111-2222-3333-444455556666";
 
     chatService.leaveChatRoom(roomId, userId);
     return ResponseEntity.status(204).build();
@@ -152,9 +189,9 @@ public class ChatController {
   public ResponseEntity<Void> markAsRead(
 //    @Parameter(description = "채팅방 ID")
       @PathVariable String roomId) {
-//    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//    String userId = authentication.getName();
-    String userId = "094cb0e2-6cb9-4d8e-8359-5c337ef07653"; //user1
+    //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+   //String userId = authentication.getName();
+    String userId = "1a2b3c4d-1111-2222-3333-444455556666";
     log.info("ChatController - markAsRead");
 
     chatService.markAsRead(roomId, userId);

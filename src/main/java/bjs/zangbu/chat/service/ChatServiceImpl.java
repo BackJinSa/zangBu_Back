@@ -72,6 +72,7 @@ public class ChatServiceImpl implements ChatService{
                 .message(message.getMessage())
                 .sendNickname(senderNickname)
                 .createdAt(formattingCreatedAt(message.getCreatedAt()))
+                .senderId(senderId)
                 .build();
     }
 
@@ -97,46 +98,49 @@ public class ChatServiceImpl implements ChatService{
     //사용자(userId)가 참여하고 있는 채팅방 목록 가져오기
     @Override
     public List<ChatResponse.ChatRoomListResponse> getChatRoomList(String userId, String type, int page, int size) {
-        
-        int offset = (page - 1) * size;
-        if (offset < 0) offset = 0;
+        int offset = Math.max(0, (page - 1) * size);
 
-        log.info("[getChatRoomList] userId={}, type={}, page={}, size={}, offset={}",
-                userId, type, page, size, offset);
-
-        //채팅방 목록 조회
         List<ChatRoom> chatRooms = chatMapper.selectChatRoomList(userId, type, offset, size);
-
-        //응답 DTO 리스트 생성
         List<ChatResponse.ChatRoomListResponse> result = new ArrayList<>();
 
         for (ChatRoom room : chatRooms) {
             String chatRoomId = room.getChatRoomId();
-            log.info("for문 안쪽: " + room);
-            //채팅방의 안 읽은 메시지 수 조회
-            int unreadCount = chatMapper.countUnreadMessages(chatRoomId, userId);
 
-            //마지막 메시지 조회
+            int unreadCount = chatMapper.countUnreadMessages(chatRoomId, userId);
             ChatMessage lastMessage = chatMapper.selectLastMessageByRoomId(chatRoomId);
 
-            //대화 상대방 닉네임 조회
+            // 현재 사용자 관점의 반대편 닉네임
             String otherNickname = userId.equals(room.getConsumerId())
                     ? room.getSellerNickname()
                     : room.getConsumerNickname();
+
+            // BUY/SELL 판정
+            String roomType = userId.equals(room.getConsumerId()) ? "BUY" : "SELL";
 
             result.add(ChatResponse.ChatRoomListResponse.builder()
                     .chatRoomId(chatRoomId)
                     .buildingName(room.getBuildingName())
                     .lastMessage(lastMessage != null ? lastMessage.getMessage() : null)
                     .lastMessageTime(lastMessage != null ? formattingCreatedAt(lastMessage.getCreatedAt()) : null)
-                    .otherUserNickname(otherNickname)
+                    .otherUserNickname(otherNickname)    // 프론트 명세
                     .status(room.getStatus())
                     .sellerType(room.getSellerType())
-                    .hasNext(chatRooms.size() == size) // 페이지 사이즈와 같으면 다음 있음
                     .unreadCount(unreadCount)
+                    .type(roomType)                   // 프론트 색 구분
+                    .price(room.getPrice())           // SQL에서 SELECT 필요 매물 가격 필요
                     .build());
         }
         return result;
+    }
+
+    @Override
+    public long countChatRoomList(String userId, String type) {
+        return chatMapper.countChatRoomList(userId, type);
+    }
+
+    @Override
+    public int countUnreadRooms(String userId, String type) {
+        return chatMapper.countUnreadRooms(userId, type);
     }
 
     //채팅방 유무 확인 - 채팅방 중복 생성 방지
@@ -150,16 +154,6 @@ public class ChatServiceImpl implements ChatService{
     @Transactional
     public ChatRoom createChatRoom(Long buildingId, String consumerId) {
         ChatRoom existingChatRoom = chatMapper.existsChatRoom(buildingId, consumerId);
-
-        log.info("ChatServiceImpl - createChatRoom");
-        //채팅방 이미 존재하는지 확인
-        if (existingChatRoom != null) {
-            log.info("ChatServiceImpl - createChatRoom: 이미 존재: " + existingChatRoom.getChatRoomId());
-            //TODO: building, deal 가져와서 null값들 넣어줘야함
-            return existingChatRoom;
-        }
-
-        log.info("ChatServiceImpl - createChatRoom : 채팅방 존재x : buildingId는 " + buildingId);
 
         Building building = buildingMapper.getBuildingById(buildingId);
 
@@ -179,10 +173,16 @@ public class ChatServiceImpl implements ChatService{
             throw new IllegalArgumentException("본인 소유의 건물입니다.");
         }
 
+        //채팅방 이미 존재하는지 확인
+        if (existingChatRoom != null) {
+            log.info("ChatServiceImpl - createChatRoom: 이미 존재: " + existingChatRoom.getChatRoomId());
+            ChatRoom existingChatRoomDetail = chatMapper.selectChatRoomById(existingChatRoom.getChatRoomId());
+            return existingChatRoomDetail;
+        }
+
         // 모든 정보가 확인되었을 때만 채팅방 생성
         if (consumerNickname != null && sellerNickname != null) {
             String uuid = UUID.randomUUID().toString();
-            log.info("uuid: " + uuid);
             ChatRoom newChatRoom = ChatRoom.builder()
                     .chatRoomId(uuid)
                     .buildingId(buildingId)
@@ -248,6 +248,16 @@ public class ChatServiceImpl implements ChatService{
         String memberId = chatMapper.selectMemberIdByNickname(nickname);
         if (memberId == null) {
             throw new IllegalArgumentException(nickname + "을(를) 닉네임으로 하는 사용자를 찾지 못했습니다.");
+        }
+
+        return memberId;
+    }
+
+    @Override
+    public String getUserIdByEmail(String email) {
+        String memberId = chatMapper.selectMemberIdByEmail(email);
+        if (memberId == null) {
+            throw new IllegalArgumentException(email + "을(를) 이메일로 하는 사용자를 찾지 못했습니다.");
         }
 
         return memberId;

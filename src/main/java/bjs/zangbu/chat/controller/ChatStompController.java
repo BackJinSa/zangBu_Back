@@ -5,7 +5,9 @@ import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.service.ChatService;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
+import bjs.zangbu.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -15,11 +17,13 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 
+@Log4j2
 @Controller
 @RequiredArgsConstructor
 public class ChatStompController {  //WebSocket 메시지 수신 컨트롤러
 
     private final ChatService chatService;
+    private final MemberService memberService;
     //서버에서 클라이언트로 STOMP 메시지를 보낼 때 사용하는 도구
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -36,7 +40,9 @@ public class ChatStompController {  //WebSocket 메시지 수신 컨트롤러
         if (principal == null) {
             throw new IllegalArgumentException("인증된 사용자 정보가 없습니다.");
         }
-        String senderId = principal.getName();
+        String senderEmail = principal.getName();
+        String senderId = chatService.getUserIdByEmail(senderEmail);
+        log.info("senderId(member_id): " + senderId);
 
         // 받은 메시지 DB에 저장 -> 클라이언트에게 보낼 메시지 형태인 응답 DTO(SendMessageResponse)로 가공
         ChatResponse.SendMessageResponse response = chatService.sendMessage(senderId, roomId, request);

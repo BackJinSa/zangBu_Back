@@ -27,6 +27,12 @@ public interface ChatMapper {
                                       @Param("offset") int offset,
                                       @Param("size") int size);
 
+    long countChatRoomList(@Param("userId") String userId,
+                           @Param("type") String type);
+
+    int countUnreadRooms(@Param("userId") String userId,
+                         @Param("type") String type);
+
     //채팅방 유무 확인(하나의 매물 + 구매자 당 하나의 채팅방이므로 중복 생성 방지용)
     ChatRoom existsChatRoom(@Param("buildingId") Long buildingId,
                             @Param("consumerId") String consumerId);
@@ -52,11 +58,15 @@ public interface ChatMapper {
     //채팅방의 안 읽은 메시지 수 조회
     int countUnreadMessages(@Param("chatRoomId") String chatRoomId,
                             @Param("userId") String userId);
-    
-    //닉네임으로 아이디 가져오기
-    String selectMemberIdByNickname(String nickname);
 
     //메시지 읽음 처리
     int markMessagesAsRead(@Param("chatRoomId") String chatRoomId,
                            @Param("userId") String userId);
+
+    //멤버로 옮기기.?
+    //닉네임으로 아이디 가져오기
+    String selectMemberIdByNickname(String nickname);
+
+    //이메일로 아이디 가져오기
+    String selectMemberIdByEmail(String email);
 }
