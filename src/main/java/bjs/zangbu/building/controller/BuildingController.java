@@ -1,6 +1,4 @@
 package bjs.zangbu.building.controller;
-
-import bjs.zangbu.building.dto.request.BuildingRequest;
 import bjs.zangbu.building.dto.request.BuildingRequest.*;
 import bjs.zangbu.building.dto.response.BuildingResponse.FilteredResponse;
 import bjs.zangbu.building.dto.response.BuildingResponse.ViewDetailResponse;
@@ -56,7 +54,7 @@ public class BuildingController {
           @RequestParam(value = "size", defaultValue = "10") int size,
           @ApiIgnore @AuthenticationPrincipal CustomUser user
   ) {
-    if (user == null || user.getMember() == null) {
+    if (user == null || user.getMember().getMemberId() == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다.");
     }
     String memberId = user.getMember().getMemberId();
@@ -83,7 +81,7 @@ public class BuildingController {
           @PathVariable("buildingId") Long buildingId,
           @ApiIgnore @AuthenticationPrincipal CustomUser user
   ) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-    if (user == null || user.getMember() == null) {
+    if (user == null || user.getMember().getMemberId() == null) {
       ViewDetailResponse response1 = buildingService.BuildingDetailWithoutMemberId(buildingId);
       return ResponseEntity.ok(response1);
     }
@@ -114,9 +112,11 @@ public class BuildingController {
           @RequestPart("identity") String identity,
           @ApiIgnore @AuthenticationPrincipal CustomUser user
   ) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-    if (user == null || user.getMember() == null) {
+    if (user == null || user.getMember().getMemberId() == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다.");
     }
+
+    System.out.println(identity);
     String memberId = user.getMember().getMemberId();
     ImageDetailsList imageList = new ImageDetailsList();
     imageList.setImages(
@@ -143,7 +143,7 @@ public class BuildingController {
           @PathVariable("buildingId") Long buildingId,
           @ApiIgnore @AuthenticationPrincipal CustomUser user
   ) {
-    if (user == null || user.getMember() == null) {
+    if (user == null || user.getMember().getMemberId() == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다.");
     }
     buildingService.removeBuilding(buildingId);
@@ -164,7 +164,7 @@ public class BuildingController {
           @RequestBody BookmarkRequest request,
           @ApiIgnore @AuthenticationPrincipal CustomUser user
   ) {
-    if (user == null || user.getMember() == null) {
+    if (user == null || user.getMember().getMemberId() == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다.");
     }
     String memberId = user.getMember().getMemberId();
@@ -186,7 +186,7 @@ public class BuildingController {
           @PathVariable("buildingId") Long buildingId,
           @ApiIgnore @AuthenticationPrincipal CustomUser user
   ) {
-    if (user == null || user.getMember() == null) {
+    if (user == null || user.getMember().getMemberId() == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다.");
     }
     String memberId = user.getMember().getMemberId();
@@ -200,7 +200,7 @@ public class BuildingController {
           @RequestBody UpdateBuilding request,
           @ApiIgnore @AuthenticationPrincipal CustomUser user
   ) {
-    if (user == null || user.getMember() == null) {
+    if (user == null || user.getMember().getMemberId() == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인 정보가 없습니다.");
     }
     String memberId = user.getMember().getMemberId();
