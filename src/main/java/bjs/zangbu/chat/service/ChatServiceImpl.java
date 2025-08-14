@@ -169,7 +169,6 @@ public class ChatServiceImpl implements ChatService{
         log.info("ChatServiceImpl - createChatRoom: 구매자닉네임: " + consumerNickname + ", 판매자: " + sellerNickname);
 
         if(consumerId.equals(building.getMemberId())) {
-            log.info("본인 소유의 건물");
             throw new IllegalArgumentException("본인 소유의 건물입니다.");
         }
 
