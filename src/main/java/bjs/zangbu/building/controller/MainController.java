@@ -3,6 +3,7 @@ package bjs.zangbu.building.controller;
 import bjs.zangbu.building.dto.response.MainResponse;
 import bjs.zangbu.building.dto.response.MainResponse.MainPageResponse;
 import bjs.zangbu.building.service.MainService;
+import bjs.zangbu.security.account.vo.CustomUser;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -49,16 +50,16 @@ public class MainController {
           @ApiResponse(code = 500, message = "서버 오류로 인한 메인 페이지 정보 조회 실패")
   })
   @GetMapping("")
-  public ResponseEntity<?> mainPage(@ApiIgnore @AuthenticationPrincipal UserDetails userDetails) {
+  public ResponseEntity<?> mainPage(@ApiIgnore @AuthenticationPrincipal CustomUser user) {
     try {
       // 인증된 사용자 ID 추출
-      String memberId = userDetails.getUsername();
+      String memberId = user.getMember().getMemberId();
 
       // 메인 페이지 정보 조회 서비스 호출
       MainPageResponse response = mainService.mainPage(memberId);
 
       // 성공 메시지 및 200 OK 반환
-      return ResponseEntity.ok().body("메인 페이지를 불러오는데 성공했습니다.");
+      return ResponseEntity.ok().body(response);
     } catch (IllegalArgumentException e) {
       // 데이터가 없을 경우 404 Not Found 반환
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body("메인 페이지를 불러오는데 실패했습니다.");

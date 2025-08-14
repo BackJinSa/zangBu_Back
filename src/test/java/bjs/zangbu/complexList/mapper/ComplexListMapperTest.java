@@ -46,7 +46,7 @@ class ComplexListMapperTest {
         null,                // complexId (selectKey로 세팅 기대)
         "APT",               // resType
         "테스트단지",          // complexName
-        987654L,              // complexNo
+        "11230103001448265",              // complexNo
         "서울",               // sido
         "강남구",             // sigungu
         "11110",             // siCode
@@ -97,7 +97,7 @@ class ComplexListMapperTest {
     Long buildingId = insertBuildingByJdbc(memberId, complexId, "판매자", "TRADING");
 
     // when
-    Long complexNo = complexListMapper.getComplexNoByBuildingId(buildingId);
+    String complexNo = complexListMapper.getComplexNoByBuildingId(buildingId);
 
     // then
     assertNotNull(complexNo);

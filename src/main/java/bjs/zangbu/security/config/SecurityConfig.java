@@ -96,34 +96,35 @@ public class SecurityConfig {
 
         // 권한 설정
         .authorizeHttpRequests(auth -> auth
-                // 기본 및 테스트 URL
-                .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/index.html")).permitAll()
+            // 기본 및 테스트 URL
+            .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/index.html")).permitAll()
 
-                // Swagger 관련 경로 허용 (Springfox 기준)
-                .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/v2/api-docs")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
+            // Swagger 관련 경로 허용 (Springfox 기준)
+            .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html/**")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/v2/api-docs")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
 
-                // 정적 리소스 허용 (필요시)
-                .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
+            // 정적 리소스 허용 (필요시)
+            .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
 
-                // auth 엔트 포인트
-                .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-                // 보안 API 경로 설정
-                .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
-                .requestMatchers(new AntPathRequestMatcher("/security/member"))
-                .hasAnyRole("ADMIN", "MEMBER")
+            // auth 엔트 포인트
+            .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+            // 보안 API 경로 설정
+            .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
+            .requestMatchers(new AntPathRequestMatcher("/security/member"))
+            .hasAnyRole("ADMIN", "MEMBER")
 
-//                .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
-//                .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()
 
-                // 그 외 요청은 인증 필요
-                .anyRequest().authenticated()
+            // 그 외 요청은 인증 필요
+            .anyRequest().authenticated()
         );
 
     return http.build();

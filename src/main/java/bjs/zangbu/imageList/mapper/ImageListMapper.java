@@ -3,6 +3,8 @@ package bjs.zangbu.imageList.mapper;
 import bjs.zangbu.imageList.vo.ImageList;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 /**
  * 이미지 관련 DB 매핑 인터페이스 (MyBatis Mapper)
  * 이미지 정보 등록 및 대표 이미지 조회 기능을 담당합니다.
@@ -24,4 +26,7 @@ public interface ImageListMapper {
      * @return 대표 이미지 URL 문자열
      */
     String representativeImage(Long buildingId);
+
+
+    List<String> getBuildingImageUrl(Long buildingId);
 }

@@ -2,6 +2,8 @@ package bjs.zangbu.imageList.service;
 
 import bjs.zangbu.imageList.vo.ImageList;
 
+import java.util.List;
+
 /**
  * 이미지 관련 서비스 인터페이스
  */
@@ -21,4 +23,6 @@ public interface ImageListService {
      * @return 대표 이미지 URL 문자열
      */
     String representativeImage(Long buildingId);
+
+    List<String> getBuildingImageUrll(Long buildingId);
 }

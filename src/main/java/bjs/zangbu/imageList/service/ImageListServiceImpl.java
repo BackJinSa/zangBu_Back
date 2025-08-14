@@ -5,6 +5,8 @@ import bjs.zangbu.imageList.vo.ImageList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * 이미지 관련 비즈니스 로직을 처리하는 서비스 구현체
  */
@@ -34,5 +36,10 @@ public class ImageListServiceImpl implements ImageListService {
     @Override
     public String representativeImage(Long buildingId) {
         return imageListMapper.representativeImage(buildingId);
+    }
+
+    @Override
+    public List<String> getBuildingImageUrll(Long buildingId) {
+        return  imageListMapper.getBuildingImageUrl(buildingId);
     }
 }

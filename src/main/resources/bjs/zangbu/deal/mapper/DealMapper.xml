@@ -207,27 +207,27 @@
   <!--    등기부등본 조회에 필요한 정보 가져오기 -->
   <select id="getEstateRegistrationRequest"
     resultType="bjs.zangbu.deal.dto.request.EstateRegistrationRequest">
-    SELECT d.deal_id,
-           m.phone,
-           m.birth,
-           cl.sido,
-           cl.address,
-           cl.sigungu,
-           cl.dong,
-           cl.ho,
-           cl.roadName
-    FROM deal d
-           JOIN member m ON m.member_id = d.member_id
-           JOIN complex_list cl ON cl.complex_id = d.complex_id
-           JOIN building b ON d.building_id = b.building_id
-    WHERE d.deal_id = #{dealId}
+      SELECT
+          b.building_id   AS buildingId,   -- ★ DTO 필드 추가 반영
+          m.phone         AS phone,
+          m.birth         AS birth,
+          cl.sido         AS sido,
+          cl.address      AS address,      -- 필요 시 CONCAT으로 도로명 주소 구성
+          cl.sigungu      AS sigungu,
+          cl.dong         AS dong,
+          cl.ho           AS ho,
+          cl.roadName     AS roadName
+      FROM building b
+               JOIN member m ON m.member_id = b.member_id
+               JOIN complex_list cl ON cl.complex_id = b.complex_id
+      WHERE b.buildingId = #{buildingId}
   </select>
   <!--    건축물대장 조회에 필요한 정보 가져오기 -->
   <select id="getDocumentInfo"
     resultType="bjs.zangbu.deal.dto.join.DealDocumentInfo">
-    SELECT d.deal_id,
-           m.identity,
-           m.birth,
+    SELECT b.building_id ,
+           m.identity ,
+           m.birth ,
            m.phone,
            m.name,
            m.telecom,
@@ -235,11 +235,10 @@
            cl.zonecode,
            cl.dong,
            cl.ho
-    FROM deal d
-           JOIN member m ON m.member_id = d.member_id
-           JOIN complex_list cl ON cl.complex_id = d.complex_id
-           JOIN building b ON d.building_id = b.building_id
-    WHERE d.deal_id = #{dealId}
+    FROM building b
+           JOIN member m ON m.member_id = b.member_id
+           JOIN complex_list cl ON cl.complex_id = b.complex_id
+    WHERE b.buildingId = #{buildingId}
   </select>
 
 
