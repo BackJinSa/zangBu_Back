@@ -18,7 +18,7 @@ public class Bookmark {
     // 빌딩 식별자(BIGINT)
     private Long buildingId;
     // 유저 식별자(UUID)
-    private String userId;
+    private String memberId;
     // 주소 식별자(BIGINT)
     private Long addressId;
     // 단지 식별자(BIGINT)

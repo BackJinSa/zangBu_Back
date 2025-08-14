@@ -1,9 +1,7 @@
 package bjs.zangbu.codef.controller;
-
 import bjs.zangbu.codef.converter.CodefConverter;
 import bjs.zangbu.codef.dto.request.CodefRequest.AddressRequest;
 import bjs.zangbu.codef.dto.request.CodefRequest.secureNoRequest;
-import bjs.zangbu.codef.dto.response.CodefResponse.ComplexResponse;
 import bjs.zangbu.codef.service.CodefService;
 import bjs.zangbu.codef.service.CodefTwoFactorService;
 import bjs.zangbu.security.account.dto.request.AuthRequest;
@@ -17,7 +15,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import lombok.*;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
 import org.springframework.http.MediaType;
@@ -112,16 +109,26 @@ public class CodefController {
           @RequestBody AddressRequest request) throws
           JsonProcessingException, InterruptedException, UnsupportedEncodingException {
     String resTypeJson = codefService.justListInquiry(request);
+    List<Map<String, Object>> dataList = CodefConverter.parseDataToDto(resTypeJson, List.class);
 
-    ComplexResponse complexResponse = CodefConverter.parseDataToDto(resTypeJson,
-            ComplexResponse.class);
-    List<ComplexResponse.ComplexInfo> complexInfoList = complexResponse.getData();
+    if (dataList == null) {
+      Map<String, String> response = new HashMap<>();
+      response.put("complexNo", "조회된 데이터가 없습니다.");
+      return ResponseEntity.ok(response);
+    }
+
     String targetComplexName = request.getBuildingName();
-
-    String matchingComplexNo = complexInfoList.stream()
-            .filter(info -> info.getResComplexName().equals(targetComplexName))
+    System.out.println(dataList);
+    String matchingComplexNo = dataList.stream()
+            .filter(infoMap -> {
+              Object complexNameObj = infoMap.get("resComplexName");
+              if (complexNameObj instanceof String) {
+                return ((String) complexNameObj).contains(targetComplexName);
+              }
+              return false;
+            })
             .findFirst()
-            .map(ComplexResponse.ComplexInfo::getCommComplexNo)
+            .map(infoMap -> (String) infoMap.get("commComplexNo"))
             .orElse("일치하는 complexNo를 찾을 수 없습니다.");
 
     Map<String, String> response = new HashMap<>();

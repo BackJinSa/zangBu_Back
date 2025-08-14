@@ -125,10 +125,10 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/chat/**")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
-                                // 그 외 요청은 인증 필요
+                .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()
+// 그 외 요청은 인증 필요
                         .anyRequest().authenticated()
                 );
-
         return http.build();
     }
 }
