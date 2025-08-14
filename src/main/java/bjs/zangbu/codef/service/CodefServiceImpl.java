@@ -268,7 +268,19 @@ public class CodefServiceImpl implements CodefService {
     map.put("addrSido", request.getComplexList().getSido());
     map.put("addrSigungu",request.getComplexList().getSigungu());
     map.put("addrRoadName",request.getComplexList().getRoadName());
-    map.put("addrBuildingNumber", request.getComplexList().getAddress().substring(18));
+    // 1. 전체 주소를 가져옵니다. (예: "서울특별시 강남구 테헤란로 123")
+    String fullAddress = request.getComplexList().getAddress();
+
+    // 2. 주소에서 마지막 공백의 위치를 찾습니다.
+    int lastSpaceIndex = fullAddress.lastIndexOf(" ");
+
+    String buildingNumber = ""; // 기본값
+    // 3. 공백이 발견되었을 경우, 그 위치 다음부터 끝까지 잘라내 건물번호를 추출합니다.
+    if (lastSpaceIndex != -1) {
+      buildingNumber = fullAddress.substring(lastSpaceIndex + 1); // "+ 1"은 공백 자체를 제외하기 위함
+    }
+
+    map.put("addrBuildingNumber", buildingNumber); // 추출한 건물번호를 맵에 추가
     map.put("electronicClosedYN", "0");
     map.put("dong", request.getComplexList().getDong());
     map.put("ho",  request.getComplexList().getHo());

@@ -96,23 +96,23 @@ public class BuildingServiceImpl implements BuildingService {
     @Override
     @Transactional
     public void SaleRegistration(SaleRegistrationRequest request, String memberId) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-//        String codefResponse1 = codefService.realEstateRegistrationAddressSearch(request);
-//        log.info(PrettyJsonFormatter.toPrettyJson(codefResponse1));
-//        // CODEF 응답 JSON에서 'data' 필드를 Map으로 파싱
-//        Map<String, Object> dataMap = CodefConverter.parseDataToDto(codefResponse1, Map.class);
-//
-//        // Map에서 "commUniqueNo" 값을 추출
-//        String authenticity = (String) dataMap.get("commUniqueNo");
-//
-//        String codefResponse2 = codefService.RealEstateRegistrationRegister(authenticity, request.getIdentity());
-//
-//        Map<String, Object> dataMap2 = CodefConverter.parseDataToDto(codefResponse2, Map.class);
-//
-//        String resMatchYN = (String) dataMap2.get("resMatchYN");
-//
-//        if(!resMatchYN.equals("1")) {
-//            return;
-//        }
+        String codefResponse1 = codefService.realEstateRegistrationAddressSearch(request);
+        System.out.println(codefResponse1);
+        // CODEF 응답 JSON에서 'data' 필드를 Map으로 파싱
+        Map<String, Object> dataMap = CodefConverter.parseDataToDto(codefResponse1, Map.class);
+        System.out.println(dataMap);
+        // Map에서 "commUniqueNo" 값을 추출
+        String authenticity = (String) dataMap.get("commUniqueNo");
+        System.out.println(authenticity);
+        String codefResponse2 = codefService.RealEstateRegistrationRegister(authenticity, request.getIdentity());
+        System.out.println(codefResponse2);
+        Map<String, Object> dataMap2 = CodefConverter.parseDataToDto(codefResponse2, Map.class);
+        System.out.println(dataMap2);
+        String resMatchYN = (String) dataMap2.get("resMatchYN");
+        System.out.println(resMatchYN);
+        if(!resMatchYN.equals("1")) {
+            return;
+        }
         // complex 저장
         ComplexList complex = ComplexDetails.toVo(request.getComplexList());
         Long complexId = complexListService.createComplexList(complex);
