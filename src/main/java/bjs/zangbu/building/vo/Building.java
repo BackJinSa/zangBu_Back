@@ -42,6 +42,9 @@ public class Building {
     private String contactPhone;
     // 제공되는 시설 정보 (예: 엘리베이터, 주차장, 보안 등)
     private String facility;
+    // 매물 면적 정보
+    private float size;
+
     // 외래키
     // 유저 식별자(UUID)
     private String memberId;

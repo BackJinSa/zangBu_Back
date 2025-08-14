@@ -18,7 +18,7 @@ public class JwtProcessor {
     @Value("${jwt.secret}")
     private String secretKeyPlain;
 
-    private final long accessTokenValidMs = 1000L * 60 * 2;       // 2분
+    private final long accessTokenValidMs = 1000L * 60 * 2 * 100;       // 2분
     private final long refreshTokenValidMs = 1000L * 60 * 60 * 24 * 14; // 14일
 
     private Key key;

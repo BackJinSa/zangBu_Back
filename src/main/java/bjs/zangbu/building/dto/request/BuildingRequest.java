@@ -149,6 +149,7 @@ public class BuildingRequest {
 //       @Schema(description = "편의시설 및 주변 시설 정보", example = "지하철 3분, 도서관 도보 5분 거리")
         private String facility;              // 편의시설 및 주변 시설 정보
 
+        private float size;
         /**
          * DTO → VO 변환 메서드
          *
@@ -175,6 +176,7 @@ public class BuildingRequest {
                     request.getContactName(),
                     request.getContactPhone(),
                     request.getFacility(),
+                    request.getSize(),
                     memberId,
                     complexId
             );
