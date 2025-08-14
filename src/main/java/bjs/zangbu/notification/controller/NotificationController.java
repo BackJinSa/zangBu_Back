@@ -50,7 +50,8 @@ public class NotificationController {
           @ApiIgnore
           @AuthenticationPrincipal CustomUser userDetails,
           @RequestParam(defaultValue = "1") int page,         // 요청 페이지 (1부터 시작)
-          @RequestParam(defaultValue = "10") int size         // 페이지당 항목 수
+          @RequestParam(defaultValue = "10") int size,         // 페이지당 항목 수
+          @RequestParam(required = false) String type     // BUILDING | TRADE | REVIEW | null(전체)
   ) {
     try {
       // 유저 ID를 받아온다.
@@ -60,7 +61,7 @@ public class NotificationController {
       PageHelper.startPage(page, size);
 
       // 3. 서비스 호출 (PagedResponse<NotificationElement> 포함된 DTO 반환)
-      NotificationAll response = notificationService.getAllNotifications(memberId);
+      NotificationAll response = notificationService.getAllNotifications(memberId, type);
 
       // 성공 : 전체 알림 리스트/페이지네이션 정보 반환
       return ResponseEntity.status(HttpStatus.OK).body(response);

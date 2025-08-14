@@ -4,13 +4,36 @@ import bjs.zangbu.notification.vo.Notification;
 import bjs.zangbu.notification.vo.Type;
 import com.github.pagehelper.PageInfo;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 public class NotificationResponse {
+
+  /** 타입별 전체 개수용 내부 DTO (Mapper에서 바로 매핑받음) */
+  @Getter
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class TypeCounts {
+    private long all;       // 전체
+    private long building;  // BUILDING
+    private long trade;     // TRADE
+    private long review;    // REVIEW
+
+    /** 프론트에 주기 편하게 Map 형태로 변환 */
+    public Map<String, Long> toMap() {
+      Map<String, Long> m = new HashMap<>();
+      m.put("ALL", all);
+      m.put("BUILDING", building);
+      m.put("TRADE", trade);
+      m.put("REVIEW", review);
+      return m;
+    }
+  }
 
   /**
    * 전체 알림 리스트 응답 Response /notification/all
@@ -20,36 +43,37 @@ public class NotificationResponse {
   @AllArgsConstructor
   public static class NotificationAll {
 
-    //         @Schema(description = "요청 페이지 번호 (1부터 시작)", example = "1")
+    // @Schema(description = "요청 페이지 번호 (1부터 시작)", example = "1")
     private int pageNum;
-    //
-//     @Schema(description = "페이지당 알림 개수", example = "10")
+    // @Schema(description = "페이지당 알림 개수", example = "10")
     private int pageSize;
-    //
-//     @Schema(description = "전체 알림 개수", example = "42")
+    // @Schema(description = "전체 알림 개수", example = "42")
     private long totalElements;
-    //
-//     @Schema(description = "전체 페이지 수", example = "5")
+    // @Schema(description = "전체 페이지 수", example = "5")
     private int totalPages;
-    //
-//     @Schema(description = "알림 목록")
+    // @Schema(description = "알림 목록")
     private List<NotificationElement> notifications;
 
-    // PageInfo<Notification> → DTO로 변환
-    public static NotificationAll toDto(PageInfo<Notification> pageInfo) {
-      List<NotificationElement> notificationList = pageInfo.getList().stream()
-          .map(notification -> NotificationElement.toDto(notification))
-          .collect(Collectors.toList());
+    // 타입별 전체 개수 (항상 전체 테이블 기준)
+    private Map<String, Long> filterCounts;
 
+    // PageInfo<Notification> → DTO로 변환
+    // 목록 + 타입별 전체 카운트 동시 포함
+    public static NotificationAll toDto(PageInfo<Notification> pageInfo, TypeCounts counts) {
+      List<NotificationElement> list = pageInfo.getList().stream()
+              .map(NotificationElement::toDto)
+              .collect(Collectors.toList());
       return new NotificationAll(
-          pageInfo.getPageNum(),
-          pageInfo.getPageSize(),
-          pageInfo.getTotal(),
-          pageInfo.getPages(),
-          notificationList
+              pageInfo.getPageNum(),
+              pageInfo.getPageSize(),
+              pageInfo.getTotal(),
+              pageInfo.getPages(),
+              list,
+              counts != null ? counts.toMap() : null
       );
     }
   }
+
 
 
   /* ========================================================= */
