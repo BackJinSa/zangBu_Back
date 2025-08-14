@@ -6,7 +6,7 @@ public interface ContractService {
 
   public String getContractPdf(Long dealId);
 
-  DealResponse.Download getEstateRegisternPdf(Long dealId) throws Exception;
+  DealResponse.Download getEstateRegisternPdf(Long buildingId) throws Exception;
 
-  DealResponse.Download getBuildingRegisterPdf(Long dealId) throws Exception;
+  DealResponse.Download getBuildingRegisterPdf(Long buildingId) throws Exception;
 }

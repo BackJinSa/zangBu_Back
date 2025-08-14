@@ -244,22 +244,22 @@ public class DealController {
   /**
    * 등기/건축 서류 다운로드
    *
-   * @param dealId 매물 ID
-   * @param type   문서 종류 (예: BUILDING_REGISTER, ARCHITECTURE 등)
+   * @param buildingId 매물 ID
+   * @param type       문서 종류 (예: BUILDING_REGISTER, ARCHITECTURE 등)
    * @return PDF 다운로드 링크
    */
-  @ApiOperation(value = "등기/건축 서류 다운로드", notes = "거래 ID와 문서 유형을 기반으로 등기 또는 건축 서류 PDF 파일을 다운로드합니다.", response = Download.class)
-  @GetMapping("/consumer/documents/{dealId}/{type}/download")
+  @ApiOperation(value = "등기/건축 서류 다운로드", notes = "매물 ID와 문서 유형을 기반으로 등기 또는 건축 서류 PDF 파일을 다운로드합니다.", response = Download.class)
+  @GetMapping("/consumer/documents/{buildingId}/{type}/download")
   public ResponseEntity<?> downloadDocument(
-      @ApiParam(value = "거래 ID", example = "123")
-      @PathVariable Long dealId,
+      @ApiParam(value = "매물 ID", example = "123")
+      @PathVariable Long buildingId,
       @ApiParam(value = "문서 타입")
       @PathVariable DocumentType type) throws Exception {
     // TODO: 중복 로직 정리 해야 함 , 그 후 스웨거 적용
     if (type == DocumentType.ESTATE) {
-      return ResponseEntity.ok(contractService.getEstateRegisternPdf(dealId));
+      return ResponseEntity.ok(contractService.getEstateRegisternPdf(buildingId));
     } else if (type == DocumentType.BUILDING_REGISTER) {
-      return ResponseEntity.ok(contractService.getBuildingRegisterPdf(dealId));
+      return ResponseEntity.ok(contractService.getBuildingRegisterPdf(buildingId));
     }
     return null;
   }
