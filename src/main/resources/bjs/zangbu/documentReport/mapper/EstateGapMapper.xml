@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="bjs.zangbu.documentReport.mapper.EstateGapMapper">
+
+    <resultMap id="EstateGapMap" type="bjs.zangbu.documentReport.vo.EstateGap">
+        <id column="id" property="id"/>
+        <result column="building_id" property="buildingId"/>
+        <result column="rank_no" property="rankNo"/>
+        <result column="rank_order" property="rankOrder"/>
+        <result column="purpose" property="purpose"/>
+        <result column="receipt" property="receipt"/>
+        <result column="cause" property="cause"/>
+        <result column="holder_name" property="holderName"/>
+        <result column="holder_regno_masked" property="holderRegnoMasked"/>
+        <result column="holder_address" property="holderAddress"/>
+        <result column="price_if_any" property="priceIfAny"/>
+        <result column="notes_raw" property="notesRaw"/>
+        <result column="created_at" property="createdAt"/>
+    </resultMap>
+
+    <select id="findByBuildingId" parameterType="long" resultMap="EstateGapMap">
+        SELECT *
+        FROM estate_gap
+        WHERE building_id = #{buildingId}
+        ORDER BY CASE WHEN rank_order IS NULL THEN 1 ELSE 0 END,
+                 rank_order ASC, id ASC
+    </select>
+
+    <delete id="deleteByBuildingId" parameterType="long">
+        DELETE
+        FROM estate_gap
+        WHERE building_id = #{buildingId}
+    </delete>
+
+    <insert id="batchInsert">
+        INSERT INTO estate_gap (
+        building_id, rank_no, rank_order, purpose, receipt, cause,
+        holder_name, holder_regno_masked, holder_address, price_if_any,
+        notes_raw, created_at
+        )
+        VALUES
+        <foreach collection="list" item="e" separator=",">
+            (
+            #{e.buildingId}, #{e.rankNo}, #{e.rankOrder}, #{e.purpose}, #{e.receipt}, #{e.cause},
+            #{e.holderName}, #{e.holderRegnoMasked}, #{e.holderAddress}, #{e.priceIfAny},
+            #{e.notesRaw}, NOW()
+            )
+        </foreach>
+    </insert>
+
+</mapper>

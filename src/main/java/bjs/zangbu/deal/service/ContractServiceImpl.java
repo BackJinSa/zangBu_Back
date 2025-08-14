@@ -12,6 +12,7 @@ import bjs.zangbu.deal.dto.response.DealResponse;
 import bjs.zangbu.deal.dto.response.EstateRegistrationResponse;
 import bjs.zangbu.deal.mapper.DealMapper;
 import bjs.zangbu.deal.util.PdfUtil;
+import bjs.zangbu.documentReport.service.DocumentIngestService;
 import bjs.zangbu.ncp.service.BinaryUploaderService;
 import bjs.zangbu.notification.vo.SaleType;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class ContractServiceImpl implements ContractService {
     private final CodefService codefService;
     private final CodefTwoFactorService codefTwoFactorService;
     private final BinaryUploaderService binaryUploaderService;
+    private final DocumentIngestService documentIngestService;
 
 
     @Override
@@ -57,28 +59,30 @@ public class ContractServiceImpl implements ContractService {
 
     // 등기부등본 발급 api
     @Override
-    public DealResponse.Download getEstateRegisternPdf(Long dealId)
+    public DealResponse.Download getEstateRegisternPdf(Long buildingId)
             throws Exception {
         //DB에서 데이터 가져와서 request 생성
-        EstateRegistrationRequest request = dealMapper.getEstateRegistrationRequest(dealId);
+        EstateRegistrationRequest request = dealMapper.getEstateRegistrationRequest(buildingId);
         // codef에서 응답 가져오기
         String rawResponse = codefService.realEstateRegistrationLeader(request);
         // pdf dto 파싱로직
         EstateRegistrationResponse dto = CodefConverter.parseDataToDto(
                 rawResponse, EstateRegistrationResponse.class);
+        // (추가)db에 나머지 json 파싱해서 저장 -> 분석리포트를 위함
+        documentIngestService.overwriteEstateFromCodef(buildingId, dto);
         // PDF 바이트 추출
         byte[] pdfBytes = PdfUtil.decodePdfBytes(dto.getResOriGinalData());
         /* 6) ncp 업로드 */
-        String key  = "estate-Register/" + dealId + ".pdf";
+        String key  = "estate-Register/" + buildingId + ".pdf";
         String url = binaryUploaderService.putPdfObject(BUCKET_NAME,key,pdfBytes);
 
         return new DealResponse.Download(url);
     }
     // 건축물대장 발급 api
     @Override
-    public DealResponse.Download getBuildingRegisterPdf(Long dealId) throws Exception {
+    public DealResponse.Download getBuildingRegisterPdf(Long buildingId) throws Exception {
         // 1) DB 조회
-        DealDocumentInfo deal = dealMapper.getDocumentInfo(dealId);
+        DealDocumentInfo deal = dealMapper.getDocumentInfo(buildingId);
         // request json 형식에 맞게 파싱
         BuildingRegisterRequest request = BuildingRegisterRequest.from(deal);
         // 1차·2차가 섞여 있을 수 있는 응답(rawResponse)
@@ -86,10 +90,14 @@ public class ContractServiceImpl implements ContractService {
         // dto로 파싱
         BuildingRegisterResponse dto =
                 CodefConverter.parseDataToDto(rawResponse, BuildingRegisterResponse.class);
+
+        // (추가)db에 나머지 json 파싱해서 저장 -> 분석리포트를 위함
+        documentIngestService.overwriteBuildingRegisterFromCodef(buildingId, dto);
+
         // PDF 바이트 추출
         byte[] pdfBytes = PdfUtil.decodePdfBytes(dto.getResOriGinalData());
         /* ncp 업로드*/
-        String key  = "building-register/" + dealId + ".pdf";
+        String key  = "building-register/" + buildingId + ".pdf";
         String url = binaryUploaderService.putPdfObject(BUCKET_NAME,key,pdfBytes);
 
         return new DealResponse.Download(url);
