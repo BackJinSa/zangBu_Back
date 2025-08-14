@@ -205,6 +205,6 @@ public class BuildingController {
     }
     String memberId = user.getMember().getMemberId();
     buildingService.updateBuilding(request, memberId);
-    return ResponseEntity.status(HttpStatus.OK).body("매물 수정에 성공했습니다.");
+    return ResponseEntity.status(HttpStatus.OK).body(request.getBuildingId());
   }
 }
