@@ -15,10 +15,10 @@ public interface DealService {
   /**
    * 거래 전 안내 조회
    *
-   * @param buildingId 매물 식별 ID
+   * @param dealId 매물 식별 ID
    * @return 거래 전 안내 정보 DTO
    */
-  Notice getNotice(Long buildingId);
+  Notice getNotice(Long dealId);
 
   /**
    * 내가 참여 중인 전체 대기 거래 목록 조회
