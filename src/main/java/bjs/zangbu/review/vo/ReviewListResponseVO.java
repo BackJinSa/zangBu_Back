@@ -39,6 +39,7 @@ public class ReviewListResponseVO {
     /**
      * ReviewListResponse DTO 리스트를 VO 리스트로 변환하는 정적 팩토리 메서드
      */
+
     public static java.util.List<ReviewListResponseVO> toList(java.util.List<ReviewListResponse> dtoList) {
         if (dtoList == null) {
             return new java.util.ArrayList<>();
@@ -47,4 +48,5 @@ public class ReviewListResponseVO {
                 .map(ReviewListResponseVO::to)
                 .collect(java.util.stream.Collectors.toList());
     }
+
 }

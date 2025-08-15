@@ -63,4 +63,12 @@ public class ChatRequest {
 //     @Schema(description = "필터 타입 (전체, 구매, 판매)", example = "전체")
     private String type; // "전체" or "구매" or "판매"
   }
+
+  @Getter
+  @NoArgsConstructor
+  @AllArgsConstructor
+  // POST  /chat/room 채팅방 생성
+  public static class CreateRoomRequest {
+    private Long buildingId;
+  }
 }
