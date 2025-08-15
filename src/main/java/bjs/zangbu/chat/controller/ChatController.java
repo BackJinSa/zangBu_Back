@@ -46,7 +46,7 @@ public class ChatController {
   public ResponseEntity<ChatRoom> createChatRoom(@PathVariable Long buildingId) {
     //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     //String consumerId = authentication.getName();  //TODO: 테스트용, 나중에 주석 취소
-    String consumerId = "7g8h9i0j-1111-2222-3333-444455556672"; //robert
+    String consumerId = "0j1k2l3m-1111-2222-3333-444455556675";
 
     log.info("ChatController - createChatRoom");
     ChatRoom room = chatService.createChatRoom(buildingId, consumerId);
@@ -73,7 +73,7 @@ public class ChatController {
 
     //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     //String userId = authentication.getName();  //TODO: 테스트하느라 주석처리함
-    String userId = "1a2b3c4d-1111-2222-3333-444455556666";
+    String userId = "0j1k2l3m-1111-2222-3333-444455556675";
 
     // 프론트 → 매퍼 타입 매핑
     String mapped = switch (type) {
@@ -170,7 +170,7 @@ public class ChatController {
       @PathVariable String roomId) {
     //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     //String userId = authentication.getName();
-    String userId = "1a2b3c4d-1111-2222-3333-444455556666";
+    String userId = "0j1k2l3m-1111-2222-3333-444455556675";
 
     chatService.leaveChatRoom(roomId, userId);
     return ResponseEntity.status(204).build();
@@ -191,7 +191,7 @@ public class ChatController {
       @PathVariable String roomId) {
     //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
    //String userId = authentication.getName();
-    String userId = "1a2b3c4d-1111-2222-3333-444455556666";
+    String userId = "0j1k2l3m-1111-2222-3333-444455556675";
     log.info("ChatController - markAsRead");
 
     chatService.markAsRead(roomId, userId);
