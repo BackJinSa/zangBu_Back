@@ -131,14 +131,14 @@ class NotificationServiceImplTest2 {
     void detectPriceChangeForAllBookmarks() {
 
         // [1] 실행 전 알림 개수
-        int beforeCount = notificationMapper.selectAllByMemberId(BOOKMARKS_MEMBER_ID).size();
+        int beforeCount = notificationMapper.selectAllByMemberId(BOOKMARKS_MEMBER_ID, "").size();
         log.info("============= beforeCount =============== {}", beforeCount);
 
         // [2] 서비스 메서드 호출 (실제 DB/FCM 사용)
         sutNotificationServiceImpl.detectPriceChangeForAllBookmarks();
 
         // [3] 실행 후 알림 개수
-        int afterCount = notificationMapper.selectAllByMemberId(BOOKMARKS_MEMBER_ID).size();
+        int afterCount = notificationMapper.selectAllByMemberId(BOOKMARKS_MEMBER_ID, "").size();
         log.info("============= afterCount =============== {}", afterCount);
 
         // [4] 검증
@@ -155,7 +155,7 @@ class NotificationServiceImplTest2 {
     void detectTradeHappenedNow_단순호출() {
 
         // [1] 실행 전 알림 개수
-        int beforeCount = notificationMapper.selectAllByMemberId(TRADE_MEMBER_ID).size();
+        int beforeCount = notificationMapper.selectAllByMemberId(TRADE_MEMBER_ID, "").size();
         log.info("============= beforeCount =============== {}", beforeCount);
 
         //
@@ -171,7 +171,7 @@ class NotificationServiceImplTest2 {
         }
 
         // [3] 실행 후 알림 개수
-        int afterCount = notificationMapper.selectAllByMemberId(TRADE_MEMBER_ID).size();
+        int afterCount = notificationMapper.selectAllByMemberId(TRADE_MEMBER_ID, "").size();
         log.info("============= afterCount =============== {}", afterCount);
 
         // [4] 검증
@@ -189,14 +189,14 @@ class NotificationServiceImplTest2 {
     @Test
     void notificationReviewRegisterd_단순호출() {
         // [1] 실행 전 알림 개수
-        int beforeCount = notificationMapper.selectAllByMemberId(REVIEW_MEMBER_ID).size();
+        int beforeCount = notificationMapper.selectAllByMemberId(REVIEW_MEMBER_ID, "").size();
         log.info("============= beforeCount =============== {}", beforeCount);
 
         // [2] 서비스 메서드 호출 (실제 DB/FCM 사용)
         sutNotificationServiceImpl.notificationReviewRegisterd(REVIEW_BUILDING_ID);
 
         // [3] 실행 후 알림 개수
-        int afterCount = notificationMapper.selectAllByMemberId(REVIEW_MEMBER_ID).size();
+        int afterCount = notificationMapper.selectAllByMemberId(REVIEW_MEMBER_ID, "").size();
         log.info("============= afterCount =============== {}", afterCount);
 
         // [4] 검증

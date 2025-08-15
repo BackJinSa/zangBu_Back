@@ -116,11 +116,11 @@ class NotificationServiceImplTest {
     @Test
     void getAllNotifications_returnsDto() {
         // given (DB에 더미 데이터가 있다고 가정)
-        List<Notification> expected = notificationMapper.selectAllByMemberId(MEMBER_ID);
+        List<Notification> expected = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
         log.info("Baseline rows from DB for {} = {}", MEMBER_ID, expected.size());
 
         // when
-        NotificationAll dto = sutNotificationServiceImpl.getAllNotifications(MEMBER_ID);
+        NotificationAll dto = sutNotificationServiceImpl.getAllNotifications(MEMBER_ID, "");
 
         // then
         assertNotNull(dto, "DTO가 null이면 안 됩니다.");
@@ -170,7 +170,7 @@ class NotificationServiceImplTest {
     @Test
     void removeNotification() {
         // 테스트용 알림 하나 확보 (DB에 더미가 있다고 가정)
-        List<Notification> list = notificationMapper.selectAllByMemberId(MEMBER_ID);
+        List<Notification> list = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
         assertFalse(list.isEmpty(), "테스트용 알림이 없습니다. MEMBER_ID에 알림 하나를 준비해주세요.");
 
         Long notificationId = list.get(0).getNotificationId();
@@ -216,7 +216,7 @@ class NotificationServiceImplTest {
                 "[시세 변동 알림]", message, firstPrice);
 
         // Assert: 1건 저장
-        List<Notification> saved = notificationMapper.selectAllByMemberId(MEMBER_ID);
+        List<Notification> saved = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
         assertEquals(1, saved.size());              // 알림 등록했기 때문에 크기 1
         assertEquals(firstPrice, saved.get(0).getPrice());   // 가격 확인
         assertEquals(Type.BUILDING, saved.get(0).getType()); // 타입 확인
@@ -226,7 +226,7 @@ class NotificationServiceImplTest {
                 "[시세 변동 알림]", "msg-duplicate", firstPrice);
 
         // Assert: 여전히 1건
-        saved = notificationMapper.selectAllByMemberId(MEMBER_ID);
+        saved = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
         assertEquals(1, saved.size(), "같은 날/같은 가격은 중복 저장되면 안 됨");
 
         // Act 3) 다른 가격으로 호출 → 새로 저장
@@ -234,7 +234,7 @@ class NotificationServiceImplTest {
                 "[시세 변동 알림]", message, secondPrice);
 
         // Assert: 2건(두 번째는 다른 가격)
-        saved = notificationMapper.selectAllByMemberId(MEMBER_ID);
+        saved = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
         assertEquals(2, saved.size(), "가격이 달라지면 새 알림 저장");
         assertTrue(saved.stream().anyMatch(n -> n.getPrice() == secondPrice));
 
@@ -261,7 +261,7 @@ class NotificationServiceImplTest {
                 MEMBER_ID, building, Type.TRADE, "[실거래 발생 알림]", message, tradePrice);
 
         // Assert: 1건
-        List<Notification> saved = notificationMapper.selectAllByMemberId(MEMBER_ID);
+        List<Notification> saved = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
         assertEquals(Type.TRADE, saved.get(0).getType());
         assertEquals(tradePrice, saved.get(0).getPrice());
 
@@ -294,7 +294,7 @@ class NotificationServiceImplTest {
                 MEMBER_ID, building, Type.REVIEW, "[리뷰 등록 알림]", message1, price);
 
         // [4] 1건 저장됨 (REVIEW는 중복 방지 로직 없음)
-        List<Notification> saved = notificationMapper.selectAllByMemberId(MEMBER_ID);
+        List<Notification> saved = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
         assertEquals(Type.REVIEW, saved.get(0).getType());
 
         // [5] 두번째 저장 -> 중복 가능이라 또 저장됨
@@ -302,7 +302,7 @@ class NotificationServiceImplTest {
                 MEMBER_ID, building, Type.REVIEW, "[리뷰 등록 알림]", message2, price);
 
         // [6] 1건 추가 저장됨
-        saved = notificationMapper.selectAllByMemberId(MEMBER_ID);
+        saved = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
         assertTrue(saved.stream().allMatch(n -> n.getType() == Type.REVIEW));
 
         // [7] 알림 저장 및 전송

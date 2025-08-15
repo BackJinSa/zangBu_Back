@@ -25,4 +25,12 @@
     ORDER BY image_id LIMIT 1
   </select>
 
+
+    <select id="getBuildingImageUrl" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT image_url
+        FROM image_list
+        WHERE building_id = #{buildingId}
+        ORDER BY image_id
+    </select>
+
 </mapper>
