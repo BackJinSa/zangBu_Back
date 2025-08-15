@@ -51,4 +51,6 @@ public interface MemberMapper {
     Boolean selectFcmConsentByMemberId(@Param("memberId") String memberId);
 
     Member findByEmail(String email);
+
+    Member findByMemberId(String memberId);
 }

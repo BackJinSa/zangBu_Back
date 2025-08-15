@@ -4,8 +4,10 @@ import bjs.zangbu.member.dto.request.MemberRequest.EditNicknameCheck;
 import bjs.zangbu.member.dto.request.MemberRequest.EditNicknameRequest;
 import bjs.zangbu.member.dto.request.MemberRequest.EditNotificationConsentRequest;
 import bjs.zangbu.member.dto.request.MemberRequest.EditPassword;
+import bjs.zangbu.member.dto.response.MemberResponse;
 import bjs.zangbu.member.dto.response.MemberResponse.BookmarkList;
 import bjs.zangbu.member.dto.response.MemberResponse.EditMyPage;
+import bjs.zangbu.member.mapper.MemberMapper;
 import bjs.zangbu.member.service.MemberService;
 import bjs.zangbu.security.account.vo.CustomUser;
 import bjs.zangbu.security.account.vo.Member;
@@ -15,14 +17,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,6 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class MemberController {
 
   private final MemberService memberService;
+  private final MemberMapper memberMapper;
 
   //1. 찜한 매물 리스트 조회
 //     @Operation(
@@ -82,20 +81,21 @@ public class MemberController {
 //       @ApiResponse(responseCode = "400", description = "찜한 매물을 찾을 수 없습니다."),
 //       @ApiResponse(responseCode = "500", description = "찜한 매물 삭제 중 오류가 발생했습니다.")
 //  })
-  @PostMapping("/favorite/delete")
+  @DeleteMapping("/favorite/delete")
   public ResponseEntity<?> deleteFavorite(
 //      @Parameter(description = "회원 ID")
-      @RequestParam String memberId,
+          @AuthenticationPrincipal CustomUser customUser,
 //      @Parameter(description = "건물 ID")
-      @RequestParam Long buildingId) {
+          @RequestParam Long buildingId) {
     try {
-      memberService.deleteBookmark(memberId, buildingId);
+      Member member = customUser.getMember();
+      memberService.deleteBookmark(member.getMemberId(), buildingId);
       return ResponseEntity.ok().build(); //200
     } catch (ResponseStatusException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     } catch (Exception e) { //500
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body("찜한 매물 삭제 중 오류가 발생했습니다.");
+              .body("찜한 매물 삭제 중 오류가 발생했습니다.");
     }
   }
 
@@ -110,7 +110,7 @@ public class MemberController {
 //       @ApiResponse(responseCode = "400", description = "정보를 불러오는데 실패했습니다."),
 //       @ApiResponse(responseCode = "500", description = "서버에서 정보를 불러오는데 실패했습니다.")
 //  })
-  @GetMapping("/edit")
+  @PostMapping("/edit")
   public ResponseEntity<?> getEditPage(
       @AuthenticationPrincipal CustomUser customUser
   ) {
@@ -140,7 +140,7 @@ public class MemberController {
 //       @ApiResponse(responseCode = "400", description = "비밀번호 변경에 실패했습니다."),
 //       @ApiResponse(responseCode = "500", description = "서버에서 비밀번호 변경을 처리하는데 실패했습니다.")
 //  })
-  @PostMapping("/edit/password")
+  @PatchMapping("/edit/password")
   public ResponseEntity<?> changePassword(
       @AuthenticationPrincipal CustomUser customUser,
 //      @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -227,9 +227,9 @@ public class MemberController {
 //       @ApiResponse(responseCode = "400", description = "닉네임 변경에 실패했습니다."),
 //       @ApiResponse(responseCode = "500", description = "서버에서 닉네임 변경을 처리하는데 실패했습니다.")
 //  })
-  @PostMapping("/edit/nickname")
+  @PatchMapping("/edit/nickname")
   public ResponseEntity<?> changeNickname(
-      @AuthenticationPrincipal CustomUser customUser,
+          @AuthenticationPrincipal CustomUser customUser,
 //      @io.swagger.v3.oas.annotations.parameters.RequestBody(
 //          description = "닉네임 변경 요청 DTO",
 //          required = true,
@@ -237,19 +237,26 @@ public class MemberController {
 //              schema = @Schema(implementation = EditNicknameRequest.class)
 //          )
 //      )
-      @RequestBody EditNicknameRequest request) {
+          @RequestBody EditNicknameRequest request) {
+
+    if (request.getNewNickname() == null || request.getNewNickname().isBlank()) {
+      return ResponseEntity.badRequest().build();
+    }
 
     try {
       Member member = customUser.getMember();
 
       memberService.editNickname(member.getMemberId(), request);
 
-      return ResponseEntity.ok("닉네임 변경에 성공했습니다.");
+      Member refreshed = memberMapper.findByEmail(member.getEmail());
+      String updateNickname = refreshed.getNickname();
+
+      return ResponseEntity.ok(new MemberResponse.EditNicknameResponse(updateNickname));
     } catch (IllegalStateException | IllegalArgumentException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body("서버에서 닉네임 변경을 처리하는데 실패했습니다.");
+              .body("서버에서 닉네임 변경을 처리하는데 실패했습니다.");
     }
   }
 
@@ -265,18 +272,25 @@ public class MemberController {
 //  })
   @DeleteMapping("/remove")
   public ResponseEntity<?> deleteMember(
-      @AuthenticationPrincipal CustomUser customUser
+          @AuthenticationPrincipal CustomUser customUser,
+          HttpServletResponse response
   ) {
     try {
       Member member = customUser.getMember();
 
+      // 1) 서비스 호출(서버측 refresh 삭제 + 회원 삭제)
       memberService.removeMember(member.getMemberId());
-      return ResponseEntity.ok().build(); //200
+
+      // 2) 클라이언트 refresh 쿠키 만료
+      response.addHeader("Set-Cookie",
+              "refreshToken=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None");
+
+      return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     } catch (IllegalStateException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body("서버에서 유저 탈퇴 처리에 실패했습니다.");
+              .body("서버에서 유저 탈퇴 처리에 실패했습니다.");
     }
   }
 
@@ -289,7 +303,7 @@ public class MemberController {
 //       @ApiResponse(responseCode = "400", description = "알림 수신 여부 변경에 실패했습니다."),
 //       @ApiResponse(responseCode = "500", description = "서버에서 알림 수신 여부 변경을 처리하는데 실패했습니다.")
 //  })
-  @PostMapping("/edit/notification/consent")
+  @PatchMapping("/edit/notification/consent")
   public ResponseEntity<?> updateNotificationConsent(
       @AuthenticationPrincipal CustomUser customUser,
 //      @io.swagger.v3.oas.annotations.parameters.RequestBody(

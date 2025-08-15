@@ -16,7 +16,7 @@ import javax.servlet.http.HttpSession;
 public interface AuthService {
 
   //로그인
-  LoginResponse login(LoginRequest loginRequest);
+//  LoginResponse login(LoginRequest loginRequest);
 
   //로그아웃
   void logout(String accessToken);
