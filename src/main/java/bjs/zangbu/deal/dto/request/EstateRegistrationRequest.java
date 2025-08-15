@@ -9,7 +9,7 @@ import lombok.*;
 @Builder
 public class EstateRegistrationRequest {
 
-  private Long dealId;
+  private Long buildingId;
 
   //    member table
   private String phone;

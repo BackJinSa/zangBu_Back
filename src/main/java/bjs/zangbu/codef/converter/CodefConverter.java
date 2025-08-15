@@ -2,6 +2,8 @@ package bjs.zangbu.codef.converter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Map;
 
 /**
@@ -16,6 +18,7 @@ import java.util.Map;
  *  • parseDataToDto()  : data 노드를 원하는 DTO 로 역직렬화
  *  • 예외 발생 시 RuntimeException 래핑 → 글로벌 예외 핸들러에서 처리
  */
+@Slf4j
 public class CodefConverter {
 
     private static final ObjectMapper mapper = new ObjectMapper();
