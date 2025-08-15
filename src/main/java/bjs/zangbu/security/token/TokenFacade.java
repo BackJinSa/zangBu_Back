@@ -19,7 +19,7 @@ public class TokenFacade {
     private final JwtProcessor jwtProcessor;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public AuthResponse.LoginResponse issueAndPersist(String email, MemberEnum role) {
+    public AuthResponse.LoginResponse issueAndPersist(String email, MemberEnum role, String nickname) {
         String at = jwtProcessor.generateAccessToken(email, role.name());
         String rt = jwtProcessor.generateRefreshToken(email);
 
@@ -33,7 +33,7 @@ public class TokenFacade {
         //Redis에 로그인 상태 저장 (만료시간 2시간)
         redisTemplate.opsForValue().set(LOGIN_TOKEN_PREFIX + email, "true", java.time.Duration.ofHours(2));
 
-        return new AuthResponse.LoginResponse(at, rt, role);
+        return new AuthResponse.LoginResponse(at, rt, role, nickname);
     }
 
     /** 쿠키 Max-Age로 쓰기 위한 TTL(초) */
