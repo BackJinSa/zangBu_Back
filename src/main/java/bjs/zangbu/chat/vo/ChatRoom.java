@@ -22,5 +22,6 @@ public class ChatRoom {
     private String buildingName;       //매물 이름 : (building의 building_name)
     private SellerType sellerType;         //판매자 타입(집주인, 세입자) : (building의 seller_type)
     private DealEnum status;             //거래 상태 : (deal의 status)
+    private Long dealId;
     private Integer price;
 }

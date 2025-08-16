@@ -32,7 +32,7 @@
     <!-- roomId를 기준으로 채팅방 상세 정보 가져오기, 거래 상태(status) 얻기 위해 deal과 join-->
     <select id="selectChatRoomById" resultType="bjs.zangbu.chat.vo.ChatRoom">
         SELECT cr.chat_room_id, b.building_id, cr.member_id as consumerId, b.member_id as sellerId, cr.complex_id, cr.seller_nickname, cr.consumer_nickname,
-               cr.seller_visible, cr.consumer_visible, b.building_name, b.seller_type, d.status
+               cr.seller_visible, cr.consumer_visible, b.building_name, b.seller_type, d.status, d.deal_id
         FROM chat_room cr
             JOIN building b ON cr.building_id = b.building_id
             LEFT JOIN deal d ON cr.chat_room_id = d.chat_room_id
@@ -57,6 +57,7 @@
         b.seller_type,
         b.price,
         d.status,
+        d.deal_id,
         lm.last_message_created_at
         FROM chat_room cr
         JOIN building b

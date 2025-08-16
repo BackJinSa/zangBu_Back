@@ -33,7 +33,7 @@ public class jwtTest {
     void makeDevAccessToken() {
         String email1 = "amanda.harris@example.com";
         String email2 = "john.smith@example.com";
-        String email3 = "emily.jones@example.com";
+        String email3 = "jessica.anderson@example.com";
         String email4 = "michael.brown@example.com";
 
         String role  = "ROLE_MEMBER";
@@ -71,10 +71,10 @@ public class jwtTest {
                 .signWith(key())                                      // ✅ JwtProcessor와 동일한 키 방식
                 .compact();
 
-        System.out.println("\n=== user1: DEV ACCESS TOKEN ===\n" + token1 + "\n");
-        System.out.println("\n=== user2: DEV ACCESS TOKEN ===\n" + token2 + "\n");
-        System.out.println("\n=== user3: DEV ACCESS TOKEN ===\n" + token3 + "\n");
-        System.out.println("\n=== user4: DEV ACCESS TOKEN ===\n" + token4 + "\n");
+        System.out.println("\n=== user1 amanda : DEV ACCESS TOKEN ===\n" + token1 + "\n");
+        System.out.println("\n=== user2 johnny : DEV ACCESS TOKEN ===\n" + token2 + "\n");
+        System.out.println("\n=== user3 jessica: DEV ACCESS TOKEN ===\n" + token3 + "\n");
+        System.out.println("\n=== user4 michael : DEV ACCESS TOKEN ===\n" + token4 + "\n");
     }
 
     /**
