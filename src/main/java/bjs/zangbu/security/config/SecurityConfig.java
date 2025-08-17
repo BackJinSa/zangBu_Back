@@ -123,6 +123,8 @@ public class SecurityConfig {
 
                         // 테스트용: /chat/** 전체 허용
                         .requestMatchers(new AntPathRequestMatcher("/chat/**")).permitAll()
+                        //테스트용: /deal/**허용
+                                .requestMatchers(new AntPathRequestMatcher("/deal/**")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()

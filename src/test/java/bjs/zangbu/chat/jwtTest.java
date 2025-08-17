@@ -27,7 +27,7 @@ public class jwtTest {
      * JwtProcessor.generateAccessToken(email, role) 과 동일한 구조의 토큰 생성
      * - subject = email  (JwtProcessor.getEmail()은 subject를 반환)
      * - claim "role" 포함
-     * - 만료 = 2분
+     * -
      */
     @Test
     void makeDevAccessToken() {

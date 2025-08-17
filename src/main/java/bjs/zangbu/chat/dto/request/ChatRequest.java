@@ -41,11 +41,11 @@ public class ChatRequest {
 
     public ChatMessage toEntity(String senderId, LocalDateTime createdAt) {
       return ChatMessage.builder()
-          .chatRoomId(chatRoomId)
-          .senderId(senderId)
-          .message(message)
-          .createdAt(createdAt)
-          .build();
+              .chatRoomId(chatRoomId)
+              .senderId(senderId)
+              .message(message)
+              .createdAt(createdAt)
+              .build();
     }
   }
 

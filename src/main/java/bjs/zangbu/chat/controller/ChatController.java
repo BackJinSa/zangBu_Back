@@ -20,15 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 
 @Log4j2
 @RestController
@@ -51,7 +44,7 @@ public class ChatController {
   public ResponseEntity<ChatRoom> createChatRoom(@PathVariable Long buildingId) {
     //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     //String consumerId = authentication.getName();  //TODO: 테스트용, 나중에 주석 취소
-    String consumerId = "3c4d5e6f-1111-2222-3333-444455556668";
+    String consumerId = "8h9i0j1k-1111-2222-3333-444455556673";
 
     log.info("ChatController - createChatRoom");
     ChatRoom room = chatService.createChatRoom(buildingId, consumerId);
@@ -202,5 +195,25 @@ public class ChatController {
     chatService.markAsRead(roomId, userId);
     return ResponseEntity.noContent().build(); // 204
   }
+
+    @DeleteMapping("/room/{chatRoomId}")
+    @Transactional
+    public ResponseEntity<Void> deleteChatRoom(@PathVariable String chatRoomId) {
+        int affected = chatService.deleteChatRoom(chatRoomId);
+        if (affected == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/room/{buildingId}/{consumerId}")
+    public ResponseEntity<ChatResponse.ChatRoomExistResponse> existsChatRoom(@PathVariable Long buildingId, @PathVariable String consumerId) {
+        ChatRoom chatRoom = chatService.existsChatRoom(buildingId, consumerId);
+        if (chatRoom != null) {
+            return ResponseEntity.ok(new ChatResponse.ChatRoomExistResponse(true, chatRoom.getChatRoomId()));
+        } else {
+            return ResponseEntity.ok(new ChatResponse.ChatRoomExistResponse(false, null));
+        }
+    }
 
 }

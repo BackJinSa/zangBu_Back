@@ -22,6 +22,8 @@ public class ChatResponse {
   @ApiModel(description = "메시지 전송 응답 DTO")
   public static class SendMessageResponse {
 
+    @ApiModelProperty(value = "메시지 타입", example = "SYSTEM") // USER | SYSTEM
+    private String type;            // 추가 (없으면 프론트에서 'USER'로 간주)
     @ApiModelProperty(value = "보낸 메시지 내용", example = "안녕")
     private String message;          //보낸 메시지 내용
     @ApiModelProperty(value = "보낸 사람 닉네임", example = "김부동산")
@@ -202,6 +204,17 @@ public class ChatResponse {
       @ApiModelProperty(value = "읽지 않은 방 개수", example = "3")
       private int unread;
     }
+  }
+
+  @Getter
+  @AllArgsConstructor
+  @NoArgsConstructor
+  @ApiModel(description = "채팅방 존재 여부 응답 객체")
+  public static class ChatRoomExistResponse {
+    @ApiModelProperty(value = "존재 여부", example = "true")
+    private boolean exists;
+    @ApiModelProperty(value = "채팅방 id")
+    private String chatRoomId;   // 없으면 null
   }
 
 }

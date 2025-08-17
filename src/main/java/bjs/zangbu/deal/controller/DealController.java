@@ -1,6 +1,7 @@
 package bjs.zangbu.deal.controller;
 
 
+import bjs.zangbu.deal.dto.request.DealRequest;
 import bjs.zangbu.deal.dto.request.DealRequest.IntentRequest;
 import bjs.zangbu.deal.dto.request.DealRequest.Status;
 import bjs.zangbu.deal.dto.response.DealResponse;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -344,13 +346,13 @@ public class DealController {
       @ApiResponse(code = 400, message = "상태 변경 실패"),
       @ApiResponse(code = 404, message = "예기치 못한 오류 발생")
   })
-  @PatchMapping("/status")
+  @PatchMapping("/{roomId}/status")
   public ResponseEntity<?> changeDealStatus(
       @ApiParam(value = "거래 상태 변경 요청 DTO", required = true)
-      @RequestBody Status dto) {
+      @RequestBody Status dto, @PathVariable String roomId) {
     try {
       // 상태 patch
-      if (dealService.patchStatus(dto)) {
+      if (dealService.patchStatus(dto, roomId)) {
         return ResponseEntity.status(HttpStatus.OK).body("상태변경에 성공했습니다.");
       } else {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("상태변경에 실패했습니다.");
@@ -385,6 +387,12 @@ public class DealController {
     } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body("리포트를 찾을 수 없습니다.");
     }
+  }
+
+  @PostMapping(value = "", consumes = "application/json", produces = "application/json;charset=UTF-8")
+  public ResponseEntity<Long> createDeal(@RequestBody DealRequest.CreateDeal req) {
+    Long dealId = dealService.createDeal(req.getChatRoomId());
+    return ResponseEntity.status(201).body(dealId);
   }
 
 }

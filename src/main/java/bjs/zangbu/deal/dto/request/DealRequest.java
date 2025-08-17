@@ -1,10 +1,16 @@
 package bjs.zangbu.deal.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
 
 /**
  * 거래 관련 요청 DTO 모음
@@ -61,6 +67,19 @@ public class DealRequest {
         allowableValues = "BEFORE_TRANSACTION,BEFORE_OWNER,BEFORE_CONSUMER,MIDDLE_DEAL,CLOSE_DEAL"
     )
     private String status;
+  }
+
+  @Getter
+  @NoArgsConstructor
+  @ApiModel(description = "거래 생성 요청 DTO")
+  public static final class CreateDeal {
+    private String chatRoomId;
+
+    @JsonCreator
+    public CreateDeal(@JsonProperty("chatRoomId") String chatRoomId) {
+      this.chatRoomId = chatRoomId;
+    }
+    public String getChatRoomId() { return chatRoomId; }
   }
 
 }

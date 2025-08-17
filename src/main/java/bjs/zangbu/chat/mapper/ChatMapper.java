@@ -50,7 +50,7 @@ public interface ChatMapper {
     void deleteMessagesByRoomId(String chatRoomId);
 
     //채팅방 삭제
-    void deleteChatRoom(String chatRoomId);
+    int deleteChatRoom(String chatRoomId);
 
     //채팅방의 마지막 메시지 조회
     ChatMessage selectLastMessageByRoomId(String chatRoomId);

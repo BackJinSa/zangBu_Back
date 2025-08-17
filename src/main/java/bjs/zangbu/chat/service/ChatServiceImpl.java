@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,40 @@ public class ChatServiceImpl implements ChatService{
     private final ChatMapper chatMapper;
     private final MemberMapper memberMapper;
     private final BuildingMapper buildingMapper;
+    private final SimpMessagingTemplate messagingTemplate;
+
+    //시스템 메시지
+    public void publishSystemMessage(String roomId, String text) {
+        ChatRoom room = chatMapper.selectChatRoomById(roomId);
+        if (room == null) {
+            throw new IllegalArgumentException(roomId + " 채팅방을 찾을 수 없습니다.");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        ChatMessage sys = ChatMessage.builder()
+                .chatRoomId(roomId)
+                .buildingId(room.getBuildingId())
+                .senderId("SYSTEM")   // 시스템 발신자
+                .complexId(room.getComplexId())
+                .message(text)
+                .createdAt(now)
+                .isRead(true)                 // 저장 시 이미 읽음 처리
+                .build();
+
+        int ins = chatMapper.insertMessage(sys);
+        if (ins != 1) throw new IllegalStateException("시스템 메시지 저장 실패");
+
+        ChatResponse.SendMessageResponse response = ChatResponse.SendMessageResponse.builder()
+                .type("SYSTEM")
+                .message(text)
+                .sendNickname("SYSTEM")
+                .createdAt(formattingCreatedAt(now))
+                .senderId("SYSTEM")
+                .build();
+
+        messagingTemplate.convertAndSend("/topic/chat." + roomId, response);
+    }
 
     //메시지 전송
     @Override
@@ -69,6 +104,7 @@ public class ChatServiceImpl implements ChatService{
         }
 
         return ChatResponse.SendMessageResponse.builder()
+                .type("USER")
                 .message(message.getMessage())
                 .sendNickname(senderNickname)
                 .createdAt(formattingCreatedAt(message.getCreatedAt()))
@@ -225,10 +261,12 @@ public class ChatServiceImpl implements ChatService{
             chatMapper.updateSellerVisible(chatRoomId);
             // 내가 나가기 전, 상대방(구매자)이 이미 나가 있었는지 확인
             otherPartyAlreadyLeft = !chatRoom.getConsumerVisible();
+            publishSystemMessage(chatRoomId, "판매자가 채팅방을 나갔습니다.");
         } else if (isBuyer) {
             chatMapper.updateConsumerVisible(chatRoomId);
             // 내가 나가기 전, 상대방(판매자)이 이미 나가 있었는지 확인
             otherPartyAlreadyLeft = !chatRoom.getSellerVisible();
+            publishSystemMessage(chatRoomId, "구매자가 채팅방을 나갔습니다.");
         } else {
             throw new IllegalStateException("채팅방 참여자가 아닙니다.");
         }
@@ -277,4 +315,12 @@ public class ChatServiceImpl implements ChatService{
         // 현재 사용자가 보낸 메시지가 아닌 것만 읽음 처리
         chatMapper.markMessagesAsRead(chatRoomId, userId);
     }
+
+    @Override
+    @Transactional
+    public int deleteChatRoom(String chatRoomId) {
+        log.info("deleteChatRoom: {}", chatRoomId);
+        return chatMapper.deleteChatRoom(chatRoomId);
+    }
+
 }
