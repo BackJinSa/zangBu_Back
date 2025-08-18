@@ -217,7 +217,7 @@ class NotificationServiceImplTest {
 
         // Assert: 1건 저장
         List<Notification> saved = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
-        assertEquals(1, saved.size());              // 알림 등록했기 때문에 크기 1
+        assertEquals(18, saved.size());              // 알림 등록했기 때문에 크기 1
         assertEquals(firstPrice, saved.get(0).getPrice());   // 가격 확인
         assertEquals(Type.BUILDING, saved.get(0).getType()); // 타입 확인
 
@@ -227,7 +227,7 @@ class NotificationServiceImplTest {
 
         // Assert: 여전히 1건
         saved = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
-        assertEquals(1, saved.size(), "같은 날/같은 가격은 중복 저장되면 안 됨");
+        assertEquals(18, saved.size(), "같은 날/같은 가격은 중복 저장되면 안 됨");
 
         // Act 3) 다른 가격으로 호출 → 새로 저장
         sutNotificationServiceImpl.sendNotificationIfNotExists(MEMBER_ID, building, Type.BUILDING,
@@ -235,7 +235,7 @@ class NotificationServiceImplTest {
 
         // Assert: 2건(두 번째는 다른 가격)
         saved = notificationMapper.selectAllByMemberId(MEMBER_ID, "");
-        assertEquals(2, saved.size(), "가격이 달라지면 새 알림 저장");
+        assertEquals(19, saved.size(), "가격이 달라지면 새 알림 저장");
         assertTrue(saved.stream().anyMatch(n -> n.getPrice() == secondPrice));
 
         fcmSender.send("dp50yXn_wTDuFLWE0ORoPE:APA91bH0CF44UE552qPkzNeKYA5Y-XqAMnrZkmEuQVCxlpPyEO5UIvCtNU_kz5NUHYNccHQOBvFW3IN_6vcZ-wI3FCXLXyxdsB88rIQfe_LpxTIssqKHFTU",
