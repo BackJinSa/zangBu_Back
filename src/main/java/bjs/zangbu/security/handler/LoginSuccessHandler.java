@@ -32,9 +32,10 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     CustomUser user = (CustomUser) authentication.getPrincipal();
     String email = user.getMember().getEmail();
     MemberEnum role = user.getMember().getRole();
+    String nickname = user.getMember().getNickname();
 
     // 토큰 발급 + Redis 저장
-    AuthResponse.LoginResponse result = tokenFacade.issueAndPersist(email, role);
+    AuthResponse.LoginResponse result = tokenFacade.issueAndPersist(email, role, nickname);
 
     // refresh 토큰은 쿠키로만 전달 (SameSite=None; Secure; HttpOnly)
     int maxAge = tokenFacade.getRefreshTtlSeconds(); // Facade에서 TTL 제공
@@ -46,6 +47,6 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     // access 토큰은 바디로만 응답 (refresh는 숨김)
     JsonResponse.send(response,
-            new AuthResponse.LoginResponse(result.getAccessToken(), null, role));
+            new AuthResponse.LoginResponse(result.getAccessToken(), null, role, nickname));
   }
 }
