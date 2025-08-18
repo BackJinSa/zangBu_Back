@@ -41,4 +41,10 @@ public interface ChatService {
 
     //채팅방 읽음 처리
     void markAsRead(String roomId, String userId);
+
+    //시스템 메시지 전송
+    public void publishSystemMessage(String roomId, String text);
+
+    //채팅방 삭제(거래 생성 실패 시에 사용)
+    int deleteChatRoom(String chatRoomId);
 }
