@@ -17,7 +17,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -32,42 +31,41 @@ import org.springframework.web.cors.CorsConfiguration;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserDetailsService userDetailsService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final AuthenticationErrorFilter authenticationErrorFilter;
-    private final LoginSuccessHandler loginSuccessHandler;
-    private final LoginFailureHandler loginFailureHandler;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final AuthenticationErrorFilter authenticationErrorFilter;
+  private final LoginSuccessHandler loginSuccessHandler;
+  private final LoginFailureHandler loginFailureHandler;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 
-    /**
-     * AuthenticationManager 빈으로 등록 (Spring 6 표준 방식)
-     */
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
-            throws Exception {
-        return authConfig.getAuthenticationManager();
-    }
+  /**
+   * AuthenticationManager 빈으로 등록 (Spring 6 표준 방식)
+   */
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+      throws Exception {
+    return authConfig.getAuthenticationManager();
+  }
 
-    /**
-     * SecurityFilterChain 구성
-     */
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   AuthenticationManager authenticationManager) throws Exception {
-        // 로그인 필터 생성
-        JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter =
-                new JwtUsernamePasswordAuthenticationFilter(authenticationManager, loginSuccessHandler,
-                        loginFailureHandler);
+  /**
+   * SecurityFilterChain 구성
+   */
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http,
+      AuthenticationManager authenticationManager) throws Exception {
+    // 로그인 필터 생성
+    JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter =
+        new JwtUsernamePasswordAuthenticationFilter(authenticationManager, loginSuccessHandler,
+            loginFailureHandler);
 
-        http
-                .addFilterBefore(jwtUsernamePasswordAuthenticationFilter,
-                        org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, JwtUsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(authenticationErrorFilter, JwtAuthenticationFilter.class)
+    http
+        .addFilterAt(jwtUsernamePasswordAuthenticationFilter,
+            org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(jwtAuthenticationFilter, JwtUsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(authenticationErrorFilter, JwtAuthenticationFilter.class)
 
         // CORS 설정
         .cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
@@ -125,10 +123,14 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/chat/**")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()
-// 그 외 요청은 인증 필요
-                        .anyRequest().authenticated()
-                );
-        return http.build();
-    }
+            .requestMatchers(new AntPathRequestMatcher("/auth/reissue")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/logout")).authenticated()
+            .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()
+
+            // 그 외 요청은 인증 필요
+            .anyRequest().authenticated()
+        );
+
+    return http.build();
+  }
 }

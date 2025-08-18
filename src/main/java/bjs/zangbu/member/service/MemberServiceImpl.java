@@ -11,6 +11,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.api.Http;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,9 @@ import java.util.List;
 public class MemberServiceImpl implements MemberService{
     private final MemberMapper memberMapper;
     private final PasswordEncoder passwordEncoder;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private static final String REFRESH_TOKEN_PREFIX = "refresh:"; //prefix
+    private static final String LOGIN_TOKEN_PREFIX = "login:";
 
     //북마크 리스트 전체 가져오기
     @Override
@@ -87,11 +91,15 @@ public class MemberServiceImpl implements MemberService{
     //닉네임 변경
     @Override
     public void editNickname(String memberId, EditNicknameRequest request) {
+        String newNickname = request.getNewNickname();
 
-        if (isNicknameDuplicated(request.getNewNickname())) {
+        if (isNicknameDuplicated(newNickname)) {
             throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
         }
-        int result = memberMapper.updateNickname(memberId, request.getNewNickname());
+        if (newNickname == null || newNickname.isBlank()) {
+            throw new IllegalArgumentException("닉네임이 비어있습니다.");
+        }
+        int result = memberMapper.updateNickname(memberId, newNickname);
         if (result == 0) { //400
             throw new IllegalStateException("닉네임 변경에 실패했습니다.");
         }
@@ -100,6 +108,19 @@ public class MemberServiceImpl implements MemberService{
     //회원 탈퇴
     @Override
     public void removeMember(String memberId) {
+        Member member = memberMapper.findByMemberId(memberId);
+        String email = member.getEmail();
+
+        // 1) 서버측 토큰 무효화 (실패해도 회원 삭제는 진행)
+        try {
+            redisTemplate.delete(REFRESH_TOKEN_PREFIX + email);
+            redisTemplate.delete(LOGIN_TOKEN_PREFIX + email); // 쓰고 있다면 함께 제거
+        } catch (Exception e) {
+            // 로그만 남기고 계속 진행
+            log.warn("[DELETE] token cleanup failed for email={}", email, e);
+        }
+
+        //회원 삭제
         int result = memberMapper.deleteMemberId(memberId);
         if (result == 0) { //400
             throw new IllegalStateException("탈퇴 처리가 실패되었습니다.");
