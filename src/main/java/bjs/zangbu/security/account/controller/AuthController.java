@@ -27,13 +27,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -120,10 +114,13 @@ public class AuthController {
   })
   @PostMapping("/logout")
   public ResponseEntity<?> logout(
+          @RequestHeader(value = "Authorization", required = false) String authHeader,
           @ApiIgnore
           @AuthenticationPrincipal CustomUser customUser,
           HttpServletResponse response
   ) {
+    log.info("[LOGOUT] raw Authorization={}", authHeader);
+    log.info("[LOGOUT] principal={}", customUser);
     try {
       String email = customUser.getUsername();
 
@@ -327,7 +324,7 @@ public class AuthController {
 
   /**
    * 이메일 중복 확인 요청 처리.
-   * {@code GET /auth/check/email} 엔드포인트를 통해 입력한 이메일이 이미 사용 중인지 여부를 확인합니다.
+   * {@code Post /auth/check/email} 엔드포인트를 통해 입력한 이메일이 이미 사용 중인지 여부를 확인합니다.
    *
    * @param request 중복 확인을 요청할 이메일 주소
    * @return 사용 가능한 이메일일 경우 200 OK 응답, 이미 사용 중일 경우 409 Conflict 응답

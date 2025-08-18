@@ -2,6 +2,7 @@ package bjs.zangbu.complexList.mapper;
 
 import bjs.zangbu.complexList.vo.ComplexList;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 복합 단지(ComplexList) 관련 DB 매핑 인터페이스 (MyBatis Mapper) 단지 정보의 삽입 기능을 담당합니다.
@@ -15,7 +16,7 @@ public interface ComplexListMapper {
    * @param complexList 삽입할 단지 정보 객체
    * @return 삽입 후 생성된 단지 ID
    */
-  int createComplexList(ComplexList complexList);
+  int createComplexList(@Param("complexList") ComplexList complexList);
 
   String getComplexNoByBuildingId(long buildingId);
 
@@ -34,4 +35,7 @@ public interface ComplexListMapper {
    * @return 단지 정보
    */
   ComplexList selectById(Long complexId);
+  String getComplexNoByBuildingId(@Param("buildingId") Long buildingId);
+
+  Long getComplexIdByBuildingId(@Param("buildingId") Long buildingId);
 }

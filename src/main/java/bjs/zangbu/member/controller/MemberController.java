@@ -14,6 +14,7 @@ import bjs.zangbu.security.account.vo.Member;
 import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletResponse;
 
+@Log4j2
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/member/mypage")
@@ -51,6 +53,8 @@ public class MemberController {
 //      @Parameter(description = "페이지당 항목 수", example = "10")
       @RequestParam(defaultValue = "10") int size         // 페이지당 항목 수)
   ) {
+    log.info("[/favorites] principal email={}, memberId={}",
+            customUser.getMember().getEmail(), customUser.getMember().getMemberId());
     try {
       //인증된 사용자 정보
       Member member = customUser.getMember();

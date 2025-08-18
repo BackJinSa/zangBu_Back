@@ -4,9 +4,9 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="bjs.zangbu.complexList.mapper.ComplexListMapper">
-    <!-- 단지 정보 삽입 쿼리 -->
-<insert id="createComplexList">
-    INSERT INTO complex_list (
+
+    <insert id="createComplexList">
+        INSERT INTO complex_list (
         res_type,
         complex_name,
         complex_no,
@@ -22,44 +22,35 @@
         dong,
         ho,
         roadName
-    )
-    VALUES (
-               #{resType},
-               #{complexName},
-               #{complexNo},
-               #{sido},
-               #{sigungu},
-               #{siCode},
-               #{eupmyeondong},
-               #{transactionId},
-               #{address},
-               #{zonecode},
-               #{buildingName},
-               #{bname},
-               #{dong},
-               #{ho},
-               #{roadName}
-           )
-    <!--
-    삽입 후 방금 생성된 complex_id 값을 가져와
-    ComplexList 객체의 complexId 필드에 설정함
-    -->
-    <selectKey
-            resultType="Long"
-            keyProperty="complexId"
-            keyColumn="complex_id"
-            order="AFTER"
-    >
-        SELECT LAST_INSERT_ID()
-    </selectKey>
-</insert>
-    <!-- 단지 정보 삽입 쿼리 -->
-    <select id="getComplexNoByBuildingId" resultType="java.lang.String">
-        SELECT cl.complex_no
-        FROM complex_list cl
-                 JOIN building b ON cl.complex_id = b.complex_id
-        WHERE b.building_id = #{buildingId}
-    </select>
+        )
+        VALUES (
+        #{resType},
+        #{complexName},
+        #{complexNo},
+        #{sido},
+        #{sigungu},
+        #{siCode},
+        #{eupmyeondong},
+        #{transactionId},
+        #{address},
+        #{zonecode},
+        #{buildingName},
+        #{bname},
+        #{dong},
+        #{ho},
+        #{roadName}
+        )
+        <selectKey
+                resultType="Long"
+                keyProperty="complexId"
+                keyColumn="complex_id"
+                order="AFTER"
+        >
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+
+   
     
     <!-- 건물 ID로 단지 ID 조회 -->
     <select id="selectComplexIdByBuildingId" resultType="java.lang.Long">
@@ -91,4 +82,13 @@
         FROM complex_list
         WHERE complex_id = #{complexId}
     </select>
+</mapper>
+
+    <select id="getComplexIdByBuildingId" resultType="java.lang.Long">
+        -- 더 효율적인 쿼리: building 테이블에 complex_id가 있으므로 JOIN이 불필요합니다.
+        SELECT complex_id
+        FROM building
+        WHERE building_id = #{buildingId}
+    </select>
+
 </mapper>
