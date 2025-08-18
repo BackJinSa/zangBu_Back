@@ -121,7 +121,7 @@ class NotificationServiceImplTest2 {
     private static final String TRADE_MEMBER_ID = "a56f6d85-37fd-4e99-92a6-cece4689fd7b"; // 실거래 테스트용 유저 아이디
 
     // ========================== 리뷰 등록 테스트용 변수들 ====================================
-    private static final String REVIEW_MEMBER_ID = "a0030658-24f8-42cd-8d78-a9fd06bf02b2"; // 리뷰 등록 테스트용 유저 아이디
+    private static final String REVIEW_MEMBER_ID = "user-001"; // 리뷰 등록 테스트용 유저 아이디
     private static final Long   REVIEW_BUILDING_ID = 2L;      // 리뷰 등록 테스트용 빌딩 아이디
 
     /*

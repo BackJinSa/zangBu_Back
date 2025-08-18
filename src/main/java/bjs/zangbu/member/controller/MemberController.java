@@ -15,6 +15,9 @@ import bjs.zangbu.security.account.vo.Member;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -22,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -371,8 +375,15 @@ public class MemberController {
 //       @ApiResponse(responseCode = "400", description = "매물 리스트 조회에 실패했습니다."),
 //       @ApiResponse(responseCode = "500", description = "매물 리스트 조회를 처리하는데 실패했습니다.")
 //  })
+  @ApiOperation(value = "내가 등록한 매물 리스트 조회", notes = "현재 로그인한 사용자가 등록한 매물 리스트를 페이지 단위로 조회합니다.")
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "매물 리스트 조회 성공"),
+          @ApiResponse(code = 400, message = "잘못된 요청"),
+          @ApiResponse(code = 500, message = "서버 오류")
+  })
   @GetMapping("/myBuildings")
   public ResponseEntity<?> getMyBuildings(
+          @ApiIgnore
           @AuthenticationPrincipal CustomUser customUser,
           @RequestParam(defaultValue = "1") int page,
           @RequestParam(defaultValue = "10") int size
