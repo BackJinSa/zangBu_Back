@@ -34,6 +34,12 @@ public class DealWaitingListResponse {
   @ApiModel(description = "거래 대기 매물 개별 요소 응답 DTO")
   public static class WaitingListElement {
 
+    @ApiModelProperty(value = "거래 ID", example = "11")
+    private Long dealId;
+
+    @ApiModelProperty(value = "채팅방 ID", example = "121")
+    private String chatRoomId;
+
     @ApiModelProperty(value = "건물 ID", example = "101")
     private Long buildingId;
 
@@ -81,6 +87,8 @@ public class DealWaitingListResponse {
       }
 
       return new WaitingListElement(
+          dto.getDealId(),
+          dto.getChatRoomId(),
           dto.getBuildingId(),
           dto.getPrice(),
           dto.getBuildingName(),

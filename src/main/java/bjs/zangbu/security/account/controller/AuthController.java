@@ -27,13 +27,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -59,47 +53,47 @@ public class AuthController {
    * @param response HTTP 응답 객체 (Refresh Token 쿠키 설정을 위해 사용)
    * @return 로그인 성공 시 {@link LoginResponse}와 함께 200 OK 응답, 실패 시 400 Bad Request 또는 500 Internal Server Error 응답
    */
-  @ApiOperation(
-          value = "로그인",
-          notes = "로그인 성공 시 토큰을 발급하여 반환합니다.",
-          response = LoginResponse.class
-  )
-  @ApiResponses({
-          @ApiResponse(code = 200, message = "로그인 성공했습니다."),
-          @ApiResponse(code = 400, message = "아이디 또는 비밀번호가 일치하지 않습니다"),
-          @ApiResponse(code = 500, message = "서버에서 로그인을 처리하는데 오류가 발생했습니다.")
-  })
-  @PostMapping("/login")
-  public ResponseEntity<?> login(
-          @ApiParam(value = "로그인 요청 DTO (이메일, 비밀번호 입력)", required = true)
-          @RequestBody LoginRequest request,
-          HttpServletResponse response) {
-    try {
-      LoginResponse loginResponse = authService.login(request);
-
-      //쿠키에 refresh 토큰 담기
-      Cookie refreshCookie = new Cookie("refreshToken", loginResponse.getRefreshToken());
-      refreshCookie.setHttpOnly(true); //JS 접근 방지 - 장기 인증 수단이므로 클라이언트 측 js에서 접근 못하게 해야 함
-      refreshCookie.setSecure(true); //Https에서만 전송 가능하도록
-      refreshCookie.setPath("/"); //전체 경로에 대해 유효함
-      refreshCookie.setMaxAge(7 * 24 * 60 * 60); //7일간 유효(초단위)
-
-      response.addCookie(refreshCookie);
-
-      //access 토큰은 클라이언트에 바디로 전달
-      //refresh 토큰은 쿠키로 숨겨서 클라이언트에 저장
-      return ResponseEntity.ok(
-              new LoginResponse(loginResponse.getAccessToken(), null, loginResponse.getRole()));
-
-    } catch (IllegalArgumentException e) {
-      //400 에러 - 아이디/비밀번호 일치하지 않음
-      return ResponseEntity.badRequest().body(e.getMessage());
-    } catch (Exception e) {
-      // 500 에러
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body("서버에서 로그인을 처리하는데 오류가 발생했습니다.");
-    }
-  }
+//  @ApiOperation(
+//          value = "로그인",
+//          notes = "로그인 성공 시 토큰을 발급하여 반환합니다.",
+//          response = LoginResponse.class
+//  )
+//  @ApiResponses({
+//          @ApiResponse(code = 200, message = "로그인 성공했습니다."),
+//          @ApiResponse(code = 400, message = "아이디 또는 비밀번호가 일치하지 않습니다"),
+//          @ApiResponse(code = 500, message = "서버에서 로그인을 처리하는데 오류가 발생했습니다.")
+//  })
+//  @PostMapping("/login")
+//  public ResponseEntity<?> login(
+//          @ApiParam(value = "로그인 요청 DTO (이메일, 비밀번호 입력)", required = true)
+//          @RequestBody LoginRequest request,
+//          HttpServletResponse response) {
+//    try {
+//      LoginResponse loginResponse = authService.login(request);
+//
+//      //쿠키에 refresh 토큰 담기
+//      Cookie refreshCookie = new Cookie("refreshToken", loginResponse.getRefreshToken());
+//      refreshCookie.setHttpOnly(true); //JS 접근 방지 - 장기 인증 수단이므로 클라이언트 측 js에서 접근 못하게 해야 함
+//      refreshCookie.setSecure(true); //Https에서만 전송 가능하도록
+//      refreshCookie.setPath("/"); //전체 경로에 대해 유효함
+//      refreshCookie.setMaxAge(7 * 24 * 60 * 60); //7일간 유효(초단위)
+//
+//      response.addCookie(refreshCookie);
+//
+//      //access 토큰은 클라이언트에 바디로 전달
+//      //refresh 토큰은 쿠키로 숨겨서 클라이언트에 저장
+//      return ResponseEntity.ok(
+//              new LoginResponse(loginResponse.getAccessToken(), null, loginResponse.getRole()));
+//
+//    } catch (IllegalArgumentException e) {
+//      //400 에러 - 아이디/비밀번호 일치하지 않음
+//      return ResponseEntity.badRequest().body(e.getMessage());
+//    } catch (Exception e) {
+//      // 500 에러
+//      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//              .body("서버에서 로그인을 처리하는데 오류가 발생했습니다.");
+//    }
+//  }
 
   /**
    * 로그아웃 요청 처리.
@@ -120,10 +114,13 @@ public class AuthController {
   })
   @PostMapping("/logout")
   public ResponseEntity<?> logout(
+          @RequestHeader(value = "Authorization", required = false) String authHeader,
           @ApiIgnore
           @AuthenticationPrincipal CustomUser customUser,
           HttpServletResponse response
   ) {
+    log.info("[LOGOUT] raw Authorization={}", authHeader);
+    log.info("[LOGOUT] principal={}", customUser);
     try {
       String email = customUser.getUsername();
 
@@ -327,9 +324,9 @@ public class AuthController {
 
   /**
    * 이메일 중복 확인 요청 처리.
-   * {@code GET /auth/check/email} 엔드포인트를 통해 입력한 이메일이 이미 사용 중인지 여부를 확인합니다.
+   * {@code Post /auth/check/email} 엔드포인트를 통해 입력한 이메일이 이미 사용 중인지 여부를 확인합니다.
    *
-   * @param email 중복 확인을 요청할 이메일 주소
+   * @param request 중복 확인을 요청할 이메일 주소
    * @return 사용 가능한 이메일일 경우 200 OK 응답, 이미 사용 중일 경우 409 Conflict 응답
    */
   @ApiOperation(
@@ -341,12 +338,12 @@ public class AuthController {
           @ApiResponse(code = 409, message = "이미 사용 중인 이메일입니다."),
           @ApiResponse(code = 500, message = "서버에서 이메일 중복 확인을 처리하는데 오류가 발생했습니다.")
   })
-  @GetMapping("/check/email")
+  @PostMapping("/check/email")
   public ResponseEntity<?> checkEmail(
           @ApiParam(value = "이메일", example = "example@zangbu.com", required = true)
-          @RequestParam String email
+          @RequestBody AuthRequest.EmailCheck request
   ) {
-    boolean isDuplicated = authService.isEmailDuplicated(email);
+    boolean isDuplicated = authService.isEmailDuplicated(request.getEmail());
     if (isDuplicated) { //409
       return ResponseEntity.status(HttpStatus.CONFLICT)
               .body("이미 사용 중인 이메일입니다.");
@@ -358,7 +355,7 @@ public class AuthController {
    * 닉네임 중복 확인 요청 처리.
    * {@code GET /auth/check/nickname} 엔드포인트를 통해 입력한 닉네임이 이미 사용 중인지 여부를 확인합니다.
    *
-   * @param nickname 중복 확인을 요청할 닉네임
+   * @param request 중복 확인을 요청할 닉네임
    * @return 사용 가능한 닉네임일 경우 200 OK 응답, 이미 사용 중일 경우 409 Conflict 응답
    */
   @ApiOperation(
@@ -370,12 +367,12 @@ public class AuthController {
           @ApiResponse(code = 409, message = "이미 사용 중인 닉네임입니다."),
           @ApiResponse(code = 500, message = "서버에서 닉네임 중복 확인을 처리하는데 오류가 발생했습니다.")
   })
-  @GetMapping("/check/nickname")
+  @PostMapping("/check/nickname")
   public ResponseEntity<?> checkNickname(
           @ApiParam(value = "닉네임", example = "김철수123", required = true)
-          @RequestParam String nickname
+          @RequestBody AuthRequest.NicknameCheck request
   ) {
-    boolean isDuplicated = authService.isNicknameDuplicated(nickname);
+    boolean isDuplicated = authService.isNicknameDuplicated(request.getNickname());
     if (isDuplicated) {
       return ResponseEntity.status(HttpStatus.CONFLICT)
               .body("이미 사용 중인 닉네임입니다.");

@@ -12,6 +12,8 @@ import bjs.zangbu.deal.dto.response.DealResponse;
 import bjs.zangbu.deal.dto.response.EstateRegistrationResponse;
 import bjs.zangbu.deal.mapper.DealMapper;
 import bjs.zangbu.deal.util.PdfUtil;
+import bjs.zangbu.deal.vo.DocumentType;
+import bjs.zangbu.documentReport.service.DocumentToMongoService;
 import bjs.zangbu.ncp.service.BinaryUploaderService;
 import bjs.zangbu.notification.vo.SaleType;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class ContractServiceImpl implements ContractService {
     private final CodefService codefService;
     private final CodefTwoFactorService codefTwoFactorService;
     private final BinaryUploaderService binaryUploaderService;
+    private final DocumentToMongoService documentToMongoService;
 
 
     @Override
@@ -57,28 +60,43 @@ public class ContractServiceImpl implements ContractService {
 
     // 등기부등본 발급 api
     @Override
-    public DealResponse.Download getEstateRegisternPdf(Long dealId)
+    public DealResponse.Download getEstateRegisterPdf(String memberId,Long buildingId)
             throws Exception {
+
+        final DocumentType docType = DocumentType.ESTATE;
+
         //DB에서 데이터 가져와서 request 생성
-        EstateRegistrationRequest request = dealMapper.getEstateRegistrationRequest(dealId);
+        EstateRegistrationRequest request = dealMapper.getEstateRegistrationRequest(buildingId);
         // codef에서 응답 가져오기
         String rawResponse = codefService.realEstateRegistrationLeader(request);
         // pdf dto 파싱로직
         EstateRegistrationResponse dto = CodefConverter.parseDataToDto(
                 rawResponse, EstateRegistrationResponse.class);
+
         // PDF 바이트 추출
         byte[] pdfBytes = PdfUtil.decodePdfBytes(dto.getResOriGinalData());
+        if (pdfBytes == null || pdfBytes.length == 0) {
+            log.warn("PDF bytes empty: buildingId={}, type={}", buildingId, docType);
+            // 필요시: 예외/복구 로직
+        }
+        // (추가)mongodb에 나머지 json 파싱해서 저장 -> 분석리포트를 위함
+        documentToMongoService.saveJson(memberId, buildingId, docType, dto);
         /* 6) ncp 업로드 */
-        String key  = "estate-Register/" + dealId + ".pdf";
+        String key = "estate-Register/" + "/" + memberId + "/" + buildingId + ".pdf";
         String url = binaryUploaderService.putPdfObject(BUCKET_NAME,key,pdfBytes);
+
+        documentToMongoService.updatePdfMeta(memberId, buildingId,
+                docType, url, pdfBytes.length, null);
 
         return new DealResponse.Download(url);
     }
     // 건축물대장 발급 api
     @Override
-    public DealResponse.Download getBuildingRegisterPdf(Long dealId) throws Exception {
+    public DealResponse.Download getBuildingRegisterPdf(String memberId, Long buildingId) throws Exception {
+
+        final DocumentType docType = DocumentType.BUILDING_REGISTER;
         // 1) DB 조회
-        DealDocumentInfo deal = dealMapper.getDocumentInfo(dealId);
+        DealDocumentInfo deal = dealMapper.getDocumentInfo(buildingId);
         // request json 형식에 맞게 파싱
         BuildingRegisterRequest request = BuildingRegisterRequest.from(deal);
         // 1차·2차가 섞여 있을 수 있는 응답(rawResponse)
@@ -86,11 +104,21 @@ public class ContractServiceImpl implements ContractService {
         // dto로 파싱
         BuildingRegisterResponse dto =
                 CodefConverter.parseDataToDto(rawResponse, BuildingRegisterResponse.class);
+
         // PDF 바이트 추출
         byte[] pdfBytes = PdfUtil.decodePdfBytes(dto.getResOriGinalData());
+        if (pdfBytes == null || pdfBytes.length == 0) {
+            log.warn("PDF bytes empty: buildingId={}, type={}", buildingId, docType);
+            // 필요시: 예외/복구 로직
+        }
+        // (추가)mongodb에 나머지 json 파싱해서 저장 -> 분석리포트를 위함
+        documentToMongoService.saveJson(memberId, buildingId, docType, dto);
         /* ncp 업로드*/
-        String key  = "building-register/" + dealId + ".pdf";
+        String key  = "building-register/" + "/" + memberId + "/" + buildingId + ".pdf";
         String url = binaryUploaderService.putPdfObject(BUCKET_NAME,key,pdfBytes);
+
+        documentToMongoService.updatePdfMeta(memberId, buildingId,
+                docType, url, pdfBytes.length, null);
 
         return new DealResponse.Download(url);
     }

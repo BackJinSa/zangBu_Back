@@ -17,6 +17,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
     this.jwtProcessor = jwtProcessor;
   }
 
+  //TODO: 테스트 후 이거 필요 없으면 삭제하기
   @Override
   public boolean beforeHandshake(
       ServerHttpRequest request, ServerHttpResponse response,

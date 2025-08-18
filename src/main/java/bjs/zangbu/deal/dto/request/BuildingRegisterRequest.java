@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public class BuildingRegisterRequest {
     //todo : dealdocumentinfo와 같은 형식이면 둘중 하나 날리는게 나을듯
     /** dealId → mapper 에서 채운다 */
-    private Long dealId;
+    private Long buildingId;
 
     // --- CODEF 파라미터 ---
     private String userName;       // 사용자 이름
@@ -29,7 +29,7 @@ public class BuildingRegisterRequest {
     /** mapper→DTO 변환 헬퍼 */
     public static BuildingRegisterRequest from(DealDocumentInfo info){
         return BuildingRegisterRequest.builder()
-                .dealId(info.getDealId())
+                .buildingId(info.getBuildingId())
                 .userName(info.getName())
                 .identity(info.getIdentity())
                 .birthDate(info.getBirth())

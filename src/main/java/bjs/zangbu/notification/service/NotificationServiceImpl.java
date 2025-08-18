@@ -15,6 +15,7 @@ import bjs.zangbu.notification.vo.Notification;
 import bjs.zangbu.notification.vo.Type;
 import bjs.zangbu.review.mapper.ReviewMapper;
 import com.github.pagehelper.PageInfo;
+import com.github.pagehelper.page.PageMethod;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataAccessException;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static bjs.zangbu.notification.dto.response.NotificationResponse.*;
 import static bjs.zangbu.notification.dto.response.NotificationResponse.NotificationElement.formatMoney;
@@ -46,15 +48,35 @@ public class NotificationServiceImpl implements NotificationService {
     // ====================== API 전용 ======================
     // [API] 전체 알림 조회(DB select)
     @Override
-    public NotificationAll getAllNotifications(String memberId) {
-        // 1. 알림 VO 리스트 조회
-        List<Notification> notifications = notificationMapper.selectAllByMemberId(memberId);
+    public NotificationAll getAllNotifications(String memberId, String type) {
+        // type = null/공백/ALL → 필터 없음, 그 외는 enum 매칭 실패 시 필터 없음(전체)
+        String normalized = normalizeTypeOrNull(type);
 
-        // 2. PageInfo로 감싸서 페이지 정보 획득
-        PageInfo<Notification> pageInfo = new PageInfo<>(notifications);
+        // 1) 목록 (페이징 적용됨: 컨트롤러에서 startPage가 이미 호출됨)
+        List<Notification> list = notificationMapper.selectAllByMemberId(memberId, normalized);
+        PageInfo<Notification> pageInfo = new PageInfo<>(list);
 
-        // 3. DTO로 변환
-        return NotificationAll.toDto(pageInfo);
+        // 2) 타입별 전체 카운트 (페이징 영향 제거)
+        PageMethod.clearPage();
+        TypeCounts counts = notificationMapper.selectTypeCountsByMemberId(memberId);
+
+        // 3) 응답 조립 (목록 페이지 정보 + filterCounts 동시 포함)
+        return NotificationAll.toDto(pageInfo, counts);
+    }
+
+    /** null/공백/ALL → null(필터 없음), 유효 타입만 허용 */
+    private String normalizeTypeOrNull(String type) {
+        if (type == null || type.isBlank()) return null;
+        String up = type.trim().toUpperCase(Locale.ROOT);
+        switch (up) {
+            case "ALL": return null; // 전체
+            case "BUILDING":
+            case "TRADE":
+            case "REVIEW":
+                return up;
+            default:
+                return null; // 잘못된 값은 전체로 간주
+        }
     }
 
     // [API] 하나의 알림 읽음 처리 (DB update)

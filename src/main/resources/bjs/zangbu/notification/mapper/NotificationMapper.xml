@@ -23,7 +23,22 @@
             building_id AS buildingId
         FROM notification
         WHERE member_id = #{memberId}
+        <if test="type != null and type != ''">
+            AND `type` = #{type}
+        </if>
         ORDER BY created_at DESC
+    </select>
+
+    <!-- 타입별 전체 카운트 (회원 기준, 단일 로우로 리턴) -->
+    <select id="selectTypeCountsByMemberId"
+            resultType="bjs.zangbu.notification.dto.response.NotificationResponse$TypeCounts">
+        SELECT
+            COUNT(*)                       AS `all`,
+            SUM(`type`='BUILDING')        AS building,
+            SUM(`type`='TRADE')           AS trade,
+            SUM(`type`='REVIEW')          AS review
+        FROM notification
+        WHERE member_id = #{memberId}
     </select>
 
     <!-- 알림 읽음 처리 -->

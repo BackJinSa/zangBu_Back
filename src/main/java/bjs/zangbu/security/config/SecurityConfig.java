@@ -17,7 +17,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -32,7 +31,7 @@ import org.springframework.web.cors.CorsConfiguration;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  private final UserDetailsService userDetailsService;
+
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final AuthenticationErrorFilter authenticationErrorFilter;
   private final LoginSuccessHandler loginSuccessHandler;
@@ -51,7 +50,6 @@ public class SecurityConfig {
       throws Exception {
     return authConfig.getAuthenticationManager();
   }
-
   /**
    * SecurityFilterChain 구성
    */
@@ -64,7 +62,7 @@ public class SecurityConfig {
             loginFailureHandler);
 
     http
-        .addFilterBefore(jwtUsernamePasswordAuthenticationFilter,
+        .addFilterAt(jwtUsernamePasswordAuthenticationFilter,
             org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthenticationFilter, JwtUsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(authenticationErrorFilter, JwtAuthenticationFilter.class)
@@ -79,9 +77,10 @@ public class SecurityConfig {
               "http://localhost:3000",
               "http://localhost:5173",
               "http://localhost:8080",
-              "http://localhost:61613"
+              "http://localhost:61613",
+              "http://localhost:6379"
           ));
-          config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+          config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
           config.setAllowedHeaders(List.of("*"));
           config.setAllowCredentials(true);
           config.setMaxAge(3600L);
@@ -113,15 +112,28 @@ public class SecurityConfig {
 
             // auth 엔트 포인트
             .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+
             // 보안 API 경로 설정
             .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
             .requestMatchers(new AntPathRequestMatcher("/security/member"))
             .hasAnyRole("ADMIN", "MEMBER")
 
+            // 테스트용: /chat/** 전체 허용
+            .requestMatchers(new AntPathRequestMatcher("/chat/**")).permitAll()
+
+            //테스트용: /deal/**허용
+            .requestMatchers(new AntPathRequestMatcher("/deal/**")).permitAll()
+
             .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/reissue")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/email")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/check/email")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/check/nickname")).permitAll()
+
+            .requestMatchers(new AntPathRequestMatcher("/auth/logout")).authenticated()
+            .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()
 
             // 그 외 요청은 인증 필요
             .anyRequest().authenticated()

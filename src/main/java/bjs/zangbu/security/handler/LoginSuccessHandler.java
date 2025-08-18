@@ -3,12 +3,13 @@ package bjs.zangbu.security.handler;
 import bjs.zangbu.security.account.dto.response.AuthResponse;
 import bjs.zangbu.security.account.vo.CustomUser;
 import bjs.zangbu.security.account.vo.MemberEnum;
+import bjs.zangbu.security.token.TokenFacade;   // 공통 파사드
 import bjs.zangbu.security.util.JsonResponse;
-import bjs.zangbu.security.util.JwtProcessor;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.Authentication;
@@ -20,31 +21,32 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-  private final JwtProcessor jwtProcessor;
-
-  private AuthResponse.LoginResponse makeLoginResponse(CustomUser user) {
-
-    //JsonResponse로 보낼 값들 만들어야함.
-    //성공했으므로  Authentication객체가 이미 만들어져서
-    //SecuriyContextHolder에 들어가 있음.
-    String email = user.getMember().getEmail();
-    MemberEnum role = user.getMember().getRole();
-
-    // 토큰 생성
-    String accessToken = jwtProcessor.generateAccessToken(email, role.name());
-    String refreshToken = jwtProcessor.generateRefreshToken(email);
-    // 토큰 + 사용자 기본 정보 (사용자명, ...)를 묶어서 AuthResultDTO 구성
-    return new AuthResponse.LoginResponse(accessToken, refreshToken, role);
-  }
+  private final TokenFacade tokenFacade; // Jwt 발급 + Redis 저장 + TTL 제공
 
   @Override
-  public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-      Authentication authentication) throws IOException, ServletException {
-    // 인증 결과 Principal
-    CustomUser user = (CustomUser) authentication.getPrincipal();
+  public void onAuthenticationSuccess(HttpServletRequest request,
+                                      HttpServletResponse response,
+                                      Authentication authentication)
+          throws IOException, ServletException {
 
-    // 인증 성공 결과를 JSON으로 직접 응답
-    AuthResponse.LoginResponse result = makeLoginResponse(user);
-    JsonResponse.send(response, result);
+    CustomUser user = (CustomUser) authentication.getPrincipal();
+    String email = user.getMember().getEmail();
+    MemberEnum role = user.getMember().getRole();
+    String nickname = user.getMember().getNickname();
+
+    // 토큰 발급 + Redis 저장
+    AuthResponse.LoginResponse result = tokenFacade.issueAndPersist(email, role, nickname);
+
+    // refresh 토큰은 쿠키로만 전달 (SameSite=None; Secure; HttpOnly)
+    int maxAge = tokenFacade.getRefreshTtlSeconds(); // Facade에서 TTL 제공
+    String setCookie = String.format(
+            "refreshToken=%s; Max-Age=%d; Path=/; HttpOnly; Secure; SameSite=None",
+            result.getRefreshToken(), maxAge
+    );
+    response.addHeader("Set-Cookie", setCookie);
+
+    // access 토큰은 바디로만 응답 (refresh는 숨김)
+    JsonResponse.send(response,
+            new AuthResponse.LoginResponse(result.getAccessToken(), null, role, nickname));
   }
 }

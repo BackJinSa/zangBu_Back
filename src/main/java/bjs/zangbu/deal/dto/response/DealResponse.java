@@ -27,7 +27,10 @@ public class DealResponse {
   public static class Notice {
 
     @ApiModelProperty(value = "건물 ID", example = "1001")
-    private Long buildingId;
+    private Long dealId;
+
+    @ApiModelProperty(value = "채팅방 ID", example = "101")
+    private String chatRoomId;
 
     @ApiModelProperty(value = "건물 이름", example = "신촌 한울타리 아파트")
     private String buildingName;
@@ -38,13 +41,14 @@ public class DealResponse {
     /**
      * {@link Building} → {@link Notice} 변환
      *
-     * @param buildingId 매물 ID
-     * @param buildVO    건물 VO
+     * @param dealId  매물 ID
+     * @param buildVO 건물 VO
      * @return 변환된 Notice DTO
      */
-    public static Notice toDto(Long buildingId, Building buildVO) {
+    public static Notice toDto(Long dealId, String chatRoomId, Building buildVO) {
       return new Notice(
-          buildingId,
+          dealId,
+          chatRoomId,
           buildVO.getBuildingName(),
           buildVO.getInfoBuilding()
       );

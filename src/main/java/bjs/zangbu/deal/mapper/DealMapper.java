@@ -73,18 +73,18 @@ public interface DealMapper {
   /**
    * 등기부등본 조회에 필요한 데이터 조회
    *
-   * @param dealId 거래 식별 ID
+   * @param buildingId 거래 식별 ID
    * @return 등기부등본 요청 DTO
    */
-  EstateRegistrationRequest getEstateRegistrationRequest(@Param("dealId") Long dealId);
+  EstateRegistrationRequest getEstateRegistrationRequest(@Param("buildingId") Long buildingId);
 
   /**
    * 건축물대장 조회에 필요한 데이터 조회
    *
-   * @param dealId 거래 식별 ID
+   * @param buildingId 거래 식별 ID
    * @return 건축물대장 정보 DTO
    */
-  DealDocumentInfo getDocumentInfo(@Param("dealId") Long dealId);
+  DealDocumentInfo getDocumentInfo(@Param("buildingId") Long buildingId);
 
   /**
    * 표준계약서 XML 코드 조회
@@ -127,4 +127,5 @@ public interface DealMapper {
    */
   Long getComplexIdByDealId(@Param("dealId") Long dealId);
 
+  String getRoomIdByDealId(Long dealId);
 }

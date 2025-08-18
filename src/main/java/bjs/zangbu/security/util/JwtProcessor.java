@@ -57,7 +57,7 @@ public class JwtProcessor {
     // username = email 추출
     public String getEmail(String token) {
         if (!validateToken(token)) {
-            throw new JwtException("유효하지 않은 토큰입니다.");
+            return null;
         }
         return getClaims(token).getSubject();
     }

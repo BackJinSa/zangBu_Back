@@ -10,11 +10,9 @@ import bjs.zangbu.building.dto.response.BuildingResponse.*;
 import bjs.zangbu.building.mapper.BuildingMapper;
 import bjs.zangbu.complexList.service.ComplexListService;
 import bjs.zangbu.complexList.vo.ComplexList;
-import bjs.zangbu.global.formatter.PrettyJsonFormatter;
 import bjs.zangbu.imageList.service.ImageListService;
 import bjs.zangbu.imageList.vo.ImageList;
 import bjs.zangbu.ncp.service.MultipartUploaderService;
-import bjs.zangbu.review.dto.response.ReviewListResponse;
 import bjs.zangbu.review.service.ReviewService;
 import bjs.zangbu.review.vo.ReviewListResponseVO;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -69,7 +67,8 @@ public class BuildingServiceImpl implements BuildingService {
     public void bookMarkService(BookmarkRequest request, String memberId) {
         buildingFilter.validateBuildingExists(request.getBuildingId());
         Integer price = buildingMapper.selectCurrentPrice(request.getBuildingId());
-        bookMarkService.insertBookMark(memberId, request.getBuildingId(), request.getComplexId(), price);
+        Long complexId = complexListService.getComplexIdByBuildingId(request.getBuildingId());
+        bookMarkService.insertBookMark(memberId, request.getBuildingId(), complexId, price);
         buildingMapper.incrementBookmarkCount(request.getBuildingId());
     }
 
@@ -96,23 +95,23 @@ public class BuildingServiceImpl implements BuildingService {
     @Override
     @Transactional
     public void SaleRegistration(SaleRegistrationRequest request, String memberId) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
-//        String codefResponse1 = codefService.realEstateRegistrationAddressSearch(request);
-//        log.info(PrettyJsonFormatter.toPrettyJson(codefResponse1));
-//        // CODEF 응답 JSON에서 'data' 필드를 Map으로 파싱
-//        Map<String, Object> dataMap = CodefConverter.parseDataToDto(codefResponse1, Map.class);
-//
-//        // Map에서 "commUniqueNo" 값을 추출
-//        String authenticity = (String) dataMap.get("commUniqueNo");
-//
-//        String codefResponse2 = codefService.RealEstateRegistrationRegister(authenticity, request.getIdentity());
-//
-//        Map<String, Object> dataMap2 = CodefConverter.parseDataToDto(codefResponse2, Map.class);
-//
-//        String resMatchYN = (String) dataMap2.get("resMatchYN");
-//
-//        if(!resMatchYN.equals("1")) {
-//            return;
-//        }
+        String codefResponse1 = codefService.realEstateRegistrationAddressSearch(request);
+        System.out.println(codefResponse1);
+        // CODEF 응답 JSON에서 'data' 필드를 Map으로 파싱
+        Map<String, Object> dataMap = CodefConverter.parseDataToDto(codefResponse1, Map.class);
+        System.out.println(dataMap);
+        // Map에서 "commUniqueNo" 값을 추출
+        String authenticity = (String) dataMap.get("commUniqueNo");
+        System.out.println(authenticity);
+        String codefResponse2 = codefService.RealEstateRegistrationRegister(authenticity, request.getIdentity());
+        System.out.println(codefResponse2);
+        Map<String, Object> dataMap2 = CodefConverter.parseDataToDto(codefResponse2, Map.class);
+        System.out.println(dataMap2);
+        String resMatchYN = (String) dataMap2.get("resMatchYN");
+        System.out.println(resMatchYN);
+        if(!resMatchYN.equals("1")) {
+            return;
+        }
         // complex 저장
         ComplexList complex = ComplexDetails.toVo(request.getComplexList());
         Long complexId = complexListService.createComplexList(complex);

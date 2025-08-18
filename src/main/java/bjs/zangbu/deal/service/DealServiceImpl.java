@@ -2,6 +2,7 @@ package bjs.zangbu.deal.service;
 
 import bjs.zangbu.building.mapper.BuildingMapper;
 import bjs.zangbu.building.vo.Building;
+import bjs.zangbu.chat.service.ChatService;
 import bjs.zangbu.deal.dto.join.DealWithChatRoom;
 import bjs.zangbu.deal.dto.request.DealRequest.Status;
 import bjs.zangbu.deal.dto.response.DealResponse.CreateResult;
@@ -35,19 +36,26 @@ public class DealServiceImpl implements DealService {
   private final BuildingMapper buildingMapper;
   private final ImageListService imageListService;
   private final NotificationService notificationService;
+  private final ChatService chatService;
 
   /**
    * 거래 전 안내 조회
    *
-   * @param buildingId 매물 식별 ID
+   * @param dealId 매물 식별 ID
    * @return 거래 전 안내 DTO
    */
   @Override
-  public Notice getNotice(Long buildingId) {
-    // buildMapper 에서 Building 조회
+  public Notice getNotice(Long dealId) {
+    // buildingId 조회
+    Long buildingId = dealMapper.getBuildingIdByDealId(dealId);
+
+    // chatRoomId 조회
+    String chatRoomId = dealMapper.getRoomIdByDealId(dealId);
+
+    // Building 조회
     Building buildVO = buildingMapper.getBuildingById(buildingId);
 
-    return Notice.toDto(buildingId, buildVO);
+    return Notice.toDto(dealId, chatRoomId, buildVO);
   }
 
   /**
@@ -140,6 +148,7 @@ public class DealServiceImpl implements DealService {
     String from = dealMapper.getStatusByDealId(status.getDealId());
     // 바꿀(요청) 상태
     String to = status.getStatus();
+    log.info("DealServiceImpl - patchStatus: " + from + " -> " + to);
 
     // 상태 FLOW 체크: from -> to 가 유효한지
     if (!checkStatus(from, to)) {
@@ -151,6 +160,15 @@ public class DealServiceImpl implements DealService {
     int updated = dealMapper.patchStatus(status);
     if (updated != 1) {
       return false;
+    }
+    String roomId = dealMapper.getRoomIdByDealId(status.getDealId());
+
+    if (to.equals("BEFORE_CONSUMER")) {
+      chatService.publishSystemMessage(roomId, "판매자가 거래를 활성화했습니다.");
+    } else if (to.equals("MIDDLE_DEAL")) {
+      chatService.publishSystemMessage(roomId, "구매자가 거래를 수락했습니다. 거래가 시작되었습니다.");
+    } else if (to.equals("CLOSE_DEAL")) {
+      chatService.publishSystemMessage(roomId, "거래가 완료되었습니다.");
     }
 
     // 성공적으로 업데이트된 뒤 알림
