@@ -50,37 +50,37 @@ public class AuthServiceImpl implements AuthService {
   private static final String REFRESH_TOKEN_PREFIX = "refresh:"; //prefix
   private static final String SIGNUP_VERIFY_PREFIX = "signup:verify:";
 
-  @Override
-  public LoginResponse login(LoginRequest loginRequest) {
-    Member member = mapper.findByEmail(loginRequest.getEmail());
-
-    if (member == null || !passwordEncoder.matches(loginRequest.getPassword(),
-        member.getPassword())) {
-      throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
-    }
-
-    // 회원 찾기 성공 시 JWT 발급
-    String accessToken = jwtProcessor.generateAccessToken(member.getEmail(),
-        member.getRole().name());
-    String refreshToken = jwtProcessor.generateRefreshToken(member.getEmail());
-
-    //redis에 refresh 토큰 저장
-    redisTemplate.opsForValue().set(
-        REFRESH_TOKEN_PREFIX + member.getEmail(),   // Key
-        refreshToken,                     // Value
-        jwtProcessor.getRefreshTokenExpiration(), // refresh 토큰 유효시간
-        TimeUnit.MILLISECONDS
-    );
-
-    // Redis에 로그인 상태 저장 (만료시간 2시간)
-    redisTemplate.opsForValue().set(
-        "login:" + member.getEmail(), // key
-        "true",                       // value
-        Duration.ofHours(2)           // TTL: 2시간
-    );
-
-    return new LoginResponse(accessToken, refreshToken, member.getRole());
-  }
+//  @Override
+//  public LoginResponse login(LoginRequest loginRequest) {
+//    Member member = mapper.findByEmail(loginRequest.getEmail());
+//
+//    if (member == null || !passwordEncoder.matches(loginRequest.getPassword(),
+//        member.getPassword())) {
+//      throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
+//    }
+//
+//    // 회원 찾기 성공 시 JWT 발급
+//    String accessToken = jwtProcessor.generateAccessToken(member.getEmail(),
+//        member.getRole().name());
+//    String refreshToken = jwtProcessor.generateRefreshToken(member.getEmail());
+//
+//    //redis에 refresh 토큰 저장
+//    redisTemplate.opsForValue().set(
+//        REFRESH_TOKEN_PREFIX + member.getEmail(),   // Key
+//        refreshToken,                     // Value
+//        jwtProcessor.getRefreshTokenExpiration(), // refresh 토큰 유효시간
+//        TimeUnit.MILLISECONDS
+//    );
+//
+//    // Redis에 로그인 상태 저장 (만료시간 2시간)
+//    redisTemplate.opsForValue().set(
+//        "login:" + member.getEmail(), // key
+//        "true",                       // value
+//        Duration.ofHours(2)           // TTL: 2시간
+//    );
+//
+//    return new LoginResponse(accessToken, refreshToken, member.getRole());
+//  }
 
   //로그아웃
   @Override
@@ -192,6 +192,9 @@ public class AuthServiceImpl implements AuthService {
   //이메일 찾기(이름, 휴대폰 번호로)
   @Override
   public EmailAuthResponse findEmail(EmailAuthRequest request) {
+    String normalizedPhone = request.getPhone().replaceAll("\\D", "");
+    request.setPhone(normalizedPhone);
+
     String email = mapper.findEmailByNameAndPhone(request.getName(), request.getPhone());
 
     if (email == null) {
