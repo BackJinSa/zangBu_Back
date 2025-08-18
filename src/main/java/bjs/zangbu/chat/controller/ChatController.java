@@ -7,7 +7,10 @@ import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.dto.request.ChatRequest;
 import bjs.zangbu.chat.vo.ChatRoom;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
+import bjs.zangbu.security.account.vo.CustomUser;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -19,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -42,10 +46,19 @@ public class ChatController {
 
 
   @PostMapping(value = "/room/{buildingId}", produces = "application/json;charset=UTF-8")
-  public ResponseEntity<ChatRoom> createChatRoom(@PathVariable Long buildingId) {
-    //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    //String consumerId = authentication.getName();  //TODO: 테스트용, 나중에 주석 취소
-    String consumerId = "8h9i0j1k-1111-2222-3333-444455556673";
+  public ResponseEntity<?> createChatRoom(@PathVariable Long buildingId,  Authentication authentication) {
+         if (authentication == null || !authentication.isAuthenticated()) {
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("controller: authentication이 null입니다.");
+         }
+         log.info("== Auth Info ==");
+         log.info("authentication = {}", authentication);
+
+         Object principal = authentication.getPrincipal();
+         // DB 재조회하지 않고 필터에서 넣어준 CustomUser에서 바로 꺼내기
+         if (!(principal instanceof bjs.zangbu.security.account.vo.CustomUser cu) || cu.getMember() == null) {
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 주체를 확인할 수 없습니다.");
+         }
+         String consumerId = cu.getMember().getMemberId();
 
     log.info("ChatController - createChatRoom");
     ChatRoom room = chatService.createChatRoom(buildingId, consumerId);
@@ -66,11 +79,12 @@ public class ChatController {
     @ApiParam(value = "페이지 번호")
       @RequestParam int page,
     @ApiParam(value = "한 페이지 당 표시할 개수")
-      @RequestParam int size) {
+      @RequestParam int size,
+    @AuthenticationPrincipal CustomUser userDetails) {
     log.info("ChatController - getChatRoomList");
 
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    String userId = authentication.getName();
+    String userId = userDetails.getMember().getMemberId();
+    log.info("ChatController - getChatRoomList - userId: " + userId);
 
     // 프론트 → 매퍼 타입 매핑
     String mapped = switch (type) {
@@ -161,12 +175,17 @@ public class ChatController {
   })
 
   @PatchMapping("/list/exit/{roomId}")
-  public ResponseEntity<Void> leaveChatRoom(
+  public ResponseEntity<?> leaveChatRoom(
     @ApiParam(value = "나갈 채팅방 id")
-      @PathVariable String roomId) {
-    //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    //String userId = authentication.getName();
-    String userId = "8h9i0j1k-1111-2222-3333-444455556673";
+      @PathVariable String roomId,
+    Authentication authentication
+    ) {
+         Object principal = authentication.getPrincipal();
+         // DB 재조회하지 않고 필터에서 넣어준 CustomUser에서 바로 꺼내기
+         if (!(principal instanceof bjs.zangbu.security.account.vo.CustomUser cu) || cu.getMember() == null) {
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 주체를 확인할 수 없습니다.");
+         }
+         String userId = cu.getMember().getMemberId();
 
     chatService.leaveChatRoom(roomId, userId);
     return ResponseEntity.status(204).build();
@@ -181,12 +200,16 @@ public class ChatController {
        @ApiResponse(code = 500, message = "서버 내부 오류")
   })
   @PutMapping(value = "/room/{roomId}/read")
-  public ResponseEntity<Void> markAsRead(
+  public ResponseEntity<?> markAsRead(
     @ApiParam(value = "채팅방 ID")
-      @PathVariable String roomId) {
-    //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-   //String userId = authentication.getName();
-    String userId = "8h9i0j1k-1111-2222-3333-444455556673";
+      @PathVariable String roomId, Authentication authentication) {
+
+         Object principal = authentication.getPrincipal();
+         // DB 재조회하지 않고 필터에서 넣어준 CustomUser에서 바로 꺼내기
+         if (!(principal instanceof bjs.zangbu.security.account.vo.CustomUser cu) || cu.getMember() == null) {
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 주체를 확인할 수 없습니다.");
+         }
+         String userId = cu.getMember().getMemberId();
     log.info("ChatController - markAsRead");
 
     chatService.markAsRead(roomId, userId);
@@ -210,6 +233,19 @@ public class ChatController {
             return ResponseEntity.ok(new ChatResponse.ChatRoomExistResponse(true, chatRoom.getChatRoomId()));
         } else {
             return ResponseEntity.ok(new ChatResponse.ChatRoomExistResponse(false, null));
+        }
+    }
+
+    @GetMapping("/id")
+    public ResponseEntity<Map<String, String>> findMemberId(@RequestParam String email) {
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "email is required"));
+        }
+        try {
+            String memberId = chatService.getUserIdByEmail(email);
+            return ResponseEntity.ok(Map.of("memberId", memberId));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body(Map.of("error", "member not found"));
         }
     }
 
