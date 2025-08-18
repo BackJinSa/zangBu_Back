@@ -226,7 +226,7 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
     parameterMap.put("userName", request.getName());
     parameterMap.put("issueDate", request.getIssueDate());
     parameterMap.put("identityEncYn", "Y");
-    parameterMap.put("timeout", "170"); // 2차 인증 대기 시간
+//    parameterMap.put("timeout", "170"); // 2차 인증 대기 시간
 
     // 2. 1차 인증 요청
     String firstResponse = codef.requestProduct(productUrl, EasyCodefServiceType.DEMO, parameterMap);
@@ -266,15 +266,21 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
       HashMap<String, Object> responseMap2 = new ObjectMapper().readValue(secondResponse, HashMap.class);
 
       HashMap<String, Object> resultMap2 = (HashMap<String, Object>) responseMap2.get("result");
+      // 인증 갱신 값 파싱을 위한 해시맵
+      HashMap<String, Object> data2 = (HashMap<String, Object>) responseMap2.get("data");
+      // 코드 상태 번호
       String code2 = (String) resultMap2.get("code");
+      System.out.println("code2 = " + code2);
+      if(code2.equals("CF-00000")) {
+        return objectMapper.writeValueAsString(data2);
+      }
       // 여기서 CF-03002 + captcha 단계여야 함
       if (!"CF-03002".equals(code2)) {
         // 이미 최종 성공/실패로 넘어간 케이스 → 그대로 전달하거나 에러 처리
         // 필요 시 아래 라인처럼 바로 반환:
         throw new IllegalStateException("예상치 못한 2-Way 상태: " + code2);
       }
-      // 인증 갱신 값 파싱을 위한 해시맵
-      HashMap<String, Object> data2 = (HashMap<String, Object>) responseMap2.get("data");
+
       // png를 위한 파싱을 위한 해시맵
       HashMap<String, Object> extraInfo = (HashMap<String, Object>) data2.get("extraInfo");
       // 보안문자 png

@@ -25,6 +25,7 @@ import org.springframework.web.servlet.view.JstlView;
     "bjs.zangbu.chat.controller",
     "bjs.zangbu.codef.controller",
     "bjs.zangbu.deal.controller",
+    "bjs.zangbu.documentReport.controller",
     "bjs.zangbu.fcm.controller",
     "bjs.zangbu.map.controller",
     "bjs.zangbu.member.controller",

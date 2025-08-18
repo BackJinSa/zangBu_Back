@@ -50,11 +50,37 @@
         </selectKey>
     </insert>
 
-    <select id="getComplexNoByBuildingId" resultType="java.lang.String">
-        SELECT cl.complex_no
+   
+    
+    <!-- 건물 ID로 단지 ID 조회 -->
+    <select id="selectComplexIdByBuildingId" resultType="java.lang.Long">
+        SELECT cl.complex_id
         FROM complex_list cl
                  JOIN building b ON cl.complex_id = b.complex_id
         WHERE b.building_id = #{buildingId}
+    </select>
+    
+    <!-- 단지 ID로 단지 정보 조회 -->
+    <select id="selectById" resultType="bjs.zangbu.complexList.vo.ComplexList">
+        SELECT 
+            complex_id,
+            res_type,
+            complex_name,
+            complex_no,
+            sido,
+            sigungu,
+            si_code,
+            eupmyeondong,
+            transaction_id,
+            address,
+            zonecode,
+            building_name,
+            bname,
+            dong,
+            ho,
+            roadName
+        FROM complex_list
+        WHERE complex_id = #{complexId}
     </select>
 
     <select id="getComplexIdByBuildingId" resultType="java.lang.Long">
@@ -64,4 +90,17 @@
         WHERE building_id = #{buildingId}
     </select>
 
+    <select id="getComplexNoByBuildingId" resultType="java.lang.String">
+        SELECT cl.complex_no
+        FROM complex_list cl
+                 JOIN building b ON cl.complex_id = b.complex_id
+        WHERE b.building_id = #{buildingId}
+    </select>
+
+    <select id="getComplexListByBuildingId" resultType="bjs.zangbu.complexList.vo.ComplexList">
+        SELECT cl.*
+        FROM complex_list cl
+                 JOIN building b ON cl.complex_id = b.complex_id
+        WHERE b.building_id = #{buildingId}
+    </select>
 </mapper>
