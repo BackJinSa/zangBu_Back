@@ -142,6 +142,13 @@ dependencies {
     // Apache Commons Codec
     implementation 'commons-codec:commons-codec:1.15'
 
+<<<<<<< HEAD
+=======
+    //mongoDb
+    implementation "org.mongodb:mongodb-driver-sync:4.11.1"
+    
+
+>>>>>>> 5add48663c9a714df1a3a8a55953f5d33ffda73c
     //JSON localdatetime 직렬화 문제로 추가함
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 }

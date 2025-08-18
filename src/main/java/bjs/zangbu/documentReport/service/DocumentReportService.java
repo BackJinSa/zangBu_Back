@@ -1,5 +1,6 @@
 package bjs.zangbu.documentReport.service;
 
+import bjs.zangbu.deal.vo.DocumentType;
 import bjs.zangbu.documentReport.dto.request.DocumentReportRequest.DocumentReportRequestElement;
 import bjs.zangbu.documentReport.dto.request.EstateRegisterData;
 import bjs.zangbu.documentReport.dto.response.DocumentReportResponse.DocumentReportElement;
@@ -18,4 +19,9 @@ public interface DocumentReportService {
   DocumentReportElement createDocumentReport(String userId,
       DocumentReportRequestElement request);
 
+  String getLatestUrlOrNull(String memberId, Long buildingId, DocumentType type);
+
+  void saveLatestUrl(String memberId, Long buildingId, DocumentType type, String url);
+
+  void deleteLatestUrl(String memberId, Long buildingId, DocumentType type);
 }

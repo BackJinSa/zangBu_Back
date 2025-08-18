@@ -40,6 +40,7 @@ public class ChatController {
        @ApiResponse(code = 500, message = "서버 내부 오류")
 })
 
+
   @PostMapping(value = "/room/{buildingId}", produces = "application/json;charset=UTF-8")
   public ResponseEntity<ChatRoom> createChatRoom(@PathVariable Long buildingId) {
     //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -58,7 +59,6 @@ public class ChatController {
        @ApiResponse(code = 400, message = "채팅방 목록 조회 실패"),
        @ApiResponse(code = 500, message = "서버 내부 오류")
   })
-
   @GetMapping(value=  "/list",  produces = "application/json;charset=UTF-8")
   public  ResponseEntity<ChatResponse.ChatRoomListPage> getChatRoomList(
     @ApiParam(value = "판매 타입", example = "ALL or BUY or SELL")
@@ -79,7 +79,6 @@ public class ChatController {
       case "SELL" -> "SELLER";
       default     -> "ALL";
     };
-
     List<ChatResponse.ChatRoomListResponse> roomList = chatService.getChatRoomList(userId, mapped,
         page, size);
 
@@ -182,7 +181,6 @@ public class ChatController {
        @ApiResponse(code = 404, message = "채팅방이 존재하지 않음"),
        @ApiResponse(code = 500, message = "서버 내부 오류")
   })
-
   @PutMapping(value = "/room/{roomId}/read")
   public ResponseEntity<Void> markAsRead(
     @ApiParam(value = "채팅방 ID")

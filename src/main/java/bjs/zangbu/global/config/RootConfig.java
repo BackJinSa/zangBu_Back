@@ -1,10 +1,15 @@
 package bjs.zangbu.global.config;
 
+import bjs.zangbu.mongo.Dao.ReportDocumentDao;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageInterceptor;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.util.Properties;
+import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -103,5 +108,36 @@ public class RootConfig {
   @Bean
   public ObjectMapper objectMapper() {
     return new ObjectMapper();
+  }
+
+  /* ---------- Mongo ---------- */
+  @Value("${mongo.uri}")  String mongoUri;                         // ex) mongodb://localhost:27017
+  @Value("${mongo.db}")   String mongoDb;                          // ex) zangBu
+  @Value("${mongo.collections.report:report_documents}")
+  String reportCollectionName;                                     // ex) report_documents
+
+  private MongoClient mongoClientRef; // 종료 시 close
+
+  @Bean
+  public MongoClient mongoClient() {
+    mongoClientRef = MongoClients.create(mongoUri);
+    return mongoClientRef;
+  }
+
+  @Bean
+  public MongoDatabase mongoDatabase(MongoClient client) {
+    return client.getDatabase(mongoDb);
+  }
+
+  @Bean
+  public ReportDocumentDao reportDocumentDao(MongoDatabase db) {
+    ReportDocumentDao dao = new ReportDocumentDao(db, reportCollectionName);
+    dao.ensureIndexes(); // (memberId, buildingId, docType) 유니크 & 조회 인덱스 보장
+    return dao;
+  }
+
+  @PreDestroy
+  public void close() {
+    if (mongoClientRef != null) mongoClientRef.close();
   }
 }
