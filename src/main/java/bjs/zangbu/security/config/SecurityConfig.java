@@ -50,6 +50,7 @@ public class SecurityConfig {
             throws Exception {
         return authConfig.getAuthenticationManager();
     }
+
     /**
      * SecurityFilterChain 구성
      */

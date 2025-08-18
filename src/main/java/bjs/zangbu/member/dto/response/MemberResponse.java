@@ -1,8 +1,13 @@
 package bjs.zangbu.member.dto.response;
 
+import bjs.zangbu.building.vo.Building;
 import bjs.zangbu.member.dto.join.BookmarkBuilding;
 import com.github.pagehelper.PageInfo;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -93,4 +98,82 @@ public class MemberResponse {
     @ApiModelProperty(value = "알림 수신 동의 여부", example = "true")
     private Boolean consent;
   }
+
+  // 내가 등록한 매물 리스트 dto
+
+  @Getter
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class MyBuildingList {
+    private int pageNum;
+    private int pageSize;
+    private long total;
+    private int pages;
+    private List<MyBuildingElement> buildings;
+
+    public static MyBuildingList toDto(PageInfo<Building> pageInfo) {
+      List<MyBuildingElement> list = pageInfo.getList().stream()
+              .map(MyBuildingElement::fromEntity)
+              .collect(Collectors.toList());
+
+      return new MyBuildingList(
+              pageInfo.getPageNum(),
+              pageInfo.getPageSize(),
+              pageInfo.getTotal(),
+              pageInfo.getPages(),
+              list
+      );
+    }
+  }
+
+  @Getter
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class MyBuildingElement {
+    private Long buildingId;
+    private String sellerNickname;
+    private String saleType;
+    private Integer price;
+    private Long deposit;
+    private Integer bookmarkCount;
+    private String createdAt;
+    private String buildingName;
+    private String sellerType;
+    private String propertyType;
+    private String moveDate;
+    private String infoOneline;
+    private String infoBuilding;
+    private String contactName;
+    private String contactPhone;
+    private String facility;
+    private float size;
+    private String memberId;
+    private Long complexId;
+
+    public static MyBuildingElement fromEntity(Building b) {
+      DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+      return new MyBuildingElement(
+              b.getBuildingId(),
+              b.getSellerNickname(),
+              b.getSaleType() != null ? b.getSaleType().name() : null,
+              b.getPrice(),
+              b.getDeposit(),
+              b.getBookmarkCount(),
+              b.getCreatedAt() != null ? b.getCreatedAt().format(fmt) : null,
+              b.getBuildingName(),
+              b.getSellerType() != null ? b.getSellerType().name() : null,
+              b.getPropertyType() != null ? b.getPropertyType().name() : null,
+              b.getMoveDate() != null ? b.getMoveDate().format(fmt) : null,
+              b.getInfoOneline(),
+              b.getInfoBuilding(),
+              b.getContactName(),
+              b.getContactPhone(),
+              b.getFacility(),
+              b.getSize(),
+              b.getMemberId(),
+              b.getComplexId()
+      );
+    }
+  }
+
 }

@@ -1,5 +1,6 @@
 package bjs.zangbu.member.mapper;
 
+import bjs.zangbu.building.vo.Building;
 import bjs.zangbu.member.dto.join.BookmarkBuilding;
 import bjs.zangbu.security.account.vo.Member;
 import org.apache.ibatis.annotations.Param;
@@ -53,4 +54,7 @@ public interface MemberMapper {
     Member findByEmail(String email);
 
     Member findByMemberId(String memberId);
+
+    // 내가 등록한 매물 리스트 조회
+    List<Building> findMyBuildings(@Param("memberId") String memberId);
 }
