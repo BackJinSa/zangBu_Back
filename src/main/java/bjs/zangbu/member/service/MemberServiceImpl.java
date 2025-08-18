@@ -1,6 +1,6 @@
 package bjs.zangbu.member.service;
 
-import bjs.zangbu.building.vo.Building;
+import bjs.zangbu.building.vo.BuildingImg;
 import bjs.zangbu.member.dto.join.BookmarkBuilding;
 import bjs.zangbu.member.dto.request.MemberRequest.EditNicknameRequest;
 import bjs.zangbu.member.dto.request.MemberRequest.EditPassword;
@@ -153,11 +153,11 @@ public class MemberServiceImpl implements MemberService{
         }
     }
 
-    // 내가 등록한 매물 전체 리스트 조회
+    // 내가 등록한 매물 전체 리스트 조회 (대표 이미지 포함)
     @Override
-    public List<Building> getMyBuildings(String memberId) {
+    public List<BuildingImg> getMyBuildings(String memberId) {
         validateMemberId(memberId);
-        return memberMapper.findMyBuildings(memberId);
+        return memberMapper.findMyBuildingsWithImg(memberId);
     }
 
     // 유저 식별 헬퍼
