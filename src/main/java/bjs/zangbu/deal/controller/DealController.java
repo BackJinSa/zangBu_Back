@@ -248,20 +248,79 @@ public class DealController {
    * @param type       문서 종류 (예: BUILDING_REGISTER, ARCHITECTURE 등)
    * @return PDF 다운로드 링크
    */
-  @ApiOperation(value = "등기/건축 서류 다운로드", notes = "매물 ID와 문서 유형을 기반으로 등기 또는 건축 서류 PDF 파일을 다운로드합니다.", response = Download.class)
+  @ApiOperation(value = "등기/건축 서류 다운로드(자동 첫 발급 포함))",
+          notes = "최신 URL이 없으면 즉시 발급하여 URL을 반환합니다.",
+          response = Download.class)
   @GetMapping("/consumer/documents/{buildingId}/{type}/download")
   public ResponseEntity<?> downloadDocument(
-      @ApiParam(value = "매물 ID", example = "123")
-      @PathVariable Long buildingId,
-      @ApiParam(value = "문서 타입")
-      @PathVariable DocumentType type) throws Exception {
-    // TODO: 중복 로직 정리 해야 함 , 그 후 스웨거 적용
-    if (type == DocumentType.ESTATE) {
-      return ResponseEntity.ok(contractService.getEstateRegisternPdf(buildingId));
-    } else if (type == DocumentType.BUILDING_REGISTER) {
-      return ResponseEntity.ok(contractService.getBuildingRegisterPdf(buildingId));
+          @ApiIgnore @AuthenticationPrincipal CustomUser user,
+          @ApiParam(value = "매물 ID", example = "123")
+          @PathVariable Long buildingId,
+          @ApiParam(value = "문서 타입")
+          @PathVariable DocumentType type) throws Exception {
+
+    final String memberId = user.getMember().getMemberId();
+
+    // 1) 최신 URL 조회 → 있으면 그대로 반환
+    String existing = documentReportService.getLatestUrlOrNull(memberId, buildingId, type);
+    if (existing != null && !existing.isBlank()) {
+      return ResponseEntity.ok(new DealResponse.Download(existing));
     }
-    return null;
+
+    // 2) 없으면 "첫 발급" 수행 (문서 타입에 따라 분기)
+    DealResponse.Download issued = switch (type) {
+      case ESTATE -> contractService.getEstateRegisterPdf(memberId, buildingId);
+      case BUILDING_REGISTER -> contractService.getBuildingRegisterPdf(memberId, buildingId);
+      default -> throw new IllegalArgumentException("지원하지 않는 문서 타입: " + type);
+    };
+    // 3) 업로드가 켜져 있어 URL이 내려왔는지 확인 후 저장·반환
+    String newUrl = (issued == null) ? null : issued.getUrl();
+    if (newUrl == null || newUrl.isBlank()) {
+      // 업로드 비활성/실패 등인 경우
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body("발급은 되었으나 URL이 비었습니다. 업로드 설정을 확인하세요.");
+    }
+
+    // 최신 URL upsert (중복 upsert 무해)
+    documentReportService.saveLatestUrl(memberId, buildingId, type, newUrl);
+
+    return ResponseEntity.ok(new DealResponse.Download(newUrl));
+  }
+
+  @ApiOperation(
+          value = "등기/건축 서류 수동 갱신(재발급)",
+          notes = "강제로 재발급을 수행하고, 업로드가 성공하면 최신 URL을 반환합니다.",
+          response = Download.class
+  )
+  @PostMapping("/consumer/documents/{buildingId}/{type}/refresh")
+  public ResponseEntity<?> refreshDocument(
+          @ApiIgnore @AuthenticationPrincipal CustomUser user,
+          @PathVariable Long buildingId,
+          @PathVariable DocumentType type
+  ) throws Exception {
+    final String memberId = user.getMember().getMemberId();
+
+    DealResponse.Download issued;
+    switch (type) {
+      case ESTATE:
+        issued = contractService.getEstateRegisterPdf(memberId, buildingId);
+        break;
+      case BUILDING_REGISTER:
+        issued = contractService.getBuildingRegisterPdf(memberId, buildingId);
+        break;
+      default:
+        return ResponseEntity.badRequest()
+                .body("지원하지 않는 문서 타입: " + type);
+    }
+
+
+    String newUrl = (issued == null) ? null : issued.getUrl();
+    if (newUrl == null || newUrl.isBlank()) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body("발급은 되었으나 URL이 비었습니다. 업로드 설정을 확인하세요.");
+    }
+    documentReportService.saveLatestUrl(memberId, buildingId, type, newUrl);
+    return ResponseEntity.ok(new DealResponse.Download(newUrl));
   }
 
   /**
