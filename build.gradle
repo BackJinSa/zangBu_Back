@@ -148,6 +148,13 @@ dependencies {
     
     //JSON localdatetime 직렬화 문제로 추가함
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    //gemini
+    implementation "com.google.genai:google-genai:1.12.0"
+    // Markdown -> HTML
+    implementation "com.vladsch.flexmark:flexmark-all:0.64.8"
+    // XSS 방지
+    implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20240325.1'
 }
 
 test {
