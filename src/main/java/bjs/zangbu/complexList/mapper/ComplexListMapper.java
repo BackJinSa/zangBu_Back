@@ -18,8 +18,6 @@ public interface ComplexListMapper {
    */
   int createComplexList(@Param("complexList") ComplexList complexList);
 
-  String getComplexNoByBuildingId(long buildingId);
-
   /**
    * 건물 ID로 단지 ID를 조회합니다.
    *
@@ -35,7 +33,10 @@ public interface ComplexListMapper {
    * @return 단지 정보
    */
   ComplexList selectById(Long complexId);
+
   String getComplexNoByBuildingId(@Param("buildingId") Long buildingId);
 
   Long getComplexIdByBuildingId(@Param("buildingId") Long buildingId);
+
+  ComplexList getComplexListByBuildingId(@Param("buildingId") Long buildingId);
 }

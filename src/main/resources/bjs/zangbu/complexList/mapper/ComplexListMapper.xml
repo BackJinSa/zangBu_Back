@@ -82,7 +82,6 @@
         FROM complex_list
         WHERE complex_id = #{complexId}
     </select>
-</mapper>
 
     <select id="getComplexIdByBuildingId" resultType="java.lang.Long">
         -- 더 효율적인 쿼리: building 테이블에 complex_id가 있으므로 JOIN이 불필요합니다.
@@ -91,4 +90,17 @@
         WHERE building_id = #{buildingId}
     </select>
 
+    <select id="getComplexNoByBuildingId" resultType="java.lang.String">
+        SELECT cl.complex_no
+        FROM complex_list cl
+                 JOIN building b ON cl.complex_id = b.complex_id
+        WHERE b.building_id = #{buildingId}
+    </select>
+
+    <select id="getComplexListByBuildingId" resultType="bjs.zangbu.complexList.vo.ComplexList">
+        SELECT cl.*
+        FROM complex_list cl
+                 JOIN building b ON cl.complex_id = b.complex_id
+        WHERE b.building_id = #{buildingId}
+    </select>
 </mapper>

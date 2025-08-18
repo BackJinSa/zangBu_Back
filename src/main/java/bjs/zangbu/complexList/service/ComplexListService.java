@@ -18,4 +18,6 @@ public interface ComplexListService {
     String getComplexNoByBuildingId(Long buildingId);
 
     Long getComplexIdByBuildingId(Long buildingId);
+
+    ComplexList getComplexListByBuildingId(Long buildingId);
 }
