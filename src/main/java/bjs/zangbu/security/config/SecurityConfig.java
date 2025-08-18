@@ -129,6 +129,9 @@ public class SecurityConfig {
             .requestMatchers(new AntPathRequestMatcher("/auth/email")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/check/email")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/check/nickname")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/auth/verify")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/codef/secure")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/codef/captcha")).permitAll()
 
             .requestMatchers(new AntPathRequestMatcher("/auth/logout")).authenticated()
             .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()

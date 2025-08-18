@@ -1,5 +1,6 @@
 package bjs.zangbu.security.account.service;
 
+import bjs.zangbu.addressChange.service.AddressChangeService;
 import bjs.zangbu.codef.encryption.RSAEncryption;
 import bjs.zangbu.codef.service.CodefTwoFactorService;
 import bjs.zangbu.security.account.dto.request.AuthRequest;
@@ -38,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class AuthServiceImpl implements AuthService {
 
+  final AddressChangeService addressChangeService;
   final PasswordEncoder passwordEncoder;
   final AuthMapper mapper;
   final JwtProcessor jwtProcessor;
@@ -69,34 +71,30 @@ public class AuthServiceImpl implements AuthService {
     String rawResponse = codefTwoFactorService.
         residentRegistrationAuthenticityConfirmation(request);
     String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
-    
-    //본인인증 성공 시
-    //String sessionId = saveToRedis(request); --> redis에 데이터 저장
+
 
     return null; //todo : 로직 설계 해야 함
   }
 
-  //세션 아이디 발급 및 redis에 데이터 저장
-  //codef 검증 후 성공일 때만 사용하도록
-  private String saveToRedis(AuthRequest.VerifyCodefRequest request) throws Exception {
+  public String cacheVerification(AuthRequest.VerifyCodefRequest request) throws Exception {
     //세션 아이디 생성
     String sessionId = UUID.randomUUID().toString();
     String key = SIGNUP_VERIFY_PREFIX + sessionId;
 
-    //주민번호 암호화해서 넣기
-    String encIdentity = rsaEncryption.encrypt(request.getIdentity());
-
     Map<String, String> toSave = new HashMap<>();
-    toSave.put("status", "Y"); // 본인인증 성공 후에만 저장하므로 Y
+    toSave.put("status", "Y");
     toSave.put("name", request.getName());
     toSave.put("birth", request.getBirth());
-    toSave.put("identity", encIdentity);
+    toSave.put("identity", request.getIdentity());
     toSave.put("phone", request.getPhone());
     toSave.put("telecom", request.getTelecom());
     toSave.put("issueDate", request.getIssueDate());
 
+    // Redis 저장 및 TTL
     redisTemplate.opsForHash().putAll(key, toSave);
     redisTemplate.expire(key, Duration.ofMinutes(10L)); //10분
+
+    log.info("[VERIFY SAVED] key={}", key);
 
     //세션 아이디 반환
     return sessionId;
@@ -109,14 +107,17 @@ public class AuthServiceImpl implements AuthService {
     if (signUpRequest.getSessionId() == null || signUpRequest.getSessionId().isBlank())
       throw new IllegalArgumentException("본인인증 세션 ID가 없습니다.");
 
+    log.info("[SIGNUP] sessionId={}", signUpRequest.getSessionId());
     //저장해둔 세션 키로 redis에서 값 가져오기
     String key = SIGNUP_VERIFY_PREFIX + signUpRequest.getSessionId();
     Map<Object, Object> saved = redisTemplate.opsForHash().entries(key);
+    log.info("[SIGNUP] redis loaded size={}, keys={}", saved.size(), saved.keySet());
     if (saved == null || saved.isEmpty())
       throw new IllegalStateException("본인인증 정보가 만료되었거나 존재하지 않습니다.");
 
     //Y일 때가 본인인증 성공 상태
     String status = (String) saved.get("status");
+    log.info("[SIGNUP] status={}", status);
     if (!"Y".equalsIgnoreCase(status))
       throw new IllegalStateException("본인인증이 완료되지 않았습니다.");
 
@@ -152,6 +153,9 @@ public class AuthServiceImpl implements AuthService {
     if (result == 0) {
       throw new IllegalStateException("회원가입에 실패하였습니다.");
     }
+
+    //여기서 주소 service 호출하기==========================================
+    addressChangeService.generateAddressChange(memberId);
 
     // 일회성 인증 정보 삭제
     redisTemplate.delete(key);
@@ -215,6 +219,24 @@ public class AuthServiceImpl implements AuthService {
 //      throw new RuntimeException("PASS 본인인증 중 오류가 발생했습니다.");
 //    }
 //  }
+
+  //비밀번호 재설정 전 사용자 존재하는지 확인
+  @Override
+  public boolean isValidUser(String sessionId){
+    String key = SIGNUP_VERIFY_PREFIX + sessionId;
+    Map<Object, Object> saved = redisTemplate.opsForHash().entries(key);
+
+    String name = (String) saved.get("name");
+    String phone = (String) saved.get("phone");
+
+    // 일회성 인증 정보 삭제
+    redisTemplate.delete(key);
+
+    String email = mapper.findEmailByNameAndPhone(name, phone);
+
+    Member member = mapper.findByEmail(email);
+      return member != null;
+  }
 
   //비밀번호 재설정
   @Override

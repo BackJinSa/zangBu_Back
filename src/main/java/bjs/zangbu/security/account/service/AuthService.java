@@ -44,4 +44,8 @@ public interface AuthService {
 
   //토큰 재발급 요청
   TokenResponse reissue(String refreshToken);
+
+  String cacheVerification(AuthRequest.VerifyCodefRequest request) throws Exception;
+
+  boolean isValidUser(String sessionId);
 }

@@ -6,6 +6,7 @@ import bjs.zangbu.security.account.dto.request.AuthRequest.LoginRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.ResetPassword;
 import bjs.zangbu.security.account.dto.request.AuthRequest.SignUp;
 import bjs.zangbu.security.account.dto.request.AuthRequest.VerifyCodefRequest;
+import bjs.zangbu.security.account.dto.response.AuthResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.VerifyCodefResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.EmailAuthResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.LoginResponse;
@@ -224,50 +225,63 @@ public class AuthController {
   }
 
   /**
-   * 본인인증 요청 처리.
-   * {@code POST /auth/verify} 엔드포인트를 통해 본인인증을 수행하고, 성공 시 세션에 인증 상태를 저장합니다.
-   *
-   * @param customUser 인증된 사용자 정보 (현재 사용되지 않지만, 필요 시 확장 가능)
-   * @param request 본인인증 정보를 담고 있는 {@link VerifyRequest} DTO
-   * @param session HTTP 세션 객체 (인증 상태 저장을 위해 사용)
-   * @return 본인인증 성공 시 {@link VerifyCodefResponse}와 함께 200 OK 응답, 실패 시 400 Bad Request 또는 500 Internal Server Error 응답
+   * 본인인증 성공 후 데이터 받아오기
+   * POST로 본인인증 성공한 데이터 받아서 redis에 저장하고,
+   * 인증 상태 세션에 저장
    */
-//  @ApiOperation(
-//          value = "본인인증 요청",
-//          notes = "본인인증 수행 후 성공 시 세션에 인증 상태를 저장합니다.",
-//          response = VerifyCodefResponse.class
-//  )
-//  @ApiResponses({
-//          @ApiResponse(code = 200, message = "본인인증에 성공하였습니다."),
-//          @ApiResponse(code = 400, message = "본인인증에 실패하였습니다."),
-//          @ApiResponse(code = 500, message = "서버에서 본인인증을 처리하는데 오류가 발생했습니다.")
-//  })
-//  @PostMapping("/verify")
-//  public ResponseEntity<?> verifyAuthenticity(
-//          @ApiIgnore
-//          @AuthenticationPrincipal CustomUser customUser,
-//          @ApiParam(value = "본인인증 요청 DTO", required = true)
-//          @RequestBody VerifyCodefRequest request,
-//          HttpSession session) {
-//
-//    try {
-//      //본인인증 수행
-//      VerifyCodefResponse result = authService.verifyAuthenticity(request);
-//
-//      // 진위 확인 성공 시 인증 상태 세션에 저장 --비밀번호 재설정 시 상태 사용
-//      if ("Y".equalsIgnoreCase(result.getResAuthenticity())) {
-//        //세션에 이메일 저장
-//        session.setAttribute("verifiedEmail", request.getEmail());
-//      }
-//      return ResponseEntity.ok(result); //200
-//
-//    } catch (IllegalArgumentException e) {
-//      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("본인인증에 실패하였습니다.");
-//    } catch (Exception e) { //500
-//      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//              .body("서버에서 본인인증을 처리하는데 오류가 발생했습니다.");
-//    }
-//  }
+  @ApiOperation(
+          value = "본인인증 요청",
+          notes = "본인인증 수행 후 성공 시 세션에 인증 상태를 저장합니다."
+  )
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "데이터 전송에 성공하였습니다."),
+          @ApiResponse(code = 400, message = "데이터 전송에 실패하였습니다."),
+          @ApiResponse(code = 500, message = "서버에서 데이터를 처리하는데 오류가 발생했습니다.")
+  })
+  @PostMapping("/verify")
+  public ResponseEntity<?> verifyAuthenticity(
+          @ApiIgnore
+          @AuthenticationPrincipal CustomUser customUser,
+          @ApiParam(value = "본인인증 성공한 데이터 DTO", required = true)
+          @RequestBody VerifyCodefRequest request,
+          HttpSession session) {
+
+    try {
+      String sessionId = authService.cacheVerification(request);
+
+      return ResponseEntity.ok(new AuthResponse.VerifyResponse(sessionId));
+
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("데이터 전송에 실패하였습니다.");
+    } catch (Exception e) { //500
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body("서버에서 데이터를 처리하는데 오류가 발생했습니다.");
+    }
+  }
+
+  //비밀번호 재설정 전 본인인증
+  @PostMapping("/verify/password")
+  public ResponseEntity<?> verifyAuthenticityForPassword(
+          @ApiIgnore
+          @AuthenticationPrincipal CustomUser customUser,
+          @ApiParam(value = "본인인증 성공한 데이터 DTO", required = true)
+          @RequestBody VerifyCodefRequest request,
+          HttpSession session) {
+
+    try {
+      String sessionId = authService.cacheVerification(request);
+
+      boolean isValidUser = authService.isValidUser(sessionId);
+
+      return ResponseEntity.ok(new AuthResponse.PasswordVerifyResponse(isValidUser));
+
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사용자가 존재하지 않습니다.");
+    } catch (Exception e) { //500
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body("서버에서 사용자를 확인하는 데 오류가 발생했습니다.");
+    }
+  }
 
   /**
    * 본인인증 CODEF 진위인증 사용 (임시).
