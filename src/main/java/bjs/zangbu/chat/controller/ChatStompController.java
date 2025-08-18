@@ -5,7 +5,11 @@ import bjs.zangbu.chat.dto.response.ChatResponse;
 import bjs.zangbu.chat.service.ChatService;
 import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.vo.ChatRoom;
+import bjs.zangbu.fcm.mapper.FcmMapper;
+import bjs.zangbu.fcm.service.FcmService;
+import bjs.zangbu.member.mapper.MemberMapper;
 import bjs.zangbu.member.service.MemberService;
+import bjs.zangbu.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -16,6 +20,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
+import java.util.List;
 
 @Log4j2
 @Controller
@@ -24,6 +29,7 @@ public class ChatStompController {  //WebSocket 메시지 수신 컨트롤러
 
     private final ChatService chatService;
     private final MemberService memberService;
+    private final NotificationService notificationService;
     //서버에서 클라이언트로 STOMP 메시지를 보낼 때 사용하는 도구
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -62,9 +68,13 @@ public class ChatStompController {  //WebSocket 메시지 수신 컨트롤러
             receiverId = chatRoom.getConsumerId();
         }
 
+        notificationService.sendChatNotification(receiverId, roomId, request.getMessage());
+
 
         // 채팅방 구독자(/topic/chat.room.{roomId}를 구독하고 있는 모든 클라이언트)에게 메시지 브로드캐스트(response를 실시간 전송)
         messagingTemplate.convertAndSend("/topic/chat." + roomId, response);
     }
+
+
 
 }
