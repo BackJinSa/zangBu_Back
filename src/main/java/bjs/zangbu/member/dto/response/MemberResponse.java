@@ -1,5 +1,6 @@
 package bjs.zangbu.member.dto.response;
 
+import bjs.zangbu.building.vo.BuildingImg;
 import bjs.zangbu.building.vo.Building;
 import bjs.zangbu.member.dto.join.BookmarkBuilding;
 import com.github.pagehelper.PageInfo;
@@ -111,7 +112,8 @@ public class MemberResponse {
     private int pages;
     private List<MyBuildingElement> buildings;
 
-    public static MyBuildingList toDto(PageInfo<Building> pageInfo) {
+    // PageInfo<Building> → PageInfo<BuildingImg>
+    public static MyBuildingList toDto(PageInfo<BuildingImg> pageInfo) {
       List<MyBuildingElement> list = pageInfo.getList().stream()
               .map(MyBuildingElement::fromEntity)
               .collect(Collectors.toList());
@@ -150,7 +152,10 @@ public class MemberResponse {
     private String memberId;
     private Long complexId;
 
-    public static MyBuildingElement fromEntity(Building b) {
+    private String representativeImageUrl;
+
+
+    public static MyBuildingElement fromEntity(BuildingImg b) {
       DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
       return new MyBuildingElement(
               b.getBuildingId(),
@@ -171,7 +176,10 @@ public class MemberResponse {
               b.getFacility(),
               b.getSize(),
               b.getMemberId(),
-              b.getComplexId()
+              b.getComplexId(),
+
+              // 대표 이미지
+              b.getRepresentativeImageUrl()
       );
     }
   }

@@ -1,6 +1,7 @@
 package bjs.zangbu.member.controller;
 
 import bjs.zangbu.building.vo.Building;
+import bjs.zangbu.building.vo.BuildingImg;
 import bjs.zangbu.member.dto.request.MemberRequest.EditNicknameCheck;
 import bjs.zangbu.member.dto.request.MemberRequest.EditNicknameRequest;
 import bjs.zangbu.member.dto.request.MemberRequest.EditNotificationConsentRequest;
@@ -392,9 +393,9 @@ public class MemberController {
       String memberId = customUser.getMember().getMemberId();
 
       PageHelper.startPage(page, size);
-      List<Building> voList = memberService.getMyBuildings(memberId);
+      List<BuildingImg> voList = memberService.getMyBuildings(memberId);
 
-      PageInfo<Building> pageInfo = new PageInfo<>(voList);
+      PageInfo<BuildingImg> pageInfo = new PageInfo<>(voList);
 
       MemberResponse.MyBuildingList response = MemberResponse.MyBuildingList.toDto(pageInfo);
 
