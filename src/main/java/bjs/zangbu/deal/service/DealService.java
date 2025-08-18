@@ -63,7 +63,7 @@ public interface DealService {
    * @param status 거래 ID와 목표 상태를 담은 요청 DTO ({@link bjs.zangbu.deal.dto.request.DealRequest.Status})
    * @return 전환 및 업데이트 성공 여부
    */
-  boolean patchStatus(Status status);
+  boolean patchStatus(Status status, String roomId);
 
   /**
    * 거래 생성
