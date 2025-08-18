@@ -69,9 +69,8 @@ public class ChatController {
       @RequestParam int size) {
     log.info("ChatController - getChatRoomList");
 
-    //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    //String userId = authentication.getName();  //TODO: 테스트하느라 주석처리함
-    String userId = "8h9i0j1k-1111-2222-3333-444455556673";
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String userId = authentication.getName();
 
     // 프론트 → 매퍼 타입 매핑
     String mapped = switch (type) {
