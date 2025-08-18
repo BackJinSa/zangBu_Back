@@ -32,11 +32,11 @@ public interface BookMarkMapper {
      * 특정 찜(Bookmark)의 가격 정보를 업데이트합니다.
      *
      * @param bookmarkId 가격을 변경할 찜 ID
-     * @param Price 업데이트할 새로운 가격
+     * @param price 업데이트할 새로운 가격
      * @return 업데이트 성공 시 영향받은 행 수
      */
     int updateBookmarkPrice(@Param("bookmarkId") Long bookmarkId,
-                            @Param("Price") int Price);
+                            @Param("price") int price);
 
     /**
      * 특정 회원이 특정 매물을 찜합니다. (찜 추가)

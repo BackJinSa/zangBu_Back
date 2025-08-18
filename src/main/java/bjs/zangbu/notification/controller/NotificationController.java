@@ -36,6 +36,23 @@ public class NotificationController {
   private final NotificationService notificationService;
 
   /* -------------------------------------------------
+   * 시연 영상용 시세 변동 알림 전송 api
+   *
+   * ------------------------------------------------- */
+  @ApiOperation(value = "시세 변동 조회", notes = "찜한 매물의 시세 변동을 조회합니다.")
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "알림 전송 성공"),
+          @ApiResponse(code = 400, message = "잘못된 요청"),
+          @ApiResponse(code = 500, message = "서버 오류")
+  })
+  @RequestMapping("/detect")
+  public void testDetectPriceChanges() {
+    log.info("테스트용 시세변동 api 호출 완료");
+    notificationService.detectPriceChangeForAllBookmarks();
+  }
+
+
+  /* -------------------------------------------------
    * 전체 알림 조회
    *
    * ------------------------------------------------- */

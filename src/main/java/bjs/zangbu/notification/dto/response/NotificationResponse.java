@@ -113,6 +113,8 @@ public class NotificationResponse {
 //     @Schema(description = "리뷰 평점", example = "3")
     private int rank;                 // 알림 등록한 찜한 매물의 리뷰 평점 ex) 2
 
+    private Long buildingId;   // 프론트로 전달할 빌딩 ID
+
     // VO → DTO 변환 (프론트에 보내줄 필요한 데이터만 추출해서 담아줌)
     public static NotificationElement toDto(Notification vo) {
       return new NotificationElement(
@@ -124,7 +126,8 @@ public class NotificationResponse {
           formatTimeAgo(vo.getCreatedAt()), // 알림의 시간을 가공해줌 formatTimeAgo 메서드 호출
           formatPriceLabel(vo), // 알림의 가격 라벨을 만들어줌 formatPriceLabel 메서드 호출
           vo.getAddress(), // 알림 등록한 찜한 매물의 주소
-          vo.getRank() // 알림 등록한 찜한 매물의 리뷰
+          vo.getRank(), // 알림 등록한 찜한 매물의 리뷰
+          vo.getBuildingId()
       );
     } // toDto
 
