@@ -50,7 +50,6 @@ public class SecurityConfig {
       throws Exception {
     return authConfig.getAuthenticationManager();
   }
-
   /**
    * SecurityFilterChain 구성
    */
@@ -110,14 +109,13 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
 
-
-                        // auth 엔트 포인트
-                        .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
-                        // 보안 API 경로 설정
-                        .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
-                        .requestMatchers(new AntPathRequestMatcher("/security/member"))
-                        .hasAnyRole("ADMIN", "MEMBER")
+            // auth 엔트 포인트
+//            .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+            // 보안 API 경로 설정
+            .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
+            .requestMatchers(new AntPathRequestMatcher("/security/member"))
+            .hasAnyRole("ADMIN", "MEMBER")
 
 
                         // 테스트용: /chat/** 전체 허용
@@ -128,6 +126,10 @@ public class SecurityConfig {
             .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/reissue")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/email")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/check/email")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/check/nickname")).permitAll()
+
             .requestMatchers(new AntPathRequestMatcher("/auth/logout")).authenticated()
             .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()
 
