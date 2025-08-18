@@ -167,4 +167,59 @@
         <result property="size" column="size"/>
     </resultMap>
 
+
+
+
+    <!-- VO 매핑 정의 -->
+    <resultMap id="BuildingResultMap" type="bjs.zangbu.building.vo.Building">
+        <id property="buildingId" column="building_id"/>
+        <result property="sellerNickname" column="seller_nickname"/>
+        <result property="saleType" column="sale_type"/>
+        <result property="price" column="price"/>
+        <result property="deposit" column="deposit"/>
+        <result property="bookmarkCount" column="bookmark_count"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="buildingName" column="building_name"/>
+        <result property="sellerType" column="seller_type"/>
+        <result property="propertyType" column="property_type"/>
+        <result property="moveDate" column="move_date"/>
+        <result property="infoOneline" column="info_oneline"/>
+        <result property="infoBuilding" column="info_building"/>
+        <result property="contactName" column="contact_name"/>
+        <result property="contactPhone" column="contact_phone"/>
+        <result property="facility" column="facility"/>
+        <result property="size" column="size"/>
+        <!-- 외래키 -->
+        <result property="memberId" column="member_id"/>
+        <result property="complexId" column="complex_id"/>
+    </resultMap>
+
+
+    <!-- 특정 회원이 등록한 매물 리스트 조회 -->
+    <select id="findMyBuildings" resultMap="BuildingResultMap" parameterType="string">
+        SELECT
+            building_id,
+            seller_nickname,
+            sale_type,
+            price,
+            deposit,
+            bookmark_count,
+            created_at,
+            building_name,
+            seller_type,
+            property_type,
+            move_date,
+            info_oneline,
+            info_building,
+            contact_name,
+            contact_phone,
+            facility,
+            size,
+            member_id,
+            complex_id
+        FROM building
+        WHERE member_id = #{memberId}
+        ORDER BY created_at DESC
+    </select>
+
 </mapper>
