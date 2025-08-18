@@ -48,10 +48,14 @@ public class DealServiceImpl implements DealService {
   public Notice getNotice(Long dealId) {
     // buildingId 조회
     Long buildingId = dealMapper.getBuildingIdByDealId(dealId);
+
+    // chatRoomId 조회
+    String chatRoomId = dealMapper.getRoomIdByDealId(dealId);
+
     // Building 조회
     Building buildVO = buildingMapper.getBuildingById(buildingId);
 
-    return Notice.toDto(dealId, buildVO);
+    return Notice.toDto(dealId, chatRoomId, buildVO);
   }
 
   /**
@@ -139,7 +143,7 @@ public class DealServiceImpl implements DealService {
    */
   @Override
   @Transactional
-  public boolean patchStatus(Status status, String roomId) {
+  public boolean patchStatus(Status status) {
     // 현재(DB) 상태
     String from = dealMapper.getStatusByDealId(status.getDealId());
     // 바꿀(요청) 상태
@@ -157,15 +161,24 @@ public class DealServiceImpl implements DealService {
     if (updated != 1) {
       return false;
     }
+    String roomId = status.getChatRoomId();
+    //= dealMapper.getRoomIdByDealId(status.getDealId());
 
-    if(to.equals("BEFORE_CONSUMER"))
-      chatService.publishSystemMessage(roomId, "판매자가 거래를 활성화했습니다.");
-    else if(to.equals("MIDDLE_DEAL"))
-      chatService.publishSystemMessage(roomId, "구매자가 거래를 수락했습니다. 거래가 시작되었습니다.");
-    else if(to.equals("CLOSE_DEAL"))
-      chatService.publishSystemMessage(roomId, "거래가 완료되었습니다.");
-
-
+    try {
+      switch (to) {
+        case "BEFORE_CONSUMER":
+          chatService.publishSystemMessage(roomId, "판매자가 거래를 활성화했습니다.");
+          break;
+        case "MIDDLE_DEAL":
+          chatService.publishSystemMessage(roomId, "구매자가 거래를 수락했습니다. 거래가 시작되었습니다.");
+          break;
+        case "CLOSE_DEAL":
+          chatService.publishSystemMessage(roomId, "거래가 완료되었습니다.");
+          break;
+      }
+    } catch (Exception e) {
+      log.error(e.getMessage(), e);
+    }
     // 성공적으로 업데이트된 뒤 알림
     if ("CLOSE_DEAL".equals(to)) {
       notificationService.detectTradeHappenedNow(status.getDealId());

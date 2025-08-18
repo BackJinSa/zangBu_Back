@@ -26,11 +26,10 @@ import org.springframework.web.cors.CorsConfiguration;
 @Configuration
 @EnableWebSecurity
 @Log4j2
-@MapperScan(basePackages = {"bjs.zangbu.security.account.mapper"})
-@ComponentScan(basePackages = {"bjs.zangbu.security"})
+@MapperScan(basePackages = { "bjs.zangbu.security.account.mapper" })
+@ComponentScan(basePackages = { "bjs.zangbu.security" })
 @RequiredArgsConstructor
 public class SecurityConfig {
-
 
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final AuthenticationErrorFilter authenticationErrorFilter;
@@ -57,9 +56,9 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
       AuthenticationManager authenticationManager) throws Exception {
     // 로그인 필터 생성
-    JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter =
-        new JwtUsernamePasswordAuthenticationFilter(authenticationManager, loginSuccessHandler,
-            loginFailureHandler);
+    JwtUsernamePasswordAuthenticationFilter jwtUsernamePasswordAuthenticationFilter = new JwtUsernamePasswordAuthenticationFilter(
+        authenticationManager, loginSuccessHandler,
+        loginFailureHandler);
 
     http
         .addFilterAt(jwtUsernamePasswordAuthenticationFilter,
@@ -77,8 +76,8 @@ public class SecurityConfig {
               "http://localhost:3000",
               "http://localhost:5173",
               "http://localhost:8080",
-              "http://localhost:61613"
-          ));
+              "http://localhost:61613",
+              "http://localhost:6379"));
           config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
           config.setAllowedHeaders(List.of("*"));
           config.setAllowCredentials(true);
@@ -86,28 +85,28 @@ public class SecurityConfig {
           return config;
         }))
 
-                .csrf(csrf -> csrf.disable())
-                .httpBasic(httpBasic -> httpBasic.disable())
-                .formLogin(formLogin -> formLogin.disable())
-                .sessionManagement(
-                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .csrf(csrf -> csrf.disable())
+        .httpBasic(httpBasic -> httpBasic.disable())
+        .formLogin(formLogin -> formLogin.disable())
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 권한 설정
-                .authorizeHttpRequests(auth -> auth
-                        // 기본 및 테스트 URL
-                        .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/index.html")).permitAll()
+        // 권한 설정
+        .authorizeHttpRequests(auth -> auth
+            // 기본 및 테스트 URL
+            .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/index.html")).permitAll()
 
-                        // Swagger 관련 경로 허용 (Springfox 기준)
-                        .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/v2/api-docs")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
+            // Swagger 관련 경로 허용 (Springfox 기준)
+            .requestMatchers(new AntPathRequestMatcher("/swagger-ui.html/**")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/v2/api-docs")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
 
-                        // 정적 리소스 허용 (필요시)
-                        .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
+            // 정적 리소스 허용 (필요시)
+            .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
 
             // auth 엔트 포인트
 //            .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
@@ -116,13 +115,23 @@ public class SecurityConfig {
             .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
             .requestMatchers(new AntPathRequestMatcher("/security/member"))
             .hasAnyRole("ADMIN", "MEMBER")
+            .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
 
+            // codef 엔드포인트 허용
+            .requestMatchers(new AntPathRequestMatcher("/codef/**")).permitAll()
 
-                        // 테스트용: /chat/** 전체 허용
-                        .requestMatchers(new AntPathRequestMatcher("/chat/**")).permitAll()
+            // 보안 API 경로 설정
+            .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
+            .requestMatchers(new AntPathRequestMatcher("/security/member"))
+            .hasAnyRole("ADMIN", "MEMBER")
 
-                        //테스트용: /deal/**허용
-                                .requestMatchers(new AntPathRequestMatcher("/deal/**")).permitAll()
+            // 테스트용: /chat/** 전체 허용
+            .requestMatchers(new AntPathRequestMatcher("/chat/**")).permitAll()
+
+            // 테스트용: /deal/**허용
+            .requestMatchers(new AntPathRequestMatcher("/deal/**")).permitAll()
+
             .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/reissue")).permitAll()
@@ -137,8 +146,7 @@ public class SecurityConfig {
             .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()
 
             // 그 외 요청은 인증 필요
-            .anyRequest().authenticated()
-        );
+            .anyRequest().authenticated());
 
     return http.build();
   }

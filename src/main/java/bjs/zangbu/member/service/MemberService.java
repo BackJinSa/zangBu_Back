@@ -1,5 +1,7 @@
 package bjs.zangbu.member.service;
 
+import bjs.zangbu.building.vo.Building;
+import bjs.zangbu.building.vo.BuildingImg;
 import bjs.zangbu.member.dto.join.BookmarkBuilding;
 import bjs.zangbu.member.dto.request.MemberRequest.*;
 import bjs.zangbu.member.dto.response.MemberResponse.*;
@@ -42,4 +44,7 @@ public interface MemberService {
 
     //알림 수신 여부 조회
     boolean getFcmConsent(String memberId);
+
+    // 내가 등록한 매물 리스트 조회
+    List<BuildingImg> getMyBuildings(String memberId);
 }

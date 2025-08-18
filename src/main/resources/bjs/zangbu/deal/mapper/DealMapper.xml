@@ -29,6 +29,7 @@
     UPDATE deal
     SET status = #{status}
     WHERE deal_id = #{dealId}
+      AND chat_room_id = #{chatRoomId}
   </update>
 
   <!-- Deal 삭제 -->
@@ -62,7 +63,6 @@
            JOIN complex_list cl ON d.complex_id = cl.complex_id
     WHERE d.member_id = #{memberId}
       AND d.status != 'BEFORE_TRANSACTION'
-      AND d.status != 'CLOSE_DEAL'
     ORDER BY d.created_at DESC
   </select>
 
@@ -100,7 +100,6 @@
     WHERE c.consumer_nickname = #{nickname}
       AND d.member_id = #{memberId}
       AND d.status != 'BEFORE_TRANSACTION'
-      AND d.status != 'CLOSE_DEAL'
     ORDER BY d.created_at DESC
   </select>
 
@@ -131,7 +130,6 @@
     WHERE c.seller_nickname = #{nickname}
       AND b.member_id = #{memberId}
       AND d.status != 'BEFORE_TRANSACTION'
-      AND d.status != 'CLOSE_DEAL'
     ORDER BY d.created_at DESC
 
   </select>
@@ -238,6 +236,11 @@
            JOIN member m ON m.member_id = b.member_id
            JOIN complex_list cl ON cl.complex_id = b.complex_id
     WHERE b.building_id = #{buildingId}
+  </select>
+  <select id="getRoomIdByDealId" resultType="java.lang.String">
+    SELECT chat_room_id
+    FROM deal
+    WHERE deal_id = #{dealId}
   </select>
 
 

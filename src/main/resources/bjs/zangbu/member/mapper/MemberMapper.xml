@@ -167,4 +167,69 @@
         <result property="size" column="size"/>
     </resultMap>
 
+
+
+
+    <!-- VO 매핑 정의 -->
+    <resultMap id="BuildingImgResultMap" type="bjs.zangbu.building.vo.BuildingImg">
+        <id     property="buildingId"       column="building_id"/>
+        <result property="sellerNickname"   column="seller_nickname"/>
+        <result property="saleType"         column="sale_type"/>
+        <result property="price"            column="price"/>
+        <result property="deposit"          column="deposit"/>
+        <result property="bookmarkCount"    column="bookmark_count"/>
+        <result property="createdAt"        column="created_at"/>
+        <result property="buildingName"     column="building_name"/>
+        <result property="sellerType"       column="seller_type"/>
+        <result property="propertyType"     column="property_type"/>
+        <result property="moveDate"         column="move_date"/>
+        <result property="infoOneline"      column="info_oneline"/>
+        <result property="infoBuilding"     column="info_building"/>
+        <result property="contactName"      column="contact_name"/>
+        <result property="contactPhone"     column="contact_phone"/>
+        <result property="facility"         column="facility"/>
+        <result property="size"             column="size"/>
+        <result property="memberId"         column="member_id"/>
+        <result property="complexId"        column="complex_id"/>
+
+        <!-- 대표 이미지 -->
+        <result property="representativeImageUrl" column="representative_image_url"/>
+    </resultMap>
+
+    <select id="findMyBuildingsWithImg" resultMap="BuildingImgResultMap">
+        SELECT
+            b.building_id,
+            b.seller_nickname,
+            b.sale_type,
+            b.price,
+            b.deposit,
+            b.bookmark_count,
+            b.created_at,
+            b.building_name,
+            b.seller_type,
+            b.property_type,
+            b.move_date,
+            b.info_oneline,
+            b.info_building,
+            b.contact_name,
+            b.contact_phone,
+            b.facility,
+            b.size,
+            b.member_id,
+            b.complex_id,
+
+            /* 대표 이미지: 가장 먼저 등록된 1장 (image_id ASC) */
+            (
+                SELECT il.image_url
+                FROM image_list il
+                WHERE il.building_id = b.building_id
+                ORDER BY il.image_id ASC
+                LIMIT 1
+            ) AS representative_image_url
+
+        FROM building b
+        WHERE b.member_id = #{memberId}
+        ORDER BY b.created_at DESC
+    </select>
+
 </mapper>

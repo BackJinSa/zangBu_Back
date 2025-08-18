@@ -272,11 +272,12 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
 
       HashMap<String, Object> resultMap2 = (HashMap<String, Object>) responseMap2.get("result");
 
+      // 인증 갱신 값 파싱을 위한 해시맵
       HashMap<String, Object> data2 = (HashMap<String, Object>) responseMap2.get("data");
-
+      // 코드 상태 번호
       String code2 = (String) resultMap2.get("code");
       System.out.println("code2 = " + code2);
-      if(code2.equals("CF-00000")){
+      if(code2.equals("CF-00000")) {
         return objectMapper.writeValueAsString(data2);
       }
 
@@ -287,8 +288,10 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
 //        throw new IllegalStateException("예상치 못한 2-Way 상태: " + code2);
         return objectMapper.writeValueAsString(responseMap2);
       }
+
       // 인증 갱신 값 파싱을 위한 해시맵
 //      HashMap<String, Object> data2 = (HashMap<String, Object>) responseMap2.get("data");
+
       // png를 위한 파싱을 위한 해시맵
       HashMap<String, Object> extraInfo = (HashMap<String, Object>) data2.get("extraInfo");
       // 보안문자 png
