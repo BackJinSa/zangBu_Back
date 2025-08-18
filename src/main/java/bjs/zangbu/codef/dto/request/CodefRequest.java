@@ -3,6 +3,7 @@ package bjs.zangbu.codef.dto.request;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -36,7 +37,7 @@ public class CodefRequest {
   /**
    * 건물 주소 정보를 사용하여 단지 정보를 조회하기 위한 요청 DTO.
    */
-  @Getter
+  @Data
   @NoArgsConstructor
   @AllArgsConstructor
   @ApiModel(description = "건물 주소 정보를 사용하여 단지 정보를 조회하기 위한 요청 DTO")

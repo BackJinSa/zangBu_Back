@@ -8,6 +8,7 @@ import bjs.zangbu.review.dto.response.ReviewListResponse;
 import bjs.zangbu.review.dto.response.ReviewListResult;
 import bjs.zangbu.review.vo.ReviewListResponseVO;
 import bjs.zangbu.review.exception.ReviewNotFoundException;
+import bjs.zangbu.review.exception.AddressValidationException;
 import bjs.zangbu.review.mapper.ReviewInsertParam;
 import bjs.zangbu.review.mapper.ReviewMapper;
 import com.github.pagehelper.PageHelper;
@@ -21,10 +22,13 @@ import java.util.List;
 public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper reviewMapper;
     private final NotificationService notificationService;
+    private final ReviewAddressValidationService addressValidationService;
 
-    public ReviewServiceImpl(ReviewMapper reviewMapper, NotificationService notificationService) {
+    public ReviewServiceImpl(ReviewMapper reviewMapper, NotificationService notificationService,
+            ReviewAddressValidationService addressValidationService) {
         this.reviewMapper = reviewMapper;
         this.notificationService = notificationService;
+        this.addressValidationService = addressValidationService;
     }
 
     // 날짜 형식 설정
@@ -73,6 +77,12 @@ public class ReviewServiceImpl implements ReviewService {
                 req.getRank() < 1 ||
                 req.getRank() > 5) {
             throw new IllegalArgumentException("리뷰 작성에 실패했습니다."); // 400
+        }
+
+        // 주소 검증: 사용자가 리뷰를 작성하려는 건물의 주소와 주민등록초본에 기록된 주소가 일치하는지 확인
+        boolean isAddressValid = addressValidationService.validateAddressForReview(userId, req.getBuildingId());
+        if (!isAddressValid) {
+            throw new AddressValidationException("리뷰를 작성할 수 없습니다. 주민등록초본에 기록된 주소와 해당 건물의 주소가 일치하지 않습니다.");
         }
 
         // complexId를 요청에서 받거나, buildingId로 조회하여 보정
@@ -135,6 +145,11 @@ public class ReviewServiceImpl implements ReviewService {
         if (deletedRows == 0) {
             throw new ReviewNotFoundException(reviewId);
         }
+    }
+
+    @Override
+    public boolean validateAddressForReview(String memberId, Long buildingId) {
+        return addressValidationService.validateAddressForReview(memberId, buildingId);
     }
 
     @Override
