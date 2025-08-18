@@ -61,4 +61,30 @@
       AND building_id = #{buildingId}
     ORDER BY created_at DESC LIMIT 1
   </select>
+
+    <insert id="upsert">
+        INSERT INTO document_latest_url
+            (member_id, building_id, doc_type, pdf_url)
+        VALUES
+            (#{memberId}, #{buildingId}, #{docType}, #{url})
+            ON DUPLICATE KEY UPDATE
+                                 pdf_url = VALUES(pdf_url),
+                                 updated_at = CURRENT_TIMESTAMP(3)
+    </insert>
+
+    <select id="selectUrl" resultType="string">
+        SELECT pdf_url
+        FROM document_latest_url
+        WHERE member_id = #{memberId}
+          AND building_id = #{buildingId}
+          AND doc_type = #{docType}
+            LIMIT 1
+    </select>
+
+    <delete id="delete">
+        DELETE FROM document_latest_url
+        WHERE member_id = #{memberId}
+          AND building_id = #{buildingId}
+          AND doc_type = #{docType}
+    </delete>
 </mapper>
