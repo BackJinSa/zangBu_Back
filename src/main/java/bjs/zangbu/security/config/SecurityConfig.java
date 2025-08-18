@@ -121,10 +121,11 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/chat/**")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
-            .requestMatchers(new AntPathRequestMatcher("/auth/email")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/reissue")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/email")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/check/email")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/check/nickname")).permitAll()
+
             .requestMatchers(new AntPathRequestMatcher("/auth/logout")).authenticated()
             .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()
 
