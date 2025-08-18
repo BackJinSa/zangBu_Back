@@ -82,7 +82,8 @@
                img.image_url,
                bd.contact_name,
                bd.contact_phone,
-               bd.facility
+               bd.facility,
+               bd.size
         FROM bookmark b
                  /*북마크된 매물 id와 전체 매물 id 기준으로 조인 -> 북마크된 매물의 상세 정보를 가져오기*/
                  INNER JOIN building bd ON b.building_id = bd.building_id
@@ -135,6 +136,13 @@
         where member_id = #{memberId}
     </select>
 
+    <!--member id로 member 조회-->
+    <select id="findByMemberId" resultType="bjs.zangbu.security.account.vo.Member">
+        select *
+        from member
+        where member_id = #{memberId}
+    </select>
+
     <!--  getBookmarksByMemberId join 한 결과값 -->
     <resultMap id="BookmarksByMemberIdMap" type="bjs.zangbu.member.dto.join.BookmarkBuilding">
         <id property="bookmarkId" column="bookmark_id"/>
@@ -156,6 +164,7 @@
         <result property="contactName" column="contact_name"/>
         <result property="contactPhone" column="contact_phone"/>
         <result property="facility" column="facility"/>
+        <result property="size" column="size"/>
     </resultMap>
 
 </mapper>

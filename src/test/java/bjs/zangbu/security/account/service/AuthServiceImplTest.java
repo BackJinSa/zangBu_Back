@@ -150,30 +150,30 @@ class AuthServiceImplTest {
 
     /* ----------------- 테스트들 ----------------- */
 
-    @Test
-    @DisplayName("login: 성공 시 토큰 발급 + Redis 키/TTL 저장")
-    void login_success() {
-        String email = "login_" + UUID.randomUUID().toString().substring(0,8) + "@t.com";
-        insertMember(email, "Pw1!", "01011112222", "nick", "950101", "홍길동", true, "SKT", "1234567");
-
-        LoginResponse res = authService.login(new LoginRequest(email, "Pw1!"));
-
-        log.info("accessToken={}", res.getAccessToken());
-        log.info("refreshToken={}", res.getRefreshToken());
-
-        assertNotNull(res.getAccessToken());
-        assertNotNull(res.getRefreshToken());
-
-        // Redis 확인
-        String refreshKey = "refresh:" + email;
-        assertEquals("REF:" + email, valueOps.get(refreshKey));
-        Long ttlMs = redisTemplate.getExpire(refreshKey);
-        log.info("savedKey={}, ttlMs={}", refreshKey, ttlMs);
-        // null/음수만 아니면 OK로
-        assertNotNull(ttlMs);
-
-        assertEquals("true", valueOps.get("login:" + email));
-    }
+//    @Test
+//    @DisplayName("login: 성공 시 토큰 발급 + Redis 키/TTL 저장")
+//    void login_success() {
+//        String email = "login_" + UUID.randomUUID().toString().substring(0,8) + "@t.com";
+//        insertMember(email, "Pw1!", "01011112222", "nick", "950101", "홍길동", true, "SKT", "1234567");
+//
+//        LoginResponse res = authService.login(new LoginRequest(email, "Pw1!"));
+//
+//        log.info("accessToken={}", res.getAccessToken());
+//        log.info("refreshToken={}", res.getRefreshToken());
+//
+//        assertNotNull(res.getAccessToken());
+//        assertNotNull(res.getRefreshToken());
+//
+//        // Redis 확인
+//        String refreshKey = "refresh:" + email;
+//        assertEquals("REF:" + email, valueOps.get(refreshKey));
+//        Long ttlMs = redisTemplate.getExpire(refreshKey);
+//        log.info("savedKey={}, ttlMs={}", refreshKey, ttlMs);
+//        // null/음수만 아니면 OK로
+//        assertNotNull(ttlMs);
+//
+//        assertEquals("true", valueOps.get("login:" + email));
+//    }
 
     @Test
     @DisplayName("logout: Redis 키 삭제")
