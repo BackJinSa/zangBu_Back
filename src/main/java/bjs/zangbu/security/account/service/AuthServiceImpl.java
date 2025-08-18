@@ -49,6 +49,7 @@ public class AuthServiceImpl implements AuthService {
   private static final String SIGNUP_VERIFY_PREFIX = "signup:verify:";
   private static final String LOGIN_TOKEN_PREFIX = "login:";
 
+
   //로그아웃
   @Override
   public void logout(String email) {

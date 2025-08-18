@@ -20,6 +20,7 @@ public class TokenFacade {
     private final RedisTemplate<String, Object> redisTemplate;
 
     public AuthResponse.LoginResponse issueAndPersist(String email, MemberEnum role, String nickname) {
+
         String at = jwtProcessor.generateAccessToken(email, role.name());
         String rt = jwtProcessor.generateRefreshToken(email);
 

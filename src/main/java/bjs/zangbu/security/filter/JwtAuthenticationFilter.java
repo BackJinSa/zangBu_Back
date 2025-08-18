@@ -60,6 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           throws ServletException, IOException {
 
     String header = request.getHeader(AUTHORIZATION_HEADER);
+
     log.info("[JWT] {} {} Authorization={}", request.getMethod(), request.getRequestURI(), header);
 
     if (header != null && header.startsWith(BEARER_PREFIX)) {
