@@ -13,7 +13,7 @@ public interface MemberMapper {
     Member get(String memberId);
 
     //2. member id별 북마크 되어있는 building 리스트 가져오기
-    List<BookmarkBuilding> getBookmarksByMemberId(String memberId);
+    List<BookmarkBuilding> getBookmarksByMemberId(@Param("memberId") String memberId);
 
     //3. 북마크 삭제하기
     int deleteBookMark(@Param("memberId") String memberId, @Param("buildingId") Long buildingId);

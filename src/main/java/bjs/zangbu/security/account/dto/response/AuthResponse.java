@@ -41,6 +41,12 @@ public class AuthResponse {
      */
     @ApiModelProperty(value = "역할", example = "ROLE_MEMBER", allowableValues = "ROLE_MEMBER,ROLE_ADMIN")
     private MemberEnum role;
+
+    /**
+     * 사용자 닉네임
+     */
+    @ApiModelProperty(value = "닉네임", example = "김철수123")
+    private String nickname;
   }
 
   /**
