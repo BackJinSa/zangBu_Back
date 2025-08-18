@@ -236,6 +236,11 @@
            JOIN complex_list cl ON cl.complex_id = b.complex_id
     WHERE b.building_id = #{buildingId}
   </select>
+  <select id="getRoomIdByDealId" resultType="java.lang.String">
+    SELECT chat_room_id
+    FROM deal
+    WHERE deal_id = #{dealId}
+  </select>
 
 
 </mapper>
