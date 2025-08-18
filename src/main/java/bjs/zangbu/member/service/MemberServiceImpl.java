@@ -33,10 +33,8 @@ public class MemberServiceImpl implements MemberService{
     @Override
     public BookmarkList getBookmarks(String memberId) {
         List<BookmarkBuilding> bookmarkBuildings= memberMapper.getBookmarksByMemberId(memberId);
-        //북마크 리스트 가져올 때 에러 처리
-        if (bookmarkBuildings == null || bookmarkBuildings.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "찜한 매물을 불러오는데 실패했습니다.");
-        }
+
+        //북마크한 내역 없을 수도 있으니 에러처리하지 않고 그대로 반환
         PageInfo<BookmarkBuilding> pageInfo = new PageInfo<>(bookmarkBuildings);
         return BookmarkList.toDto(pageInfo);
     }
