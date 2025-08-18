@@ -87,4 +87,15 @@
           AND building_id = #{buildingId}
           AND doc_type = #{docType}
     </delete>
+
+    <resultMap id="PriceDepositMap" type="bjs.zangbu.documentReport.dto.request.BuildingPriceDeposit">
+        <result column="price"   property="price"/>
+        <result column="deposit" property="deposit"/>
+    </resultMap>
+
+    <select id="selectPriceDeposit" resultMap="PriceDepositMap">
+        SELECT price, deposit
+        FROM building
+        WHERE building_id = #{buildingId}
+    </select>
 </mapper>

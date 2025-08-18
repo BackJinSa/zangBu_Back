@@ -44,7 +44,9 @@ class CodefServiceImplTest {
     @Test
     public void realEstateRegistrationAddressSearch_shouldReturnValidResponse_whenGivenValidRequest() throws Exception {
         // ComplexDetails 객체를 생성자에 모든 필드를 전달하여 생성
-        // 생성자 파라미터 순서: resType, complexName, complexNo, sido, sigungu, siCode, eupmyeondong, transactionId, address, zonecode, buildingName, bname, dong, ho, roadName
+        // 생성자 파라미터 순서: resType, complexName, complexNo, sido, sigungu, siCode,
+        // eupmyeondong, transactionId, address, zonecode, buildingName, bname, dong,
+        // ho, roadName
         ComplexDetails complexDetails = new ComplexDetails(
                 null,
                 null,
@@ -60,17 +62,16 @@ class CodefServiceImplTest {
                 null,
                 "101",
                 "402",
-                "왕산로23길"
-        );
+                "왕산로23길");
 
         String identity = "0110203018419";
-        // SaleRegistrationRequest 객체를 생성자에 BuildingDetails, ComplexDetails, ImageDetails를 전달하여 생성
+        // SaleRegistrationRequest 객체를 생성자에 BuildingDetails, ComplexDetails,
+        // ImageDetails를 전달하여 생성
         SaleRegistrationRequest request = new SaleRegistrationRequest(
                 new BuildingDetails(),
                 complexDetails,
                 null,
-                identity
-        );
+                identity);
 
         // 서비스 메서드 호출
         String result = codefService.realEstateRegistrationAddressSearch(request);
@@ -108,7 +109,8 @@ class CodefServiceImplTest {
         assertTrue(response.contains("result"), "응답에 'result' 필드가 포함되어야 합니다.");
 
         // 응답을 파싱하여 특정 필드 값 검증 (선택적)
-        // Map<String, Object> dataMap = CodefConverter.parseDataToDto(response, Map.class);
+        // Map<String, Object> dataMap = CodefConverter.parseDataToDto(response,
+        // Map.class);
         // String resState = (String) dataMap.get("resState");
         // assertEquals("열람", resState, "resState는 '열람'이어야 합니다.");
 
@@ -138,6 +140,82 @@ class CodefServiceImplTest {
         System.out.println("FilterpriceInformation API 응답:\n" + response);
     }
 
+    @Test
+    public void getComplexDetailByBuildingId_shouldReturnValidResponse_whenGivenValidBuildingId() throws Exception {
+        // given
+        Long buildingId = 1L; // 실제 DB에 존재하는 buildingId 사용
+
+        // when
+        String response = codefService.getComplexDetailByBuildingId(buildingId);
+
+        // then
+        assertNotNull(response, "API 응답은 null이 아니어야 합니다.");
+        assertFalse(response.isEmpty(), "응답 문자열은 비어 있지 않아야 합니다.");
+        assertTrue(response.contains("result"), "응답에 'result' 필드가 포함되어야 합니다.");
+
+        // 응답 파싱 후 특정 필드 검증
+        Map<String, Object> dataMap = CodefConverter.parseDataToDto(response, Map.class);
+        assertTrue(dataMap.containsKey("data"), "응답 데이터에 'data' 필드가 존재해야 합니다.");
+
+        System.out.println("getComplexDetailByBuildingId API 응답:\n" + response);
+    }
+
+    @Test
+    public void searchByAddress_shouldReturnValidResponse_whenGivenSpecificAddress() throws Exception {
+        // given
+        ComplexDetails complexDetails = new ComplexDetails(
+                null,
+                null,
+                null,
+                "서울특별시",
+                "서초구",
+                null,
+                "신원동",
+                null,
+                "서울특별시 서초구 신원동 557",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        SaleRegistrationRequest request = new SaleRegistrationRequest(
+                new BuildingDetails(),
+                complexDetails,
+                null,
+                "0110203018419" // dummy identity
+        );
+
+        // when
+        String result = codefService.realEstateRegistrationAddressSearch(request);
+
+        // then
+        assertNotNull(result, "API 응답은 null이 아니어야 합니다.");
+        assertTrue(!result.isEmpty(), "응답 문자열은 비어 있지 않아야 합니다.");
+
+        System.out.println("======= 주소 검색 테스트 결과 =======");
+        System.out.println(result);
+        System.out.println("===================================");
+    }
+
+    @Test
+    public void getMarketPriceInformation_shouldReturnValidResponse_whenGivenValidBuildingId() throws Exception {
+        // given
+        Long buildingId = 1L; // 실제 DB에 존재하는 buildingId
+
+        // when
+        String response = codefService.priceInformation(buildingId);
+
+        // then
+        assertNotNull(response, "API 응답은 null이 아니어야 합니다.");
+        assertTrue(response.contains("result"), "응답에 'result' 필드가 포함되어야 합니다.");
+
+        System.out.println("======= 시세 정보 조회 테스트 결과 =======");
+        System.out.println(response);
+        System.out.println("======================================");
+    }
+
     // --- 회원가입 테스트 추가 ---
     @Test
     void insertMember_shouldSaveEncodedPassword() {
@@ -162,8 +240,7 @@ class CodefServiceImplTest {
                 "19900101",
                 "홍길동",
                 true,
-                "SKT"
-        );
+                "SKT");
 
         // When: 매퍼를 통해 데이터베이스에 삽입합니다.
         int result = authMapper.insertMember(member);
