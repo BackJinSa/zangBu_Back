@@ -23,6 +23,9 @@ public interface ReviewService {
     // 리뷰 삭제 기능
     void deleteReview(Long reviewId);
 
+    // 주소 검증 기능
+    boolean validateAddressForReview(String memberId, Long buildingId);
+
     // 최근 리뷰 조회 (아파트 상세보기용)
     List<ReviewListResponseVO> getRecentReviews(Long buildingId, int limit);
 }

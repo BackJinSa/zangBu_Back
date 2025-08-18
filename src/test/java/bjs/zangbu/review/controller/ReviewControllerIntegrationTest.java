@@ -5,6 +5,7 @@ import bjs.zangbu.notification.service.NotificationService;
 import bjs.zangbu.review.dto.request.ReviewCreateRequest;
 import bjs.zangbu.review.dto.response.ReviewCreateResponse;
 import bjs.zangbu.review.mapper.ReviewMapper;
+import bjs.zangbu.review.service.ReviewAddressValidationService;
 import bjs.zangbu.review.service.ReviewService;
 import bjs.zangbu.review.service.ReviewServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +42,9 @@ class ReviewControllerIntegrationTest {
     @Mock
     private NotificationService notificationService;
 
+    @Mock
+    private ReviewAddressValidationService addressValidationService;
+
     private ReviewController reviewController;
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
@@ -59,7 +63,8 @@ class ReviewControllerIntegrationTest {
         doNothing().when(notificationService).notificationReviewRegisterd(any(Long.class));
 
         // 컨트롤러 설정 - 실제 ReviewService 사용
-        ReviewService reviewService = new ReviewServiceImpl(reviewMapper, notificationService);
+        ReviewService reviewService = new ReviewServiceImpl(reviewMapper, notificationService,
+                addressValidationService);
         reviewController = new ReviewController(reviewService);
         mockMvc = MockMvcBuilders.standaloneSetup(reviewController)
                 .addPlaceholderValue("", "")
@@ -204,7 +209,8 @@ class ReviewControllerIntegrationTest {
     void testReviewServiceDirectly() {
         // Given
         ReviewCreateRequest request = createReviewRequest(1L, 1L, 5, "새로운 리뷰입니다!");
-        ReviewService reviewService = new ReviewServiceImpl(reviewMapper, notificationService);
+        ReviewService reviewService = new ReviewServiceImpl(reviewMapper, notificationService,
+                addressValidationService);
 
         // 실제 존재하는 member_id 사용
         String actualMemberId = jdbcTemplate.queryForObject("SELECT member_id FROM member LIMIT 1", String.class);

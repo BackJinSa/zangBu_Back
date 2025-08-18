@@ -3,6 +3,7 @@ package bjs.zangbu.config;
 import bjs.zangbu.notification.service.NotificationService;
 import bjs.zangbu.review.controller.ReviewController;
 import bjs.zangbu.review.mapper.ReviewMapper;
+import bjs.zangbu.review.service.ReviewAddressValidationService;
 import bjs.zangbu.review.service.ReviewService;
 import bjs.zangbu.review.service.ReviewServiceImpl;
 import com.zaxxer.hikari.HikariConfig;
@@ -74,8 +75,9 @@ public class TestConfig {
     }
 
     @Bean
-    public ReviewService reviewService(ReviewMapper reviewMapper, NotificationService notificationService) {
-        return new ReviewServiceImpl(reviewMapper, notificationService);
+    public ReviewService reviewService(ReviewMapper reviewMapper, NotificationService notificationService,
+            ReviewAddressValidationService addressValidationService) {
+        return new ReviewServiceImpl(reviewMapper, notificationService, addressValidationService);
     }
 
     @Bean
@@ -86,6 +88,11 @@ public class TestConfig {
     @Bean
     public NotificationService notificationService() {
         return Mockito.mock(NotificationService.class);
+    }
+
+    @Bean
+    public ReviewAddressValidationService reviewAddressValidationService() {
+        return Mockito.mock(ReviewAddressValidationService.class);
     }
 
     @PostConstruct
