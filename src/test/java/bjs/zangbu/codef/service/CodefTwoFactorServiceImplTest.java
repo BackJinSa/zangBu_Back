@@ -67,7 +67,7 @@ public class CodefTwoFactorServiceImplTest {
     public void residentRegistrationCertificateTest() throws Exception {
         ResRegisterCertRequest request = ResRegisterCertRequest.builder()
                 .birth("981207")
-                .identity("bQvUpPc1lO+khOzXaUXUwIZXddmE+dSpOT7JErdq11yUgpSoqte9/lG+HQZk7G1KPL5CTuywcUqPfHLHo7KmmPW47Rf7fUXWjbojl5ax1K7JTYYIq0dv0RAfRfNLVqR5EPYAbMXjOVN3zwLFdbELKEfs2c7BzFWyxt4mxXe3O8Srtjo0HgHmrzwuhcrfZIeAa/gH5FUyOoILyG7SfvvvipQqtLzCPwoIRUGUIscEZI78c8o9GUvdBEliPVapKzHZTgiEYYia45IL2Lq5giG0qrgmSthXU/HlO/eFjATE7dqzxEIbb85tScMyDiMC5oUqfB/c3RFAlV4gE3snl6I9Tg==")
+                .identity("bqdrDvjxKbpm/+fzVgMvK5X+3lj1Jsqv6xGLpMV0+gfxgNUy5UUgBbA0dYmD2yIgEZkL4IJ14y9/YbRU2EdRvO4IdVOQkGxUzEi9KF+Uu2DPrCLwTSm+e4M3JQarKeDc6qOpr5KFgUa/TNsFXHMHQUkV+XixG+OPh3429JwAIH5lEwNOtDKXNe/9DHwh+MHCesMwtfKZbyeR4mb2C9vpSNyTeWDObiC7WAExIxS1ikFU/Zk1Na6BKlcLLUKqHnrbeFwRcH6nk3rd4GN730mRouIJJAtBfulDfGQksuFzMB7/P5UFuME0Cdd8TBAaIyuvDYTQN78urt2kwKA/ZeYqyw==")
                 .phone("01093687950")
                 .name("전경환")
                 .telecom("0")
@@ -89,7 +89,7 @@ public class CodefTwoFactorServiceImplTest {
         AuthRequest.VerifyCodefRequest request = AuthRequest.VerifyCodefRequest.builder()
                 .name("전경환")
                 .birth("981207")
-                .identity("bQvUpPc1lO+khOzXaUXUwIZXddmE+dSpOT7JErdq11yUgpSoqte9/lG+HQZk7G1KPL5CTuywcUqPfHLHo7KmmPW47Rf7fUXWjbojl5ax1K7JTYYIq0dv0RAfRfNLVqR5EPYAbMXjOVN3zwLFdbELKEfs2c7BzFWyxt4mxXe3O8Srtjo0HgHmrzwuhcrfZIeAa/gH5FUyOoILyG7SfvvvipQqtLzCPwoIRUGUIscEZI78c8o9GUvdBEliPVapKzHZTgiEYYia45IL2Lq5giG0qrgmSthXU/HlO/eFjATE7dqzxEIbb85tScMyDiMC5oUqfB/c3RFAlV4gE3snl6I9Tg==")
+                .identity("bqdrDvjxKbpm/+fzVgMvK5X+3lj1Jsqv6xGLpMV0+gfxgNUy5UUgBbA0dYmD2yIgEZkL4IJ14y9/YbRU2EdRvO4IdVOQkGxUzEi9KF+Uu2DPrCLwTSm+e4M3JQarKeDc6qOpr5KFgUa/TNsFXHMHQUkV+XixG+OPh3429JwAIH5lEwNOtDKXNe/9DHwh+MHCesMwtfKZbyeR4mb2C9vpSNyTeWDObiC7WAExIxS1ikFU/Zk1Na6BKlcLLUKqHnrbeFwRcH6nk3rd4GN730mRouIJJAtBfulDfGQksuFzMB7/P5UFuME0Cdd8TBAaIyuvDYTQN78urt2kwKA/ZeYqyw==")
                 .phone("01093687950")
                 .telecom("0")
                 .issueDate("20161207")
@@ -104,18 +104,18 @@ public class CodefTwoFactorServiceImplTest {
         String captchaDataUri = (String) m.get("captcha");
         assertNotNull(sessionKey);
         assertNotNull(captchaDataUri);
-
-        // 2) 캡차 표시 (HTML로 띄우기 - 가장 간단)
-        Path html = Files.createTempFile("captcha-", ".html");
-        String htmlContent = "<!doctype html><meta charset='utf-8'>"
-                + "<h3>아래 캡차 6자를 콘솔에 입력하세요</h3>"
-                + "<img style='image-rendering:pixelated;border:1px solid #ccc' src='" + captchaDataUri + "' />";
-        Files.writeString(html, htmlContent, StandardCharsets.UTF_8);
-        if (Desktop.isDesktopSupported()) {
-            Desktop.getDesktop().browse(html.toUri());
-        } else {
-            System.out.println("열 수 없는 환경입니다. 파일 경로: " + html.toAbsolutePath());
-        }
+        System.out.println("response map = " + m);
+//        // 2) 캡차 표시 (HTML로 띄우기 - 가장 간단)
+//        Path html = Files.createTempFile("captcha-", ".html");
+//        String htmlContent = "<!doctype html><meta charset='utf-8'>"
+//                + "<h3>아래 캡차 6자를 콘솔에 입력하세요</h3>"
+//                + "<img style='image-rendering:pixelated;border:1px solid #ccc' src='" + captchaDataUri + "' />";
+//        Files.writeString(html, htmlContent, StandardCharsets.UTF_8);
+//        if (Desktop.isDesktopSupported()) {
+//            Desktop.getDesktop().browse(html.toUri());
+//        } else {
+//            System.out.println("열 수 없는 환경입니다. 파일 경로: " + html.toAbsolutePath());
+//        }
     }
 
     @Test
