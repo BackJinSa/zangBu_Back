@@ -83,6 +83,7 @@ public class BuildingServiceImpl implements BuildingService {
     public void bookMarkServiceDelete(Long buildingId, String memberId) {
         buildingFilter.validateBuildingExists(buildingId);
         bookMarkService.deleteBookMark(memberId, buildingId);
+        buildingMapper.decrementBookmarkCount(buildingId);
     }
 
     /**

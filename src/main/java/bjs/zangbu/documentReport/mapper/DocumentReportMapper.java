@@ -1,5 +1,6 @@
 package bjs.zangbu.documentReport.mapper;
 
+import bjs.zangbu.documentReport.dto.request.BuildingPriceDeposit;
 import bjs.zangbu.documentReport.vo.DocumentReport;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -37,4 +38,6 @@ public interface DocumentReportMapper {
              @Param("buildingId") Long buildingId,
              @Param("docType") String docType);
 
+
+  BuildingPriceDeposit selectPriceDeposit(@Param("buildingId") long buildingId);
 }

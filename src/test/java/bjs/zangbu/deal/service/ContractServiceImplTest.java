@@ -151,6 +151,39 @@ class ContractServiceImplTest {
         assertTrue(pdfMeta == null || pdfMeta instanceof Document && ((Document) pdfMeta).isEmpty(),
                 "업로드를 안 했으니 pdf 메타가 없어야 정상");
     }
+    @Test
+    @DisplayName("건축물대장 mongo 테스트")
+    public void BrToMongo() throws Exception {
+        // 1) 입력값 (테스트 전용 식별자)
+        final String memberId = "test-member-json-only";
+        final Long buildingId = 112233L;
+        final DocumentType docType = DocumentType.BUILDING_REGISTER;
+
+        // 2) 리소스 JSON 로드 → DTO 파싱
+        String json = readJson("건축물대장2.json");
+        assertNotNull(json);
+        BuildingRegisterResponse dto =
+                CodefConverter.parseDataToDto(json, BuildingRegisterResponse.class);
+        assertNotNull(dto, "DTO 파싱 실패(null)");
+
+        // 3) Mongo에 JSON 업서트 (resOriGinalData는 내부에서 제거됨)
+        documentToMongoService.saveJson(memberId, buildingId, docType, dto);
+
+        // 4) 저장 검증 (parsed 존재, pdf는 아직 없음)
+        Document found = reportDocumentDao.findOne(memberId, buildingId, docType.name());
+        assertNotNull(found, "Mongo에 문서가 저장되어야 합니다.");
+        assertEquals(memberId, found.getString("memberId"));
+        assertEquals(buildingId, found.getLong("buildingId"));
+        assertEquals(docType.name(), found.getString("docType"));
+
+        // parsed(JSON) 저장 확인
+        assertNotNull(found.get("parsed"), "parsed(JSON)가 저장되어야 합니다.");
+
+        // pdf 메타는 아직 설정하지 않음 (업로드 안 했으므로 null 또는 미존재)
+        Object pdfMeta = found.get("pdf");
+        assertTrue(pdfMeta == null || pdfMeta instanceof Document && ((Document) pdfMeta).isEmpty(),
+                "업로드를 안 했으니 pdf 메타가 없어야 정상");
+    }
 }
 
 
