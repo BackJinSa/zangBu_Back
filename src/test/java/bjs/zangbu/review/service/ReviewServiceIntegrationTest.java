@@ -24,10 +24,15 @@ import javax.sql.DataSource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import bjs.zangbu.review.dto.response.ReviewListResponse;
+import bjs.zangbu.review.service.ReviewAddressValidationService;
+import bjs.zangbu.review.exception.AddressValidationException;
 
 @SpringJUnitConfig(TestConfig.class)
 @Transactional
@@ -40,6 +45,9 @@ class ReviewServiceIntegrationTest {
     @Mock
     private NotificationService notificationService;
 
+    @Mock
+    private ReviewAddressValidationService addressValidationService;
+
     private ReviewService reviewService;
 
     @Autowired
@@ -51,10 +59,11 @@ class ReviewServiceIntegrationTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         jdbcTemplate = new JdbcTemplate(dataSource);
-        reviewService = new ReviewServiceImpl(reviewMapper, notificationService);
+        reviewService = new ReviewServiceImpl(reviewMapper, notificationService, addressValidationService);
 
         // Mock 설정
         doNothing().when(notificationService).notificationReviewRegisterd(any(Long.class));
+        when(addressValidationService.validateAddressForReview(anyString(), anyLong())).thenReturn(true);
 
         // 데이터베이스 연결 테스트
         try {
