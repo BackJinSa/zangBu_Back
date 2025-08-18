@@ -29,6 +29,7 @@
     UPDATE deal
     SET status = #{status}
     WHERE deal_id = #{dealId}
+      AND chat_room_id = #{chatRoomId}
   </update>
 
   <!-- Deal 삭제 -->
