@@ -1,5 +1,6 @@
 package bjs.zangbu.member.controller;
 
+import bjs.zangbu.building.vo.Building;
 import bjs.zangbu.member.dto.request.MemberRequest.EditNicknameCheck;
 import bjs.zangbu.member.dto.request.MemberRequest.EditNicknameRequest;
 import bjs.zangbu.member.dto.request.MemberRequest.EditNotificationConsentRequest;
@@ -12,6 +13,7 @@ import bjs.zangbu.member.service.MemberService;
 import bjs.zangbu.security.account.vo.CustomUser;
 import bjs.zangbu.security.account.vo.Member;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.Api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @Log4j2
 @RestController
@@ -356,6 +359,38 @@ public class MemberController {
     } catch (RuntimeException e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body("서버에서 알림 수신 여부 조회를 처리하는데 실패했습니다.");
+    }
+  }
+
+  //10 사용자가 등록한 매물 리스트 조회
+//    @Operation(summary = "사용자가 등록한 매물 조회 리스트",
+//    description ="매물 조회합니다.")
+//
+//   @ApiResponses({
+//       @ApiResponse(responseCode = "200", description = "매물 리스트 조회에 성공했습니다."),
+//       @ApiResponse(responseCode = "400", description = "매물 리스트 조회에 실패했습니다."),
+//       @ApiResponse(responseCode = "500", description = "매물 리스트 조회를 처리하는데 실패했습니다.")
+//  })
+  @GetMapping("/myBuildings")
+  public ResponseEntity<?> getMyBuildings(
+          @AuthenticationPrincipal CustomUser customUser,
+          @RequestParam(defaultValue = "1") int page,
+          @RequestParam(defaultValue = "10") int size
+  ) {
+    try {
+      String memberId = customUser.getMember().getMemberId();
+
+      PageHelper.startPage(page, size);
+      List<Building> voList = memberService.getMyBuildings(memberId);
+
+      PageInfo<Building> pageInfo = new PageInfo<>(voList);
+
+      MemberResponse.MyBuildingList response = MemberResponse.MyBuildingList.toDto(pageInfo);
+
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+              .body("서버에서 등록한 매물 정보를 불러오는데 실패했습니다.");
     }
   }
 }

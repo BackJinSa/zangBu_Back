@@ -1,5 +1,6 @@
 package bjs.zangbu.member.service;
 
+import bjs.zangbu.building.vo.Building;
 import bjs.zangbu.member.dto.join.BookmarkBuilding;
 import bjs.zangbu.member.dto.request.MemberRequest.EditNicknameRequest;
 import bjs.zangbu.member.dto.request.MemberRequest.EditPassword;
@@ -149,6 +150,20 @@ public class MemberServiceImpl implements MemberService{
             return result != null && result;
         } catch (Exception e) {
             throw new RuntimeException();
+        }
+    }
+
+    // 내가 등록한 매물 전체 리스트 조회
+    @Override
+    public List<Building> getMyBuildings(String memberId) {
+        validateMemberId(memberId);
+        return memberMapper.findMyBuildings(memberId);
+    }
+
+    // 유저 식별 헬퍼
+    private void validateMemberId(String memberId) {
+        if (memberId == null || memberId.isBlank()) {
+            throw new IllegalArgumentException("회원 식별자가 유효하지 않습니다.");
         }
     }
 
