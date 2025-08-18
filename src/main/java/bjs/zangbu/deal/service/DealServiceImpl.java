@@ -39,15 +39,17 @@ public class DealServiceImpl implements DealService {
   /**
    * 거래 전 안내 조회
    *
-   * @param buildingId 매물 식별 ID
+   * @param dealId 매물 식별 ID
    * @return 거래 전 안내 DTO
    */
   @Override
-  public Notice getNotice(Long buildingId) {
-    // buildMapper 에서 Building 조회
+  public Notice getNotice(Long dealId) {
+    // buildingId 조회
+    Long buildingId = dealMapper.getBuildingIdByDealId(dealId);
+    // Building 조회
     Building buildVO = buildingMapper.getBuildingById(buildingId);
 
-    return Notice.toDto(buildingId, buildVO);
+    return Notice.toDto(dealId, buildVO);
   }
 
   /**
