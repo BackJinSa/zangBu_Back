@@ -32,4 +32,5 @@ public class BookmarkBuilding {
     private String contactName;
     private String contactPhone;
     private String facility;
+    private Float size;
 }
