@@ -62,8 +62,6 @@ public class BuildingRequest {
 //         @Schema(description = "북마크할 건물 ID", example = "10001", required = true)
         private Long buildingId;
 
-
-        private Long complexId;
     }
 
     /**
