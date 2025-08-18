@@ -127,4 +127,5 @@ public interface DealMapper {
    */
   Long getComplexIdByDealId(@Param("dealId") Long dealId);
 
+  String getRoomIdByDealId(Long dealId);
 }

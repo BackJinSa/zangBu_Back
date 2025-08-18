@@ -61,6 +61,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     String header = request.getHeader(AUTHORIZATION_HEADER);
 
+    log.info("[JWT] {} {} Authorization={}", request.getMethod(), request.getRequestURI(), header);
+
     if (header != null && header.startsWith(BEARER_PREFIX)) {
       String token = header.substring(BEARER_PREFIX.length()).trim(); // 공백 제거 중요
 

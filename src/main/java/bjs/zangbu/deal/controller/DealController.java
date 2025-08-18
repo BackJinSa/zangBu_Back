@@ -25,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -251,15 +250,15 @@ public class DealController {
    * @return PDF 다운로드 링크
    */
   @ApiOperation(value = "등기/건축 서류 다운로드(자동 첫 발급 포함))",
-          notes = "최신 URL이 없으면 즉시 발급하여 URL을 반환합니다.",
-          response = Download.class)
+      notes = "최신 URL이 없으면 즉시 발급하여 URL을 반환합니다.",
+      response = Download.class)
   @GetMapping("/consumer/documents/{buildingId}/{type}/download")
   public ResponseEntity<?> downloadDocument(
-          @ApiIgnore @AuthenticationPrincipal CustomUser user,
-          @ApiParam(value = "매물 ID", example = "123")
-          @PathVariable Long buildingId,
-          @ApiParam(value = "문서 타입")
-          @PathVariable DocumentType type) throws Exception {
+      @ApiIgnore @AuthenticationPrincipal CustomUser user,
+      @ApiParam(value = "매물 ID", example = "123")
+      @PathVariable Long buildingId,
+      @ApiParam(value = "문서 타입")
+      @PathVariable DocumentType type) throws Exception {
 
     final String memberId = user.getMember().getMemberId();
 
@@ -280,7 +279,7 @@ public class DealController {
     if (newUrl == null || newUrl.isBlank()) {
       // 업로드 비활성/실패 등인 경우
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body("발급은 되었으나 URL이 비었습니다. 업로드 설정을 확인하세요.");
+          .body("발급은 되었으나 URL이 비었습니다. 업로드 설정을 확인하세요.");
     }
 
     // 최신 URL upsert (중복 upsert 무해)
@@ -290,15 +289,15 @@ public class DealController {
   }
 
   @ApiOperation(
-          value = "등기/건축 서류 수동 갱신(재발급)",
-          notes = "강제로 재발급을 수행하고, 업로드가 성공하면 최신 URL을 반환합니다.",
-          response = Download.class
+      value = "등기/건축 서류 수동 갱신(재발급)",
+      notes = "강제로 재발급을 수행하고, 업로드가 성공하면 최신 URL을 반환합니다.",
+      response = Download.class
   )
   @PostMapping("/consumer/documents/{buildingId}/{type}/refresh")
   public ResponseEntity<?> refreshDocument(
-          @ApiIgnore @AuthenticationPrincipal CustomUser user,
-          @PathVariable Long buildingId,
-          @PathVariable DocumentType type
+      @ApiIgnore @AuthenticationPrincipal CustomUser user,
+      @PathVariable Long buildingId,
+      @PathVariable DocumentType type
   ) throws Exception {
     final String memberId = user.getMember().getMemberId();
 
@@ -312,14 +311,13 @@ public class DealController {
         break;
       default:
         return ResponseEntity.badRequest()
-                .body("지원하지 않는 문서 타입: " + type);
+            .body("지원하지 않는 문서 타입: " + type);
     }
-
 
     String newUrl = (issued == null) ? null : issued.getUrl();
     if (newUrl == null || newUrl.isBlank()) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body("발급은 되었으나 URL이 비었습니다. 업로드 설정을 확인하세요.");
+          .body("발급은 되었으나 URL이 비었습니다. 업로드 설정을 확인하세요.");
     }
     documentReportService.saveLatestUrl(memberId, buildingId, type, newUrl);
     return ResponseEntity.ok(new DealResponse.Download(newUrl));
@@ -405,13 +403,13 @@ public class DealController {
       @ApiResponse(code = 400, message = "상태 변경 실패"),
       @ApiResponse(code = 404, message = "예기치 못한 오류 발생")
   })
-  @PatchMapping("/{roomId}/status")
+  @PatchMapping("/status")
   public ResponseEntity<?> changeDealStatus(
       @ApiParam(value = "거래 상태 변경 요청 DTO", required = true)
-      @RequestBody Status dto, @PathVariable String roomId) {
+      @RequestBody Status dto) {
     try {
       // 상태 patch
-      if (dealService.patchStatus(dto, roomId)) {
+      if (dealService.patchStatus(dto)) {
         return ResponseEntity.status(HttpStatus.OK).body("상태변경에 성공했습니다.");
       } else {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("상태변경에 실패했습니다.");

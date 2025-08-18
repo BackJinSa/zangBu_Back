@@ -25,6 +25,7 @@ public class DealWithChatRoom {
    */
   private Long dealId;
 
+
   /**
    * 매물(건물) 식별 ID
    */
