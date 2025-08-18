@@ -32,6 +32,7 @@ public class ChatController {
 
   private final ChatService chatService;
 
+
    //채팅방 생성 후 반환, 이미 채팅방 존재하면 그 채팅방 반환
      @ApiOperation(value = "채팅방 생성", notes = "채팅방을 생성합니다.", response = ChatRoom.class)
    @ApiResponses(value = {
@@ -39,6 +40,7 @@ public class ChatController {
        @ApiResponse(code = 400, message = "채팅방 생성 실패"),
        @ApiResponse(code = 500, message = "서버 내부 오류")
 })
+
 
   @PostMapping(value = "/room/{buildingId}", produces = "application/json;charset=UTF-8")
   public ResponseEntity<ChatRoom> createChatRoom(@PathVariable Long buildingId) {
@@ -52,6 +54,7 @@ public class ChatController {
   }
 
 // 사용자가 참여하고 있는 채팅방 목록 조회
+
      @ApiOperation(value = "채팅방 목록 조회", notes = "사용자의 채팅방 목록을 조회합니다.")
    @ApiResponses(value = {
        @ApiResponse(code = 200, message = "채팅방 목록 조회 성공"),
@@ -80,6 +83,7 @@ public class ChatController {
       default     -> "ALL";
     };
 
+
     List<ChatResponse.ChatRoomListResponse> roomList = chatService.getChatRoomList(userId, mapped,
         page, size);
 
@@ -88,6 +92,7 @@ public class ChatController {
     boolean hasNext = (long) page * size < total;
 
 // 탭 카운트
+
     ChatResponse.ChatRoomListPage.Counts counts = ChatResponse.ChatRoomListPage.Counts.builder()
             .ALL(ChatResponse.ChatRoomListPage.SimpleCount.builder()
                     .count((int) chatService.countChatRoomList(userId, "ALL"))
@@ -131,6 +136,7 @@ public class ChatController {
   }
 
 //채팅방 입장 시 채팅방의 메시지들 조회 (한 번에 보여주는 개수는 기본 20개)
+
      @ApiOperation(value = "채팅방 메시지들 조회", notes = "채팅방의 메시지들을 조회합니다.")
    @ApiResponses(value = {
        @ApiResponse(code = 200, message = "채팅방 메시지들 조회 성공"),
@@ -143,6 +149,7 @@ public class ChatController {
   public ResponseEntity<List<ChatMessage>> getMessages(
     @ApiParam(value = "조회할 채팅방 id")
       @PathVariable String roomId,
+
     @ApiParam(value = "현재 불러온 메시지 중 가장 마지막 메시지 id")
       @RequestParam(required = false) Long lastMessageId,
     @ApiParam(value = "한 번에 보여주는 메시지 개수")
@@ -170,6 +177,7 @@ public class ChatController {
     //String userId = authentication.getName();
     String userId = "8h9i0j1k-1111-2222-3333-444455556673";
 
+
     chatService.leaveChatRoom(roomId, userId);
     return ResponseEntity.status(204).build();
   }
@@ -183,6 +191,7 @@ public class ChatController {
        @ApiResponse(code = 500, message = "서버 내부 오류")
   })
 
+
   @PutMapping(value = "/room/{roomId}/read")
   public ResponseEntity<Void> markAsRead(
     @ApiParam(value = "채팅방 ID")
@@ -190,6 +199,7 @@ public class ChatController {
     //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
    //String userId = authentication.getName();
     String userId = "8h9i0j1k-1111-2222-3333-444455556673";
+
     log.info("ChatController - markAsRead");
 
     chatService.markAsRead(roomId, userId);

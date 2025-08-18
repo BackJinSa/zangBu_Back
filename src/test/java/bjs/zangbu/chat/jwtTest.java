@@ -27,7 +27,7 @@ public class jwtTest {
      * JwtProcessor.generateAccessToken(email, role) 과 동일한 구조의 토큰 생성
      * - subject = email  (JwtProcessor.getEmail()은 subject를 반환)
      * - claim "role" 포함
-     * -
+
      */
     @Test
     void makeDevAccessToken() {
@@ -75,6 +75,7 @@ public class jwtTest {
         System.out.println("\n=== user2 johnny : DEV ACCESS TOKEN ===\n" + token2 + "\n");
         System.out.println("\n=== user3 jessica: DEV ACCESS TOKEN ===\n" + token3 + "\n");
         System.out.println("\n=== user4 michael : DEV ACCESS TOKEN ===\n" + token4 + "\n");
+
     }
 
     /**

@@ -2,6 +2,7 @@ package bjs.zangbu.documentReport.service;
 import bjs.zangbu.building.mapper.BuildingMapper;
 import bjs.zangbu.deal.dto.join.DealDocumentInfo;
 import bjs.zangbu.deal.mapper.DealMapper;
+import bjs.zangbu.deal.vo.DocumentType;
 import bjs.zangbu.documentReport.dto.request.DocumentReportRequest.DocumentReportRequestElement;
 import bjs.zangbu.documentReport.dto.request.EstateRegisterData;
 import bjs.zangbu.documentReport.dto.response.DocumentReportResponse.DocumentReportElement;
@@ -22,6 +23,7 @@ public class DocumentReportServiceImpl implements DocumentReportService {
   private final DocumentReportMapper reportMapper;
   private final DealMapper dealMapper;
   private final BuildingMapper buildingMapper;
+
 
   @Override
   @Transactional
@@ -90,4 +92,21 @@ public class DocumentReportServiceImpl implements DocumentReportService {
         )
     );
   }
+
+  /** 없으면 null */
+  @Override
+  public String getLatestUrlOrNull(String memberId, Long buildingId, DocumentType type) {
+    return reportMapper.selectUrl(memberId, buildingId, type.name());
+  }
+  /** upsert */
+  @Override
+  public void saveLatestUrl(String memberId, Long buildingId, DocumentType type, String url) {
+    reportMapper.upsert(memberId, buildingId, type.name(), url);
+  }
+
+  @Override
+  public void deleteLatestUrl(String memberId, Long buildingId, DocumentType type) {
+    reportMapper.delete(memberId, buildingId, type.name());
+  }
+
 }

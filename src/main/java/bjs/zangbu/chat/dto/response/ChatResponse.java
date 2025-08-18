@@ -57,6 +57,7 @@ public class ChatResponse {
 
     @ApiModelProperty(value = "채팅방 내 메시지 목록")
     private List<Message> messageList;
+
   }
 
   @Getter
@@ -115,6 +116,7 @@ public class ChatResponse {
   @NoArgsConstructor
   @ApiModel(description = "채팅방 목록 응답 DTO")
   public static class ChatRoomListResponse {
+
 
     @ApiModelProperty(value = "채팅방 ID", example = "room-uuid-123")
     private String chatRoomId;
@@ -178,6 +180,7 @@ public class ChatResponse {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
+
     @ApiModel(description = "탭별 카운트 정보")
     public static class Counts {
 

@@ -5,26 +5,36 @@ import bjs.zangbu.codef.service.CodefTwoFactorService;
 import bjs.zangbu.deal.dto.request.BuildingRegisterRequest;
 import bjs.zangbu.deal.dto.response.BuildingRegisterResponse;
 import bjs.zangbu.deal.dto.response.DealResponse;
+import bjs.zangbu.deal.dto.response.EstateRegistrationResponse;
 import bjs.zangbu.deal.util.PdfUtil;
+import bjs.zangbu.deal.vo.DocumentType;
+import bjs.zangbu.documentReport.service.DocumentToMongoService;
 import bjs.zangbu.global.config.RootConfig;
+import bjs.zangbu.mongo.Dao.ReportDocumentDao;
 import bjs.zangbu.ncp.service.Base64UploaderService;
 import bjs.zangbu.ncp.service.BinaryUploaderService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.log4j.Log4j2;
+import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static bjs.zangbu.ncp.auth.Holder.HeaderCreationHolder.BUCKET_NAME;
 import static org.junit.jupiter.api.Assertions.*;
+
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = RootConfig.class)
 @ActiveProfiles("test")
@@ -35,13 +45,15 @@ class ContractServiceImplTest {
     @Autowired
     private BinaryUploaderService binaryUploaderService;
     @Autowired
-    private Base64UploaderService base64UploaderService;
+    private DocumentToMongoService documentToMongoService;
+    @Autowired
+    private ReportDocumentDao reportDocumentDao;
 
     @BeforeEach
     public void setUp() {
     }
 
-
+    @Disabled
     @DisplayName("건축물대장 api 테스트")
     public String generateRegisterPdf() throws Exception {
         BuildingRegisterRequest request = BuildingRegisterRequest.builder()
@@ -63,6 +75,7 @@ class ContractServiceImplTest {
         return result;
     }
 
+    @Disabled
     @Test
     @DisplayName("건축물대장 response to ncp pdf url")
     public void brToNcp() throws Exception {
@@ -88,7 +101,7 @@ class ContractServiceImplTest {
         System.out.println("pdfBytes = " + pdfBytes);
         assertNotNull(pdfBytes, "디코딩 결과가 null이면 안 됩니다.");
 
-        String objectName  = "building-register-test_12345.pdf";
+        String objectName = "building-register/building_test12345/test_12345.pdf";
         String url = binaryUploaderService.putPdfObject(BUCKET_NAME, objectName, pdfBytes);
 //        String url = base64UploaderService.uploadBase64Pdf(BUCKET_NAME, key, base64Pdf);
         assertNotNull(url, "업로드 URL이 null이면 안 됩니다.");
@@ -96,5 +109,48 @@ class ContractServiceImplTest {
     }
 
 
+    // 리소스 JSON 읽기 (파일명: src/test/resources/등기부등본-원본포함-0811.json)
+    private String readJson(String name) {
+        try (InputStream is = new ClassPathResource(name).getInputStream()) {
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new RuntimeException("테스트 리소스 로딩 실패: " + name, e);
+        }
+    }
 
+    @Test
+    @DisplayName("등기부 등본 mongo 테스트")
+    public void EstateToMongo() throws Exception {
+        // 1) 입력값 (테스트 전용 식별자)
+        final String memberId = "test-member-json-only";
+        final Long buildingId = 112233L;
+        final DocumentType docType = DocumentType.ESTATE;
+
+        // 2) 리소스 JSON 로드 → DTO 파싱
+        String json = readJson("등기부등본-원본포함-0811.json");
+        assertNotNull(json);
+        EstateRegistrationResponse dto =
+                CodefConverter.parseDataToDto(json, EstateRegistrationResponse.class);
+        assertNotNull(dto, "DTO 파싱 실패(null)");
+
+        // 3) Mongo에 JSON 업서트 (resOriGinalData는 내부에서 제거됨)
+        documentToMongoService.saveJson(memberId, buildingId, docType, dto);
+
+        // 4) 저장 검증 (parsed 존재, pdf는 아직 없음)
+        Document found = reportDocumentDao.findOne(memberId, buildingId, docType.name());
+        assertNotNull(found, "Mongo에 문서가 저장되어야 합니다.");
+        assertEquals(memberId, found.getString("memberId"));
+        assertEquals(buildingId, found.getLong("buildingId"));
+        assertEquals(docType.name(), found.getString("docType"));
+
+        // parsed(JSON) 저장 확인
+        assertNotNull(found.get("parsed"), "parsed(JSON)가 저장되어야 합니다.");
+
+        // pdf 메타는 아직 설정하지 않음 (업로드 안 했으므로 null 또는 미존재)
+        Object pdfMeta = found.get("pdf");
+        assertTrue(pdfMeta == null || pdfMeta instanceof Document && ((Document) pdfMeta).isEmpty(),
+                "업로드를 안 했으니 pdf 메타가 없어야 정상");
+    }
 }
+
+
