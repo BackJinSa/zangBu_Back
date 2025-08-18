@@ -333,7 +333,7 @@ public class BuildingRequest {
         private PropertyType propertyType;
         // 입주 가능 날짜
         private LocalDateTime moveDate;
-        // 한 줄 소개 문구
+        // 한 줄 소개 문구a
         private String infoOneline;
         // 건물 상세 설명
         private String infoBuilding;
@@ -343,6 +343,8 @@ public class BuildingRequest {
         private String contactPhone;
         // 제공되는 시설 정보 (예: 엘리베이터, 주차장, 보안 등)
         private String facility;
+        // 집 면적
+        private float size;
     }
 }
 
