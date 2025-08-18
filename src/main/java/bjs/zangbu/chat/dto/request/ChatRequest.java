@@ -2,6 +2,9 @@ package bjs.zangbu.chat.dto.request;
 
 import bjs.zangbu.chat.vo.ChatMessage;
 import java.time.LocalDateTime;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,12 +16,12 @@ public class ChatRequest {
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-//     @Schema(description = "채팅방 메시지 목록 요청 DTO")
+  @ApiModel(description = "채팅방 메시지 목록 요청 DTO")
   public static class ChatMessageListRequest { //roomId에 해당하는 채팅방의 메시지들 마지막부터 limit개 불러오기
 
-    //         @Schema(description = "마지막으로 받은 메시지 ID", example = "1005")
+    @ApiModelProperty(value = "마지막으로 받은 메시지 ID")
     private Long lastMessageId;  // 마지막으로 받은 메시지 ID
-    //         @Schema(description = "한 번에 불러올 메시지 수", example = "20")
+    @ApiModelProperty(value = "한 번에 불러올 메시지 수")
     private int limit;      // 한 번에 불러올 개수
     //컨트롤러 작성해보고 dto작성 없이 @RequestParam으로 할지 생각해보기
   }
@@ -28,21 +31,21 @@ public class ChatRequest {
   @NoArgsConstructor
   @AllArgsConstructor
   @Builder
-//     @Schema(description = "메시지 전송 요청 DTO")
+  @ApiModel(description = "메시지 전송 요청 DTO")
   public static class SendMessageRequest {
 
-    //         @Schema(description = "전송할 메시지 내용", example = "안녕")
+    @ApiModelProperty(value = "전송할 메시지 내용", example = "안녕", required = true)
     private String message;
-    //         @Schema(description = "채팅방 ID", example = "room-uuid-123")
+    @ApiModelProperty(value = "채팅방 ID", example = "b10011-1111-2222-3333-444455556675", required = true)
     private String chatRoomId;
 
     public ChatMessage toEntity(String senderId, LocalDateTime createdAt) {
       return ChatMessage.builder()
-          .chatRoomId(chatRoomId)
-          .senderId(senderId)
-          .message(message)
-          .createdAt(createdAt)
-          .build();
+              .chatRoomId(chatRoomId)
+              .senderId(senderId)
+              .message(message)
+              .createdAt(createdAt)
+              .build();
     }
   }
 
@@ -50,17 +53,20 @@ public class ChatRequest {
   @Getter
   @NoArgsConstructor
   @AllArgsConstructor
-//     @Schema(description = "채팅방 목록 요청 DTO")
+  @ApiModel(description = "채팅방 목록 요청 DTO")
   public class ChatRoomListRequest {
 
-    //
-//     @Schema(description = "페이지 번호 (0부터 시작)", example = "0")
+
+    @ApiModelProperty(value = "페이지 번호 (0부터 시작)", example = "0")
     private int page;       //페이지
-    //
-//     @Schema(description = "한 페이지에 보여줄 채팅방 개수", example = "10")
+
+    @ApiModelProperty(value = "한 페이지에 보여줄 채팅방 개수", example = "10")
     private int size;       //한 페이지에 보여줄 채팅방 개수
-    //
-//     @Schema(description = "필터 타입 (전체, 구매, 판매)", example = "전체")
+
+    @ApiModelProperty(
+            value = "필터 타입",
+            allowableValues = "ALL,BUY,SELL"
+    )
     private String type; // "전체" or "구매" or "판매"
   }
 
@@ -68,7 +74,10 @@ public class ChatRequest {
   @NoArgsConstructor
   @AllArgsConstructor
   // POST  /chat/room 채팅방 생성
+  @ApiModel(description = "채팅방 생성 요청 DTO")
   public static class CreateRoomRequest {
+    @ApiModelProperty(value = "매물 ID", example = "123", required = true)
+
     private Long buildingId;
   }
 }

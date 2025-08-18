@@ -7,6 +7,11 @@ import bjs.zangbu.chat.vo.ChatMessage;
 import bjs.zangbu.chat.dto.request.ChatRequest;
 import bjs.zangbu.chat.vo.ChatRoom;
 import java.util.List;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
@@ -15,15 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 
 @Log4j2
 @RestController
@@ -34,19 +32,21 @@ public class ChatController {
 
   private final ChatService chatService;
 
-  // 채팅방 생성 후 반환, 이미 채팅방 존재하면 그 채팅방 반환
-//     @Operation(summary = "채팅방 생성", description = "채팅방을 생성합니다.")
-//   @ApiResponses({
-//       @ApiResponse(responseCode = "201", description = "채팅방 생성 성공 후 반환(이미 채팅방 존재하면 기존 채팅방 반환)"),
-//       @ApiResponse(responseCode = "400", description = "채팅방 생성 실패"),
-//       @ApiResponse(responseCode = "500", description = "서버 내부 오류")
-//})
+
+   //채팅방 생성 후 반환, 이미 채팅방 존재하면 그 채팅방 반환
+     @ApiOperation(value = "채팅방 생성", notes = "채팅방을 생성합니다.", response = ChatRoom.class)
+   @ApiResponses(value = {
+       @ApiResponse(code = 201, message = "채팅방 생성 성공 후 반환(이미 채팅방 존재하면 기존 채팅방 반환)"),
+       @ApiResponse(code = 400, message = "채팅방 생성 실패"),
+       @ApiResponse(code = 500, message = "서버 내부 오류")
+})
+
 
   @PostMapping(value = "/room/{buildingId}", produces = "application/json;charset=UTF-8")
   public ResponseEntity<ChatRoom> createChatRoom(@PathVariable Long buildingId) {
     //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     //String consumerId = authentication.getName();  //TODO: 테스트용, 나중에 주석 취소
-    String consumerId = "7g8h9i0j-1111-2222-3333-444455556672"; //robert
+    String consumerId = "8h9i0j1k-1111-2222-3333-444455556673";
 
     log.info("ChatController - createChatRoom");
     ChatRoom room = chatService.createChatRoom(buildingId, consumerId);
@@ -54,26 +54,27 @@ public class ChatController {
   }
 
 // 사용자가 참여하고 있는 채팅방 목록 조회
-//     @Operation(summary = "채팅방 목록 조회", description = "사용자의 채팅방 목록을 조회합니다.")
-//   @ApiResponses({
-//       @ApiResponse(responseCode = "200", description = "채팅방 목록 조회 성공"),
-//       @ApiResponse(responseCode = "400", description = "채팅방 목록 조회 실패"),
-//       @ApiResponse(responseCode = "500", description = "서버 내부 오류")
-//  })
+
+     @ApiOperation(value = "채팅방 목록 조회", notes = "사용자의 채팅방 목록을 조회합니다.")
+   @ApiResponses(value = {
+       @ApiResponse(code = 200, message = "채팅방 목록 조회 성공"),
+       @ApiResponse(code = 400, message = "채팅방 목록 조회 실패"),
+       @ApiResponse(code = 500, message = "서버 내부 오류")
+  })
 
   @GetMapping(value=  "/list",  produces = "application/json;charset=UTF-8")
   public  ResponseEntity<ChatResponse.ChatRoomListPage> getChatRoomList(
-//    @Parameter(description = "ALL" or "BUY" or "SELL")
+    @ApiParam(value = "판매 타입", example = "ALL or BUY or SELL")
       @RequestParam String type,
-//    @Parameter(description = "페이지 번호")
+    @ApiParam(value = "페이지 번호")
       @RequestParam int page,
-//    @Parameter(description = "한 페이지 당 표시할 개수")
+    @ApiParam(value = "한 페이지 당 표시할 개수")
       @RequestParam int size) {
     log.info("ChatController - getChatRoomList");
 
     //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     //String userId = authentication.getName();  //TODO: 테스트하느라 주석처리함
-    String userId = "1a2b3c4d-1111-2222-3333-444455556666";
+    String userId = "8h9i0j1k-1111-2222-3333-444455556673";
 
     // 프론트 → 매퍼 타입 매핑
     String mapped = switch (type) {
@@ -82,6 +83,7 @@ public class ChatController {
       default     -> "ALL";
     };
 
+
     List<ChatResponse.ChatRoomListResponse> roomList = chatService.getChatRoomList(userId, mapped,
         page, size);
 
@@ -89,7 +91,8 @@ public class ChatController {
     long total = chatService.countChatRoomList(userId, mapped);
     boolean hasNext = (long) page * size < total;
 
-// 탭 카운트(선택이지만 프론트 UX 좋아짐)
+// 탭 카운트
+
     ChatResponse.ChatRoomListPage.Counts counts = ChatResponse.ChatRoomListPage.Counts.builder()
             .ALL(ChatResponse.ChatRoomListPage.SimpleCount.builder()
                     .count((int) chatService.countChatRoomList(userId, "ALL"))
@@ -117,12 +120,12 @@ public class ChatController {
   }
 
 // 채팅방 상세 정보 조회
-//     @Operation(summary = "채팅방 상세 조회", description = "채팅방의 상세 정보를 조회합니다.")
-//   @ApiResponses({
-//       @ApiResponse(responseCode = "200", description = "채팅방 상세 정보 조회 성공"),
-//       @ApiResponse(responseCode = "404", description = "해당 id에 대한 채팅방이 없음"),
-//       @ApiResponse(responseCode = "500", description = "서버 내부 오류")
-//  })
+     @ApiOperation(value = "채팅방 상세 조회", notes = "채팅방의 상세 정보를 조회합니다.")
+   @ApiResponses(value = {
+       @ApiResponse(code = 200, message = "채팅방 상세 정보 조회 성공"),
+       @ApiResponse(code = 404, message = "해당 id에 대한 채팅방이 없음"),
+       @ApiResponse(code = 500, message = "서버 내부 오류")
+  })
 
   @GetMapping("/room/info/{roomId}")
   public ResponseEntity<ChatRoom> getChatRoomDetail(
@@ -133,21 +136,23 @@ public class ChatController {
   }
 
 //채팅방 입장 시 채팅방의 메시지들 조회 (한 번에 보여주는 개수는 기본 20개)
-//     @Operation(summary = "채팅방 메시지들 조회", description = "채팅방의 메시지들을 조회합니다.")
-//   @ApiResponses({
-//       @ApiResponse(responseCode = "200", description = "채팅방 메시지들 조회 성공"),
-//       @ApiResponse(responseCode = "400", description = "채팅방 ID 또는 파라미터 오류"),
-//       @ApiResponse(responseCode = "404", description = "채팅방이 존재하지 않음"),
-//       @ApiResponse(responseCode = "500", description = "서버 내부 오류")
-//  })
+
+     @ApiOperation(value = "채팅방 메시지들 조회", notes = "채팅방의 메시지들을 조회합니다.")
+   @ApiResponses(value = {
+       @ApiResponse(code = 200, message = "채팅방 메시지들 조회 성공"),
+       @ApiResponse(code = 400, message = "채팅방 ID 또는 파라미터 오류"),
+       @ApiResponse(code = 404, message = "채팅방이 존재하지 않음"),
+       @ApiResponse(code = 500, message = "서버 내부 오류")
+  })
 
   @GetMapping(value = "/room/{roomId}", produces = "application/json")
   public ResponseEntity<List<ChatMessage>> getMessages(
-//    @Parameter(description = "조회할 채팅방 id")
+    @ApiParam(value = "조회할 채팅방 id")
       @PathVariable String roomId,
-//    @Parameter(description = "현재 불러온 메시지 중 가장 마지막 메시지 id")
+
+    @ApiParam(value = "현재 불러온 메시지 중 가장 마지막 메시지 id")
       @RequestParam(required = false) Long lastMessageId,
-//    @Parameter(description = "한 번에 보여주는 메시지 개수")
+    @ApiParam(value = "한 번에 보여주는 메시지 개수")
       @RequestParam(defaultValue = "20") int limit
   ) {
     List<ChatMessage> messages = chatService.getMessages(roomId, lastMessageId, limit);
@@ -156,46 +161,69 @@ public class ChatController {
   }
 
 // 채팅방 나가기
-//     @Operation(summary = "채팅방 나가기", description = "채팅방을 나갑니다.")
-//   @ApiResponses({
-//       @ApiResponse(responseCode = "204", description = "채팅방 나가기 성공"),
-//       @ApiResponse(responseCode = "400", description = "유효하지 않은 사용자 or 채팅방 ID"),
-//       @ApiResponse(responseCode = "404", description = "채팅방이 존재하지 않음"),
-//       @ApiResponse(responseCode = "500", description = "서버 내부 오류")
-//  })
+     @ApiOperation(value = "채팅방 나가기", notes = "채팅방을 나갑니다.")
+   @ApiResponses(value = {
+       @ApiResponse(code = 204, message = "채팅방 나가기 성공"),
+       @ApiResponse(code = 400, message = "유효하지 않은 사용자 or 채팅방 ID"),
+       @ApiResponse(code = 404, message = "채팅방이 존재하지 않음"),
+       @ApiResponse(code = 500, message = "서버 내부 오류")
+  })
 
   @PatchMapping("/list/exit/{roomId}")
   public ResponseEntity<Void> leaveChatRoom(
-//    @Parameter(description = "나갈 채팅방 id")
+    @ApiParam(value = "나갈 채팅방 id")
       @PathVariable String roomId) {
     //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     //String userId = authentication.getName();
-    String userId = "1a2b3c4d-1111-2222-3333-444455556666";
+    String userId = "8h9i0j1k-1111-2222-3333-444455556673";
+
 
     chatService.leaveChatRoom(roomId, userId);
     return ResponseEntity.status(204).build();
   }
 
 //채팅 메시지 읽음 처리
-//     @Operation(summary = "채팅 메시지 읽음 처리", description = "채팅방 입장 시 메시지들 읽음 처리를 합니다..")
-//   @ApiResponses({
-//       @ApiResponse(responseCode = "204", description = "채팅 메시지 읽음 처리 성공"),
-//       @ApiResponse(responseCode = "400", description = "유효하지 않은 사용자 or 채팅방 ID"),
-//       @ApiResponse(responseCode = "404", description = "채팅방이 존재하지 않음"),
-//       @ApiResponse(responseCode = "500", description = "서버 내부 오류")
-//  })
+     @ApiOperation(value = "채팅 메시지 읽음 처리", notes = "채팅방 입장 시 메시지들 읽음 처리를 합니다..")
+   @ApiResponses(value = {
+       @ApiResponse(code = 204, message = "채팅 메시지 읽음 처리 성공"),
+       @ApiResponse(code = 400, message = "유효하지 않은 사용자 or 채팅방 ID"),
+       @ApiResponse(code = 404, message = "채팅방이 존재하지 않음"),
+       @ApiResponse(code = 500, message = "서버 내부 오류")
+  })
+
 
   @PutMapping(value = "/room/{roomId}/read")
   public ResponseEntity<Void> markAsRead(
-//    @Parameter(description = "채팅방 ID")
+    @ApiParam(value = "채팅방 ID")
       @PathVariable String roomId) {
     //Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
    //String userId = authentication.getName();
-    String userId = "1a2b3c4d-1111-2222-3333-444455556666";
+    String userId = "8h9i0j1k-1111-2222-3333-444455556673";
+
     log.info("ChatController - markAsRead");
 
     chatService.markAsRead(roomId, userId);
     return ResponseEntity.noContent().build(); // 204
   }
+
+    @DeleteMapping("/room/{chatRoomId}")
+    @Transactional
+    public ResponseEntity<Void> deleteChatRoom(@PathVariable String chatRoomId) {
+        int affected = chatService.deleteChatRoom(chatRoomId);
+        if (affected == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/room/{buildingId}/{consumerId}")
+    public ResponseEntity<ChatResponse.ChatRoomExistResponse> existsChatRoom(@PathVariable Long buildingId, @PathVariable String consumerId) {
+        ChatRoom chatRoom = chatService.existsChatRoom(buildingId, consumerId);
+        if (chatRoom != null) {
+            return ResponseEntity.ok(new ChatResponse.ChatRoomExistResponse(true, chatRoom.getChatRoomId()));
+        } else {
+            return ResponseEntity.ok(new ChatResponse.ChatRoomExistResponse(false, null));
+        }
+    }
 
 }
