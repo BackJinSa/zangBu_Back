@@ -11,7 +11,7 @@
                m.name,
                m.telecom
         from member m
-        where m.id = #{memberId}
+        where m.member_id = #{memberId}
     </select>
     <insert id="insert"
             parameterType="bjs.zangbu.addressChange.vo.AddressChange"

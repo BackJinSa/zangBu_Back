@@ -108,9 +108,17 @@ public class SecurityConfig {
                         // 정적 리소스 허용 (필요시)
                         .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
+            // map 엔드포인트 허용
+            .requestMatchers(new AntPathRequestMatcher("/map/**")).permitAll()
 
-                        // auth 엔트 포인트
-                        .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+            // auth 엔트 포인트
+//            .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+            // 보안 API 경로 설정
+            .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
+            .requestMatchers(new AntPathRequestMatcher("/security/member"))
+            .hasAnyRole("ADMIN", "MEMBER")
+            .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
 
                         // codef 엔드포인트 허용
                         .requestMatchers(new AntPathRequestMatcher("/codef/**")).permitAll()
@@ -127,12 +135,15 @@ public class SecurityConfig {
                         // 테스트용: /deal/**허용
                         .requestMatchers(new AntPathRequestMatcher("/deal/**")).permitAll()
 
-                        .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/auth/reissue")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/auth/email")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/auth/check/email")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/auth/check/nickname")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/reissue")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/email")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/check/email")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/check/nickname")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/auth/verify")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/codef/secure")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/codef/captcha")).permitAll()
 
                         .requestMatchers(new AntPathRequestMatcher("/auth/logout")).authenticated()
                         .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()

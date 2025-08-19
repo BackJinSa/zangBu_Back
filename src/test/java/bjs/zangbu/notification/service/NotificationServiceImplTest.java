@@ -3,14 +3,19 @@ package bjs.zangbu.notification.service;
 import bjs.zangbu.bookmark.mapper.BookMarkMapper;
 import bjs.zangbu.bookmark.service.BookMarkServiceImpl;
 import bjs.zangbu.bookmark.vo.Bookmark;
+import bjs.zangbu.building.dto.request.BuildingRequest;
 import bjs.zangbu.building.mapper.BuildingMapper;
+import bjs.zangbu.building.service.BuildingServiceImpl;
 import bjs.zangbu.building.vo.Building;
+import bjs.zangbu.building.vo.PropertyType;
+import bjs.zangbu.building.vo.SellerType;
 import bjs.zangbu.fcm.mapper.FcmMapper;
 import bjs.zangbu.fcm.service.FcmSender;
 import bjs.zangbu.member.mapper.MemberMapper;
 import bjs.zangbu.notification.dto.response.NotificationResponse.*;
 import bjs.zangbu.notification.mapper.NotificationMapper;
 import bjs.zangbu.notification.vo.Notification;
+import bjs.zangbu.notification.vo.SaleType;
 import bjs.zangbu.notification.vo.Type;
 import bjs.zangbu.review.mapper.ReviewMapper;
 import com.zaxxer.hikari.HikariConfig;
@@ -35,6 +40,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,6 +92,7 @@ class NotificationServiceImplTest {
 
     private NotificationServiceImpl sutNotificationServiceImpl;
     private BookMarkServiceImpl sutBookmarkServiceImpl;
+    private BuildingServiceImpl sutBuildingServiceImpl;
     @Resource NotificationMapper notificationMapper;
     @Resource MemberMapper memberMapper;
     @Resource BookMarkMapper bookMarkMapper;
@@ -97,13 +104,21 @@ class NotificationServiceImplTest {
     @BeforeEach
     void setUp() {
         // 필요한 의존성만 추가해서 클래스 생성
+        sutBookmarkServiceImpl = new BookMarkServiceImpl(bookMarkMapper);
+
         sutNotificationServiceImpl = new NotificationServiceImpl(
-                notificationMapper, null, buildingMapper,
-                null, null, fcmMapper, null,
+                notificationMapper, sutBookmarkServiceImpl, buildingMapper,
+                null, null, fcmMapper, fcmSender,
                 memberMapper, null
         );
 
-        sutBookmarkServiceImpl = new BookMarkServiceImpl(bookMarkMapper);
+
+        sutBuildingServiceImpl = new BuildingServiceImpl(
+                null, buildingMapper,
+                null, null, null,
+                sutBookmarkServiceImpl, null, null,
+                sutNotificationServiceImpl
+        );
     }
 
     private static final String MEMBER_ID = "a0030658-24f8-42cd-8d78-a9fd06bf02b2";
@@ -311,4 +326,38 @@ class NotificationServiceImplTest {
                 message1,
                 "테스트 URL");
     }
+
+    @Test
+    void testUpdateBuildingAndTriggerPriceChangeNotification() {
+        // given
+        String memberId = "user-002";
+        BuildingRequest.UpdateBuilding request = new BuildingRequest.UpdateBuilding(
+                2L,                 // buildingId
+                "홍길동",                     // sellerNickname
+                SaleType.MONTHLY,            // saleType (예: SALE, JEONSE, MONTHLY_RENT 등)
+                700000000,                   // price (5억)
+                100000000L,                  // deposit (보증금 1억)
+                10,                          // bookmarkCount
+                LocalDateTime.now(),         // createdAt
+                "래미안 아파트 101동 1001호",  // buildingName
+                SellerType.TENANT,            // sellerType (예: 일반인, 공인중개사)
+                PropertyType.APARTMENT,      // propertyType (예: 아파트, 오피스텔 등)
+                LocalDateTime.now().plusMonths(1), // moveDate (한 달 뒤 입주 가능)
+                "강남 최고의 입지!",                 // infoOneline
+                "역세권, 풀옵션, 채광 좋음",          // infoBuilding
+                "김철수",                          // contactName
+                "010-1234-5678",                    // contactPhone
+                "엘리베이터, 주차장, 보안",       // facility
+                84.5f                       // size (예: 84.5㎡)
+
+        );
+
+        // when
+        sutBuildingServiceImpl.updateBuilding(request, memberId);
+
+        // then
+        // detectPriceChangeForAllBookmarks() 호출 여부 검증
+        sutNotificationServiceImpl.detectPriceChangeForAllBookmarks();
+    }
+
 }

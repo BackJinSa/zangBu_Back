@@ -235,6 +235,11 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
     HashMap<String, Object> resultMap = (HashMap<String, Object>) responseMap.get("result");
     String code = (String) resultMap.get("code");
 
+    // 최종 성공이면 그대로 종료
+    if ("CF-00000".equals(code)) {
+      return firstResponse;
+    }
+
     // 3. 2차 인증이 필요한 경우 (CF-03002)
     if ("CF-03002".equals(code)) {
       System.out.println("주민등록증 진위확인 1차 인증 완료. 2차 인증을 위해 대기합니다...");
@@ -266,6 +271,7 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
       HashMap<String, Object> responseMap2 = new ObjectMapper().readValue(secondResponse, HashMap.class);
 
       HashMap<String, Object> resultMap2 = (HashMap<String, Object>) responseMap2.get("result");
+
       // 인증 갱신 값 파싱을 위한 해시맵
       HashMap<String, Object> data2 = (HashMap<String, Object>) responseMap2.get("data");
       // 코드 상태 번호
@@ -274,12 +280,17 @@ public class CodefTwoFactorServiceImpl implements CodefTwoFactorService {
       if(code2.equals("CF-00000")) {
         return objectMapper.writeValueAsString(data2);
       }
+
       // 여기서 CF-03002 + captcha 단계여야 함
       if (!"CF-03002".equals(code2)) {
         // 이미 최종 성공/실패로 넘어간 케이스 → 그대로 전달하거나 에러 처리
         // 필요 시 아래 라인처럼 바로 반환:
-        throw new IllegalStateException("예상치 못한 2-Way 상태: " + code2);
+//        throw new IllegalStateException("예상치 못한 2-Way 상태: " + code2);
+        return objectMapper.writeValueAsString(responseMap2);
       }
+
+      // 인증 갱신 값 파싱을 위한 해시맵
+//      HashMap<String, Object> data2 = (HashMap<String, Object>) responseMap2.get("data");
 
       // png를 위한 파싱을 위한 해시맵
       HashMap<String, Object> extraInfo = (HashMap<String, Object>) data2.get("extraInfo");

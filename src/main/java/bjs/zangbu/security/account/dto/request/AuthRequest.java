@@ -323,4 +323,10 @@ public class AuthRequest {
     private String issueDate;
   }
 
+  @Getter @Setter
+  public static class ResetPasswordTokenRequest {
+    private String token;
+    private String newPassword;
+  }
+
 }

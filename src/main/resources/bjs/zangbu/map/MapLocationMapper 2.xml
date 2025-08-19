@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- src/main/resources/mapper/MapLocationMapper.xml -->
+<mapper namespace="bjs.zangbu.map.mapper.MapLocationMapper">
+    <select id="findAllLocations" resultType="bjs.zangbu.map.vo.MapLocation">
+        SELECT
+            b.building_id,
+            c.address,
+            b.latitude,
+            b.longitude,
+            b.building_name
+        FROM building b
+        JOIN complex_list c ON b.complex_id = c.complex_id
+        LIMIT 100
+    </select>
+</mapper>

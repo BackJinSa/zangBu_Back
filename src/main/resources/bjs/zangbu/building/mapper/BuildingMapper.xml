@@ -147,12 +147,6 @@
             <if test="endPrice != null">
                 AND b.price &lt;= #{endPrice}
             </if>
-            <if test="startSize != null">
-                AND b.size &gt;= #{startSize}
-            </if>
-            <if test="endSize != null">
-                AND b.size &lt;= #{endSize}
-            </if>
             <if test="propertyType != null and propertyType != ''">
                 AND b.property_type = #{propertyType}
             </if>
@@ -180,12 +174,6 @@
             </if>
             <if test="endPrice != null">
                 AND b.price &lt;= #{endPrice}
-            </if>
-            <if test="startSize != null">
-                AND b.size &gt;= #{startSize}
-            </if>
-            <if test="endSize != null">
-                AND b.size &lt;= #{endSize}
             </if>
             <if test="propertyType != null and propertyType != ''">
                 AND b.property_type = #{propertyType}
