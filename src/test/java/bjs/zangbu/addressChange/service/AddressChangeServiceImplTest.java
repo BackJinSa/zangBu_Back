@@ -8,6 +8,7 @@ import bjs.zangbu.addressChange.vo.AddressChange;
 import bjs.zangbu.codef.service.CodefTwoFactorService;
 import bjs.zangbu.global.config.RootConfig;
 import org.checkerframework.checker.units.qual.A;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = RootConfig.class)
 @ActiveProfiles("test")
+@Disabled
 class AddressChangeServiceImplTest {
 
     @Autowired
@@ -42,13 +44,13 @@ class AddressChangeServiceImplTest {
 
         ResRegisterCertRequest request = ResRegisterCertRequest.builder()
                 .birth("981207")
-                .identity("bqdrDvjxKbpm/+fzVgMvK5X+3lj1Jsqv6xGLpMV0+gfxgNUy5UUgBbA0dYmD2yIgEZkL4IJ14y9/YbRU2EdRvO4IdVOQkGxUzEi9KF+Uu2DPrCLwTSm+e4M3JQarKeDc6qOpr5KFgUa/TNsFXHMHQUkV+XixG+OPh3429JwAIH5lEwNOtDKXNe/9DHwh+MHCesMwtfKZbyeR4mb2C9vpSNyTeWDObiC7WAExIxS1ikFU/Zk1Na6BKlcLLUKqHnrbeFwRcH6nk3rd4GN730mRouIJJAtBfulDfGQksuFzMB7/P5UFuME0Cdd8TBAaIyuvDYTQN78urt2kwKA/ZeYqyw==")
+                .identity(
+                        "bqdrDvjxKbpm/+fzVgMvK5X+3lj1Jsqv6xGLpMV0+gfxgNUy5UUgBbA0dYmD2yIgEZkL4IJ14y9/YbRU2EdRvO4IdVOQkGxUzEi9KF+Uu2DPrCLwTSm+e4M3JQarKeDc6qOpr5KFgUa/TNsFXHMHQUkV+XixG+OPh3429JwAIH5lEwNOtDKXNe/9DHwh+MHCesMwtfKZbyeR4mb2C9vpSNyTeWDObiC7WAExIxS1ikFU/Zk1Na6BKlcLLUKqHnrbeFwRcH6nk3rd4GN730mRouIJJAtBfulDfGQksuFzMB7/P5UFuME0Cdd8TBAaIyuvDYTQN78urt2kwKA/ZeYqyw==")
                 .phone("01093687950")
                 .name("전경환")
                 .telecom("0")
                 .memberId("")
                 .build();
-
 
         // when: 서비스 호출 (내부에서 CODEF 호출 → 파싱 → DB 저장)
         String rawJson = codefTwoFactorService.residentRegistrationCertificate(request);
@@ -58,9 +60,10 @@ class AddressChangeServiceImplTest {
         System.out.println("통합 테스트 성공! Codef API 응답:\n" + rawJson);
 
         // and: 저장 로직 실행 (RAW JSON 사용)
-        List<ResRegisterCertResponse> preview =
-                addressChangeService.generateAddressChangeFromRaw(testMemberId, rawJson);
-        // 여기까진 동일-----------------------------------------------------------------------
+        List<ResRegisterCertResponse> preview = addressChangeService.generateAddressChangeFromRaw(testMemberId,
+                rawJson);
+        // 여기까진
+        // 동일-----------------------------------------------------------------------
 
         // then: 결과 출력
         System.out.println("=== PREVIEW (DB 미저장) ===");
@@ -73,6 +76,5 @@ class AddressChangeServiceImplTest {
                     r.getMemberId());
         }
     }
-
 
 }

@@ -1,6 +1,5 @@
 package bjs.zangbu.global.config;
 
-
 import bjs.zangbu.chat.config.WebSocketConfig;
 import bjs.zangbu.security.config.SecurityConfig;
 import javax.servlet.Filter;
@@ -8,6 +7,15 @@ import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletRegistration;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.MapperFeature;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
 public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitializer {
 
@@ -18,24 +26,19 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
 
   @Override
   protected Class<?>[] getRootConfigClasses() {
-    return new Class[]{RootConfig.class, SecurityConfig.class};
+    return new Class[] { RootConfig.class, SecurityConfig.class };
   }
 
   @Override
   protected Class<?>[] getServletConfigClasses() {
-    return new Class[]{ServletConfig.class, WebSocketConfig.class, SwaggerConfig.class,
-        RedisConfig.class};
+    return new Class[] { ServletConfig.class };
   }
 
   // 스프링의 FrontController인 DispatcherServlet이 담당할 Url 매핑 패턴, / : 모든 요청에 대해 매핑
   @Override
   protected String[] getServletMappings() {
-    return new String[]{
+    return new String[] {
         "/"
-//        "/swagger-ui.html",
-//        "/swagger-resources/**",
-//        "/v2/api-docs",
-//        "/webjars/**"
     };
   }
 
@@ -46,21 +49,19 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
     characterEncodingFilter.setEncoding("UTF-8");
     characterEncodingFilter.setForceEncoding(true);
 
-    return new Filter[]{characterEncodingFilter};
+    return new Filter[] { characterEncodingFilter };
   }
 
   @Override
   protected void customizeRegistration(ServletRegistration.Dynamic registration) {
     registration.setInitParameter("throwExceptionIfNoHandlerFound", "true");
-    MultipartConfigElement multipartConfig =
-        new MultipartConfigElement(
-            LOCATION,   // 업로드 처리 디렉토리 경로
-            MAX_FILE_SIZE,    // 업로드 가능한 파일 하나의 최대 크기
-            MAX_REQUEST_SIZE,    // 업로드 가능한 전체 최대 크기(여러 파일 업로드 하는 경우)
-            FILE_SIZE_THRESHOLD        // 메모리 파일의 최대 크기(이보다 작으면 실제 메모리에서만 작업)
-        );
+    MultipartConfigElement multipartConfig = new MultipartConfigElement(
+        LOCATION, // 업로드 처리 디렉토리 경로
+        MAX_FILE_SIZE, // 업로드 가능한 파일 하나의 최대 크기
+        MAX_REQUEST_SIZE, // 업로드 가능한 전체 최대 크기(여러 파일 업로드 하는 경우)
+        FILE_SIZE_THRESHOLD // 메모리 파일의 최대 크기(이보다 작으면 실제 메모리에서만 작업)
+    );
     registration.setMultipartConfig(multipartConfig);
   }
-
 
 }

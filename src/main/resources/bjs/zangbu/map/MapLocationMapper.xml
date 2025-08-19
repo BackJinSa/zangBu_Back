@@ -5,30 +5,54 @@
 
 <!-- src/main/resources/mapper/MapLocationMapper.xml -->
 <mapper namespace="bjs.zangbu.map.mapper.MapLocationMapper">
-    <select id="findLocationsByFilters" resultType="bjs.zangbu.map.vo.MapLocation">
+    <select id="findLocationsByFilters" resultType="bjs.zangbu.map.dto.BuildingComplexInfo">
         SELECT
-        latitude       AS latitude,
-        longitude      AS longitude,
-        building_name  AS buildingName
-        FROM building
-        WHERE 1=1
-        <if test="saleTypes != null and saleTypes.size() &gt; 0">
-            AND sale_type IN
-            <foreach collection="saleTypes" item="st" open="(" separator="," close=")">
-                #{st}
-            </foreach>
-        </if>
-        <if test="propertyTypes != null and propertyTypes.size() &gt; 0">
-            AND property_type IN
-            <foreach collection="propertyTypes" item="pt" open="(" separator="," close=")">
-                #{pt}
-            </foreach>
-        </if>
-        <if test="priceMin != null">
-            AND price &gt;= #{priceMin}
-        </if>
-        <if test="priceMax != null">
-            AND price &lt;= #{priceMax}
-        </if>
+            b.building_id,
+            b.building_name,
+            cl.address,
+            cl.roadName,
+            cl.sido,
+            cl.sigungu,
+            cl.eupmyeondong
+        FROM
+            building b
+        JOIN
+            complex_list cl ON b.complex_id = cl.complex_id
+        <where>
+            <if test="propertyTypes != null and !propertyTypes.isEmpty()">
+                AND b.property_type IN
+                <foreach collection="propertyTypes" item="pt" open="(" separator="," close=")">
+                    #{pt}
+                </foreach>
+            </if>
+            <if test="saleTypes != null and !saleTypes.isEmpty()">
+                AND b.sale_type IN
+                <foreach collection="saleTypes" item="st" open="(" separator="," close=")">
+                    #{st}
+                </foreach>
+            </if>
+            <if test="priceMin != null">
+                AND b.price &gt;= #{priceMin}
+            </if>
+            <if test="priceMax != null">
+                AND b.price &lt;= #{priceMax}
+            </if>
+        </where>
     </select>
+
+    <select id="findAllBuildingComplexInfo" resultType="bjs.zangbu.map.dto.BuildingComplexInfo">
+        SELECT
+            b.building_id,
+            b.building_name,
+            cl.address,
+            cl.roadName,
+            cl.sido,
+            cl.sigungu,
+            cl.eupmyeondong
+        FROM
+            building b
+        JOIN
+            complex_list cl ON b.complex_id = cl.complex_id
+    </select>
+
 </mapper>

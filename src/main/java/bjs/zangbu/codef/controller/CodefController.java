@@ -7,6 +7,7 @@ import bjs.zangbu.codef.service.CodefService;
 import bjs.zangbu.codef.service.CodefTwoFactorService;
 import bjs.zangbu.security.account.dto.request.AuthRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -14,10 +15,12 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.*;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,26 +39,116 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "Codef API", description = "CODEF 연동 API")
 public class CodefController {
 
-        private final CodefService codefService;
-        private final CodefTwoFactorService codefTwoFactorService;
+  private final ObjectMapper objectMapper;
+  private final CodefService codefService;
+  private final CodefTwoFactorService codefTwoFactorService;
 
-        @PostMapping(path = "/captcha", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-        @ApiOperation(value = "캡차(보안문자) 받기", notes = "2-Way 완료 후 캡차 이미지와 세션키를 반환합니다.")
-        @ApiResponses({
-                        @ApiResponse(code = 200, message = "성공"),
-                        @ApiResponse(code = 400, message = "요청 파라미터 오류"),
-                        @ApiResponse(code = 502, message = "CODEF 응답 비정상"),
-                        @ApiResponse(code = 504, message = "2차 인증 타임아웃")
-        })
-        public ResponseEntity<String> requestCaptcha(
-                        @ApiParam(value = "CODEF 주민등록 진위확인 요청", required = true) @RequestBody AuthRequest.VerifyCodefRequest request)
-                        throws Exception {
-                // 서비스가 JSON 문자열을 반환하도록 구현되어 있으므로 그대로 패스스루
-                String json = codefTwoFactorService.residentRegistrationAuthenticityConfirmation(request);
-                return ResponseEntity.ok()
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .body(json);
-        }
+  @PostMapping(
+          path = "/captcha",
+          consumes = MediaType.APPLICATION_JSON_VALUE,
+          produces = MediaType.APPLICATION_JSON_VALUE
+  )
+  @ApiOperation(value = "캡차(보안문자) 받기", notes = "2-Way 완료 후 캡차 이미지와 세션키를 반환합니다.")
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "성공"),
+          @ApiResponse(code = 400, message = "요청 파라미터 오류"),
+          @ApiResponse(code = 502, message = "CODEF 응답 비정상"),
+          @ApiResponse(code = 504, message = "2차 인증 타임아웃")
+  })
+//  public ResponseEntity<String> requestCaptcha(
+//          @ApiParam(value = "CODEF 주민등록 진위확인 요청", required = true)
+//          @RequestBody AuthRequest.VerifyCodefRequest request
+//  ) throws Exception {
+//    // 서비스가 JSON 문자열을 반환하도록 구현되어 있으므로 그대로 패스스루
+//    String json = codefTwoFactorService.residentRegistrationAuthenticityConfirmation(request);
+//
+//    return ResponseEntity.ok()
+//            .contentType(MediaType.APPLICATION_JSON)
+//            .body(json);
+//  }
+  public ResponseEntity<String> requestCaptcha(
+          @ApiParam(value = "CODEF 주민등록 진위확인 요청", required = true)
+          @RequestBody AuthRequest.VerifyCodefRequest request
+  ) throws Exception {
+
+    // 서비스가 반환한 JSON 문자열
+    String raw = codefTwoFactorService.residentRegistrationAuthenticityConfirmation(request);
+
+    // 널문자 정리 후 파싱 시도
+    String cleaned = raw.replace("\u0000", "").replace("\\u0000", "");
+    Map<String, Object> body;
+    try {
+      body = objectMapper.readValue(cleaned, Map.class);
+    } catch (Exception parseFail) {
+      // 파싱 실패면 있는 그대로 반환
+      return ResponseEntity.ok()
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(cleaned);
+    }
+
+    // 서비스가 상황에 따라
+    //  - 전체 JSON({result, data, ...})를 줄 수도 있고
+    //  - data만(data2) 줄 수도 있음 → 두 케이스 모두 처리
+    Map<String, Object> data = asMap(body.get("data"));
+    Map<String, Object> dataLike = (data != null ? data : body); // data가 없으면 body 자체를 data처럼 취급
+
+    // resAuthenticity 추출
+    String resAuthenticity = (dataLike.get("resAuthenticity") != null)
+            ? String.valueOf(dataLike.get("resAuthenticity"))
+            : null;
+
+    if (resAuthenticity != null) {
+      if ("1".equals(resAuthenticity)) {
+        // 최종 성공: 캡차 없이 바로 통과
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("resultCode", "CF-00000");
+        out.put("data", sanitizeStrings(dataLike)); // 널문자 제거
+        String json = objectMapper.writeValueAsString(out);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(json);
+      } else {
+        // 불일치/실패: 재인증 요구
+        String desc = String.valueOf(
+                dataLike.getOrDefault("resAuthenticityDesc", "입력 정보가 일치하지 않습니다. 다시 시도해주세요.")
+        );
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("resultCode", "RETRY_AUTH");
+        out.put("message", desc);
+        String json = objectMapper.writeValueAsString(out);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(json);
+      }
+    }
+
+    // resAuthenticity가 없으면 → 서비스가 내려준 payload를 그대로 보냄
+    return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(cleaned);
+  }
+
+  /* ===== 유틸 ===== */
+
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> asMap(Object o) {
+    return (o instanceof Map) ? (Map<String, Object>) o : null;
+  }
+
+  private Map<String, Object> sanitizeStrings(Map<String, Object> src) {
+    Map<String, Object> out = new LinkedHashMap<>();
+    for (Map.Entry<String, Object> e : src.entrySet()) {
+      Object v = e.getValue();
+      if (v instanceof String) {
+        out.put(e.getKey(), ((String) v).replace("\u0000", "").replace("\\u0000", ""));
+      } else {
+        out.put(e.getKey(), v);
+      }
+    }
+    return out;
+  }
 
         /**
          * 보안인증 요청 처리. {@code POST /codef/secure} 엔드포인트를 통해 세션키와 보안번호를 사용하여 보안인증을 진행합니다.
