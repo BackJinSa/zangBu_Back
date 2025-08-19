@@ -22,7 +22,7 @@
     </insert>
 
     <!-- 건당 크레딧 추가 (결제 시 적립) -->
-    <insert id="addPerCaseBalance" parameterType="map">
+    <insert id="addPerCaseBalance" parameterType="java.util.Map">
         INSERT INTO member_entitlement (member_id, per_case_balance, updated_at)
         VALUES (#{memberId}, #{delta}, NOW())
             ON DUPLICATE KEY UPDATE
@@ -31,7 +31,7 @@
     </insert>
 
     <!-- 멤버십 upsert -->
-    <insert id="upsertMembership" parameterType="map">
+    <insert id="upsertMembership" parameterType="string">
         INSERT INTO membership (member_id, plan, status, start_at, end_at, next_billing_at, created_at)
         VALUES (#{memberId}, 'STANDARD', 'ACTIVE', NOW(), NULL, DATE_ADD(NOW(), INTERVAL 1 MONTH), NOW())
             ON DUPLICATE KEY UPDATE

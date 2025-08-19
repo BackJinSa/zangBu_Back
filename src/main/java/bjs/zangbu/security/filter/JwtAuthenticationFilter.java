@@ -50,14 +50,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     return new UsernamePasswordAuthenticationToken(
-            userDetails, null, userDetails.getAuthorities());
+        userDetails, null, userDetails.getAuthorities());
   }
 
   @Override
   protected void doFilterInternal(HttpServletRequest request,
-                                  HttpServletResponse response,
-                                  FilterChain filterChain)
-          throws ServletException, IOException {
+      HttpServletResponse response,
+      FilterChain filterChain)
+      throws ServletException, IOException {
 
     String header = request.getHeader(AUTHORIZATION_HEADER);
 
@@ -71,17 +71,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authentication != null) {
           SecurityContextHolder.getContext().setAuthentication(authentication);
-          filterChain.doFilter(request, response);
-          return;
-        } else {
-          // 토큰은 있었지만 유효하지 않음 → 401 반환
-          SecurityContextHolder.clearContext();
-          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-          response.setContentType("application/json;charset=UTF-8");
-          response.getWriter().write(
-                  "{\"status\":401,\"code\":\"INVALID_TOKEN\",\"message\":\"유효하지 않은 또는 만료된 토큰입니다.\"}");
-          return;
         }
+        // 인증 정보가 있든 없든 다음 필터로 계속 진행
+        filterChain.doFilter(request, response);
+        return;
+
       } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
         // 파싱/검증 예외는 여기서 반드시 종결 (500으로 올리지 말 것)
         log.warn("JWT parse/validate error: {}", e.getMessage());
@@ -89,7 +83,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write(
-                "{\"status\":401,\"code\":\"INVALID_TOKEN\",\"message\":\"유효하지 않은 또는 만료된 토큰입니다.\"}");
+            "{\"status\":401,\"code\":\"INVALID_TOKEN\",\"message\":\"유효하지 않은 또는 만료된 토큰입니다.\"}");
         return;
       }
     }

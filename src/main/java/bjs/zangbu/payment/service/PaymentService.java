@@ -17,17 +17,18 @@ public class PaymentService {
 
     @Transactional
     public void confirmPayment(String memberId, Map<String, Object> payload) {
-        // payload: paymentKey, orderId, amount, productType, productId, price, orderName, method, pgPayload
-        paymentMapper.upsertPaymentOnConfirm(Map.of(
-                "memberId", memberId,
-                "orderId", payload.get("orderId"),
-                "paymentKey", payload.get("paymentKey"),
-                "amount", payload.get("amount"),
-                "productType", payload.get("productType"),
-                "productId", payload.get("productId"),
-                "method", payload.getOrDefault("method", "CARD"),
-                "pgPayload", payload.get("pgPayload")
-        ));
+        // payload: paymentKey, orderId, amount, productType, productId, price,
+        // orderName, method, pgPayload
+        Map<String, Object> params = new HashMap<>();
+        params.put("memberId", memberId);
+        params.put("orderId", payload.get("orderId"));
+        params.put("paymentKey", payload.get("paymentKey"));
+        params.put("amount", payload.get("amount"));
+        params.put("productType", payload.get("productType"));
+        params.put("productId", payload.get("productId"));
+        params.put("method", payload.getOrDefault("method", "CARD"));
+        params.put("pgPayload", payload.get("pgPayload"));
+        paymentMapper.upsertPaymentOnConfirm(params);
 
         String productType = String.valueOf(payload.get("productType"));
         if ("MEMBERSHIP".equals(productType)) {
@@ -46,13 +47,16 @@ public class PaymentService {
         return paymentMapper.consumePerCase(memberId) == 1;
     }
 
-    public void recordDownload(String memberId, String resourceType, String resourceId, String usedPaymentType, String orderId) {
-        paymentMapper.insertDownloadHistory(new HashMap<String, Object>() {{
-            put("memberId", memberId);
-            put("resourceType", resourceType);
-            put("resourceId", resourceId);
-            put("usedPaymentType", usedPaymentType);
-            put("orderId", orderId);
-        }});
+    public void recordDownload(String memberId, String resourceType, String resourceId, String usedPaymentType,
+            String orderId) {
+        paymentMapper.insertDownloadHistory(new HashMap<String, Object>() {
+            {
+                put("memberId", memberId);
+                put("resourceType", resourceType);
+                put("resourceId", resourceId);
+                put("usedPaymentType", usedPaymentType);
+                put("orderId", orderId);
+            }
+        });
     }
 }
