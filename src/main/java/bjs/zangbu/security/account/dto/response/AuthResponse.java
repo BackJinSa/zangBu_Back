@@ -116,4 +116,23 @@ public class AuthResponse {
             example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJyZWZyZXNoIn0.4IVKn6X2OeTYuQUbPW-QgLkekJQZkp7pJKG_LMWMNoY")
     private String refreshToken;
   }
+
+  @Getter
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @ApiModel(description = "본인인증 저장 후 응답 DTO")
+  public static class VerifyResponse{
+    private String sessionId;
+  }
+
+
+  @Getter
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @ApiModel(description = "본인인증 저장 후 응답 DTO")
+  public static class PasswordVerifyResponse{
+    private boolean isValid;     // 기존 isValidUser
+    private String sessionId;    // 추가
+    private String resetToken;
+  }
 }
