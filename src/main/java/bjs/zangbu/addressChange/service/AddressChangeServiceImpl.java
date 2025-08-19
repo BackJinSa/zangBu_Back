@@ -40,8 +40,15 @@ public class AddressChangeServiceImpl implements AddressChangeService {
     @Override
     @Transactional
     public List<ResRegisterCertResponse> generateAddressChange(String memberId) throws Exception {
+        long start = System.currentTimeMillis();
+        log.info("[START] generateAddressChange memberId={}", memberId);
         //db 조회
         ResRegisterCertRequest dto = addressChangeMapper.getRegisterCertRequest(memberId);
+        if (dto == null) {
+            log.warn("[DB] ResRegisterCertRequest not found. memberId={}", memberId);
+            return List.of();
+        }
+
         //1,2차 응답 후 응답
         String rawResponse = codefTwoFactorService.residentRegistrationCertificate(dto);
 
@@ -54,6 +61,7 @@ public class AddressChangeServiceImpl implements AddressChangeService {
             return List.of();
         }
         // 여기까진 동일
+        log.info("[PARSE] addrChanges.total={}", data.addrChanges.size());
 
 
         // 3) '전입'만 선별 → 전입일 확정 → 메모 행 제외 → 전입일 오름차순
@@ -63,6 +71,7 @@ public class AddressChangeServiceImpl implements AddressChangeService {
                 .filter(t -> t.moveIn != null && !AddrUtil.isMemoLine(t.src.resUserAddr))
                 .sorted(Comparator.comparing(t -> t.moveIn))
                 .toList();
+        log.info("[FILTER] selected(after join/memo/moveIn)={}", selected.size());
 
         List<ResRegisterCertResponse> result = new ArrayList<>();
 
@@ -118,6 +127,8 @@ public class AddressChangeServiceImpl implements AddressChangeService {
                 log.warn("AddressChange save failed. memberId={}, reason={}", memberId, e.toString());
             }
         }
+        log.info("[END] generateAddressChange memberId={} resultSize={} elapsedMs={}",
+                memberId, result.size(), (System.currentTimeMillis() - start));
 
         return result; // 컨트롤러에서 그대로 반환하거나 요약 DTO로 감싸 반환
     }

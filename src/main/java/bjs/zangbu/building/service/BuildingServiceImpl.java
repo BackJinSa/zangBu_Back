@@ -13,6 +13,7 @@ import bjs.zangbu.complexList.vo.ComplexList;
 import bjs.zangbu.imageList.service.ImageListService;
 import bjs.zangbu.imageList.vo.ImageList;
 import bjs.zangbu.ncp.service.MultipartUploaderService;
+import bjs.zangbu.notification.service.NotificationService;
 import bjs.zangbu.review.service.ReviewService;
 import bjs.zangbu.review.vo.ReviewListResponseVO;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -47,6 +48,7 @@ public class BuildingServiceImpl implements BuildingService {
     private final BookMarkService bookMarkService;
     private final MultipartUploaderService multiPartUploaderService;
     private final ReviewService reviewService;
+    private final NotificationService notificationService;
 
     /**
      * 필터링 조건에 따른 특정 매물의 상세 정보를 조회합니다.
@@ -251,5 +253,6 @@ public class BuildingServiceImpl implements BuildingService {
     @Override
     public void updateBuilding(UpdateBuilding request, String memberId) {
         buildingMapper.updateBuilding(request, memberId);
+        notificationService.detectPriceChangeForAllBookmarks();
     }
 }
