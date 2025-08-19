@@ -26,8 +26,8 @@ import org.springframework.web.cors.CorsConfiguration;
 @Configuration
 @EnableWebSecurity
 @Log4j2
-@MapperScan(basePackages = { "bjs.zangbu.security.account.mapper" })
-@ComponentScan(basePackages = { "bjs.zangbu.security" })
+@MapperScan(basePackages = {"bjs.zangbu.security.account.mapper"})
+@ComponentScan(basePackages = {"bjs.zangbu.security"})
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -49,6 +49,7 @@ public class SecurityConfig {
       throws Exception {
     return authConfig.getAuthenticationManager();
   }
+
   /**
    * SecurityFilterChain 구성
    */
@@ -77,7 +78,9 @@ public class SecurityConfig {
               "http://localhost:5173",
               "http://localhost:8080",
               "http://localhost:61613",
-              "http://localhost:6379"));
+              "http://localhost:6379"
+
+          ));
           config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
           config.setAllowedHeaders(List.of("*"));
           config.setAllowCredentials(true);
@@ -141,9 +144,9 @@ public class SecurityConfig {
             .requestMatchers(new AntPathRequestMatcher("/auth/email")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/check/email")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/check/nickname")).permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/auth/verify")).permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/codef/secure")).permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/codef/captcha")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/auth/verify")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/codef/secure")).permitAll()
+            .requestMatchers(new AntPathRequestMatcher("/codef/captcha")).permitAll()
 
             .requestMatchers(new AntPathRequestMatcher("/auth/logout")).authenticated()
             .requestMatchers(new AntPathRequestMatcher("/building/{buildingId}")).permitAll()
