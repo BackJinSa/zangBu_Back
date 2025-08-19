@@ -11,10 +11,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.MapperFeature;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.springframework.web.servlet.view.JstlView;
 
 @EnableWebMvc
 @ComponentScan(basePackages = {
@@ -63,7 +63,7 @@ public class ServletConfig implements WebMvcConfigurer {
         .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/");
   }
 
-  // Servlet 3.0 파일 업로드 사용시
+  //	Servlet 3.0 파일 업로드 사용시
   @Bean
   public MultipartResolver multipartResolver() {
     StandardServletMultipartResolver resolver = new StandardServletMultipartResolver();

@@ -77,7 +77,6 @@ public class ChatRequest {
   @ApiModel(description = "채팅방 생성 요청 DTO")
   public static class CreateRoomRequest {
     @ApiModelProperty(value = "매물 ID", example = "123", required = true)
-
     private Long buildingId;
   }
 }
