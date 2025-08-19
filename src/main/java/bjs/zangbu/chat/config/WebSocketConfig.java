@@ -79,7 +79,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         System.out.println("[WS][CONNECT] native headers = " + acc.toNativeHeaderMap());
 
                         String auth = acc.getFirstNativeHeader("Authorization");
-                        if (auth == null) auth = acc.getFirstNativeHeader("authorization");
+                        if (auth == null) auth = acc.getFirstNativeHeader("Authorization");
 
                         if (auth != null && auth.startsWith("Bearer ")) {
                             String token = auth.substring(7);
