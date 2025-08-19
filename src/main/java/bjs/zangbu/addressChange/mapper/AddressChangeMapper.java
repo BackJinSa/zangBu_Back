@@ -27,4 +27,6 @@ public interface AddressChangeMapper {
      * @return 주소 목록
      */
     List<String> selectUserAddresses(String memberId);
+
+    int existsByMemberId(String memberId);
 }
