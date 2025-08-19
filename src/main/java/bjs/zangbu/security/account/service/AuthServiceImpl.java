@@ -1,16 +1,13 @@
 package bjs.zangbu.security.account.service;
 
+import bjs.zangbu.addressChange.service.AddressChangeService;
 import bjs.zangbu.codef.encryption.RSAEncryption;
 import bjs.zangbu.codef.service.CodefTwoFactorService;
 import bjs.zangbu.security.account.dto.request.AuthRequest;
 import bjs.zangbu.security.account.dto.request.AuthRequest.EmailAuthRequest;
-import bjs.zangbu.security.account.dto.request.AuthRequest.LoginRequest;
-import bjs.zangbu.security.account.dto.request.AuthRequest.ResetPassword;
 import bjs.zangbu.security.account.dto.request.AuthRequest.SignUp;
-import bjs.zangbu.security.account.dto.request.AuthRequest.VerifyCodefRequest;
-import bjs.zangbu.security.account.dto.response.AuthResponse.VerifyCodefResponse;
+import bjs.zangbu.security.account.dto.response.AuthResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.EmailAuthResponse;
-import bjs.zangbu.security.account.dto.response.AuthResponse.LoginResponse;
 import bjs.zangbu.security.account.dto.response.AuthResponse.TokenResponse;
 import bjs.zangbu.security.account.mapper.AuthMapper;
 import bjs.zangbu.security.account.vo.Member;
@@ -19,15 +16,14 @@ import io.jsonwebtoken.JwtException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,16 +34,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class AuthServiceImpl implements AuthService {
 
+  final AddressChangeService addressChangeService;
   final PasswordEncoder passwordEncoder;
   final AuthMapper mapper;
   final JwtProcessor jwtProcessor;
   private final CodefTwoFactorService codefTwoFactorService;
-  private final RSAEncryption rsaEncryption;
 
   private final RedisTemplate<String, Object> redisTemplate;
   private static final String REFRESH_TOKEN_PREFIX = "refresh:"; //prefix
   private static final String SIGNUP_VERIFY_PREFIX = "signup:verify:";
   private static final String LOGIN_TOKEN_PREFIX = "login:";
+
+  private static final String RESET_TOKEN_PREFIX = "reset:token:";
+  private static final Duration RESET_TTL = Duration.ofMinutes(15);
 
 
   //로그아웃
@@ -69,34 +68,30 @@ public class AuthServiceImpl implements AuthService {
     String rawResponse = codefTwoFactorService.
         residentRegistrationAuthenticityConfirmation(request);
     String decodedJson = URLDecoder.decode(rawResponse, StandardCharsets.UTF_8);
-    
-    //본인인증 성공 시
-    //String sessionId = saveToRedis(request); --> redis에 데이터 저장
+
 
     return null; //todo : 로직 설계 해야 함
   }
 
-  //세션 아이디 발급 및 redis에 데이터 저장
-  //codef 검증 후 성공일 때만 사용하도록
-  private String saveToRedis(AuthRequest.VerifyCodefRequest request) throws Exception {
+  public String cacheVerification(AuthRequest.VerifyCodefRequest request) throws Exception {
     //세션 아이디 생성
     String sessionId = UUID.randomUUID().toString();
     String key = SIGNUP_VERIFY_PREFIX + sessionId;
 
-    //주민번호 암호화해서 넣기
-    String encIdentity = rsaEncryption.encrypt(request.getIdentity());
-
     Map<String, String> toSave = new HashMap<>();
-    toSave.put("status", "Y"); // 본인인증 성공 후에만 저장하므로 Y
+    toSave.put("status", "Y");
     toSave.put("name", request.getName());
     toSave.put("birth", request.getBirth());
-    toSave.put("identity", encIdentity);
+    toSave.put("identity", request.getIdentity());
     toSave.put("phone", request.getPhone());
     toSave.put("telecom", request.getTelecom());
     toSave.put("issueDate", request.getIssueDate());
 
+    // Redis 저장 및 TTL
     redisTemplate.opsForHash().putAll(key, toSave);
     redisTemplate.expire(key, Duration.ofMinutes(10L)); //10분
+
+    log.info("[VERIFY SAVED] key={}", key);
 
     //세션 아이디 반환
     return sessionId;
@@ -109,14 +104,17 @@ public class AuthServiceImpl implements AuthService {
     if (signUpRequest.getSessionId() == null || signUpRequest.getSessionId().isBlank())
       throw new IllegalArgumentException("본인인증 세션 ID가 없습니다.");
 
+    log.info("[SIGNUP] sessionId={}", signUpRequest.getSessionId());
     //저장해둔 세션 키로 redis에서 값 가져오기
     String key = SIGNUP_VERIFY_PREFIX + signUpRequest.getSessionId();
     Map<Object, Object> saved = redisTemplate.opsForHash().entries(key);
+    log.info("[SIGNUP] redis loaded size={}, keys={}", saved.size(), saved.keySet());
     if (saved == null || saved.isEmpty())
       throw new IllegalStateException("본인인증 정보가 만료되었거나 존재하지 않습니다.");
 
     //Y일 때가 본인인증 성공 상태
     String status = (String) saved.get("status");
+    log.info("[SIGNUP] status={}", status);
     if (!"Y".equalsIgnoreCase(status))
       throw new IllegalStateException("본인인증이 완료되지 않았습니다.");
 
@@ -187,62 +185,56 @@ public class AuthServiceImpl implements AuthService {
     return count > 0;
   }
 
-  //본인인증
-//  @Override
-//  public VerifyCodefResponse verifyAuthenticity(VerifyCodefRequest request) {
-//    //PassAPI 호출하고 반환하는 역할 -> 호출 실패나 응답에 대한 예외 처리
-//
-//    try {
-//      // PASS API에 전달할 값들로 JSON 생성
-//      Map<String, String> payload = new HashMap<>();
-//      payload.put("name", request.getName()); //이름
-//      payload.put("identity", request.getIdentity()); //주민번호
-//      payload.put("phone", request.getPhone()); //전화번호
-//
-//      // 실제 PASS API 호출 (RestTemplate, WebClient 등 사용)해서 응답 받음
-//      ResponseEntity<VerifyCodefResponse> response = passApiClient.sendVerification(payload);
-//
-//      //응답 body가 null인 경우
-//      //500
-//      if (response.getBody() == null) {
-//        throw new IllegalStateException("PASS API에서 유효한 응답을 받지 못했습니다.");
-//      }
-//      // 성공 시 결과 반환
-//      return response.getBody();
-//      // "Y"/"N" 여부 판단은 Controller에서 하고, y일때만 세션에 저장하도록 처리
-//
-//    } catch (Exception e) {
-//      throw new RuntimeException("PASS 본인인증 중 오류가 발생했습니다.");
-//    }
-//  }
-
-  //비밀번호 재설정
   @Override
-  public void resetPassword(ResetPassword request, HttpSession session) {
-    // 1. 세션에서 이메일 조회 -> 인증 되었을 때만 변경할 수 있음
-    String verifiedEmail = (String) session.getAttribute("verifiedEmail");
-
-    if (verifiedEmail == null) {
-      throw new IllegalStateException("본인인증이 필요한 상태입니다.");
+  public AuthResponse.PasswordVerifyResponse verifyPasswordFlow(String sessionId) {
+    String key = SIGNUP_VERIFY_PREFIX + sessionId;
+    Map<Object, Object> saved = redisTemplate.opsForHash().entries(key);
+    if (saved == null || saved.isEmpty()) {
+      throw new IllegalArgumentException("인증 세션이 만료되었거나 존재하지 않습니다.");
     }
 
-    // 2. 회원 존재 확인
-    Member member = mapper.findByEmail(verifiedEmail);
+    String name  = (String) saved.get("name");
+    String phone = (String) saved.get("phone");
 
+    String email = mapper.findEmailByNameAndPhone(name, phone);
+    boolean exists = (email != null);
+
+    String resetToken = null;
+    if (exists) {
+      resetToken = Base64.getUrlEncoder().withoutPadding()
+              .encodeToString(UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8));
+      String tKey = RESET_TOKEN_PREFIX + resetToken;
+      redisTemplate.opsForValue().set(tKey, email, RESET_TTL);
+    }
+
+    redisTemplate.delete(key); // 일회성 삭제
+    return new AuthResponse.PasswordVerifyResponse(exists, sessionId, resetToken);
+  }
+
+
+  // 새로 추가: 토큰 기반 비밀번호 재설정(세션 안 씀)
+  @Override
+  public void resetPasswordByToken(String resetToken, String newPassword) {
+    String tKey = RESET_TOKEN_PREFIX + resetToken;
+    String email = (String) redisTemplate.opsForValue().get(tKey);
+    if (email == null) {
+      throw new IllegalStateException("재설정 토큰이 만료되었거나 유효하지 않습니다.");
+    }
+
+    Member member = mapper.findByEmail(email);
     if (member == null) {
+      redisTemplate.delete(tKey);
       throw new IllegalArgumentException("일치하는 회원 정보가 없습니다.");
     }
 
-    // 3. 비밀번호 인코딩 후 새 비밀번호로 업데이트
-    String encodedPassword = passwordEncoder.encode(request.getNewPassword());
-
-    int result = mapper.updatePassword(member.getEmail(), encodedPassword);
-    if (result == 0) {
+    String encoded = passwordEncoder.encode(newPassword);
+    int updated = mapper.updatePassword(email, encoded);
+    if (updated == 0) {
       throw new IllegalStateException("비밀번호를 변경하는데 실패했습니다.");
     }
 
-    // 4. 인증 상태 세션에서 제거 --일회성 인증
-    session.removeAttribute("verifiedEmail");
+    // 일회성 토큰 삭제
+    redisTemplate.delete(tKey);
   }
 
   //토큰 재발급
