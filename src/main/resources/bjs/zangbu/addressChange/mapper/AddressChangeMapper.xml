@@ -42,4 +42,11 @@
           AND res_user_addr != ''
         ORDER BY res_move_in_date DESC
     </select>
+
+    <!-- memberId 존재 여부 확인 -->
+    <select id="existsByMemberId" resultType="int">
+        SELECT COUNT(1)
+        FROM address_change
+        WHERE member_id = #{memberId,jdbcType=VARCHAR}
+    </select>
 </mapper>
