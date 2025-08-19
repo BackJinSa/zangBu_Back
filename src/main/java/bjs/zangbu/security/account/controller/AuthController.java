@@ -21,11 +21,13 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -44,57 +46,6 @@ import springfox.documentation.annotations.ApiIgnore;
 public class AuthController {
 
   private final AuthService authService;
-
-  /**
-   * 로그인 요청 처리.
-   * {@code POST /auth/login} 엔드포인트를 통해 사용자의 로그인을 처리하고, 성공 시 JWT 토큰(Access Token, Refresh Token)을 발급합니다.
-   * Refresh Token은 HTTP Only 쿠키로, Access Token은 응답 본문으로 전달됩니다.
-   *
-   * @param request 로그인 정보를 담고 있는 {@link LoginRequest} DTO (이메일, 비밀번호)
-   * @param response HTTP 응답 객체 (Refresh Token 쿠키 설정을 위해 사용)
-   * @return 로그인 성공 시 {@link LoginResponse}와 함께 200 OK 응답, 실패 시 400 Bad Request 또는 500 Internal Server Error 응답
-   */
-//  @ApiOperation(
-//          value = "로그인",
-//          notes = "로그인 성공 시 토큰을 발급하여 반환합니다.",
-//          response = LoginResponse.class
-//  )
-//  @ApiResponses({
-//          @ApiResponse(code = 200, message = "로그인 성공했습니다."),
-//          @ApiResponse(code = 400, message = "아이디 또는 비밀번호가 일치하지 않습니다"),
-//          @ApiResponse(code = 500, message = "서버에서 로그인을 처리하는데 오류가 발생했습니다.")
-//  })
-//  @PostMapping("/login")
-//  public ResponseEntity<?> login(
-//          @ApiParam(value = "로그인 요청 DTO (이메일, 비밀번호 입력)", required = true)
-//          @RequestBody LoginRequest request,
-//          HttpServletResponse response) {
-//    try {
-//      LoginResponse loginResponse = authService.login(request);
-//
-//      //쿠키에 refresh 토큰 담기
-//      Cookie refreshCookie = new Cookie("refreshToken", loginResponse.getRefreshToken());
-//      refreshCookie.setHttpOnly(true); //JS 접근 방지 - 장기 인증 수단이므로 클라이언트 측 js에서 접근 못하게 해야 함
-//      refreshCookie.setSecure(true); //Https에서만 전송 가능하도록
-//      refreshCookie.setPath("/"); //전체 경로에 대해 유효함
-//      refreshCookie.setMaxAge(7 * 24 * 60 * 60); //7일간 유효(초단위)
-//
-//      response.addCookie(refreshCookie);
-//
-//      //access 토큰은 클라이언트에 바디로 전달
-//      //refresh 토큰은 쿠키로 숨겨서 클라이언트에 저장
-//      return ResponseEntity.ok(
-//              new LoginResponse(loginResponse.getAccessToken(), null, loginResponse.getRole()));
-//
-//    } catch (IllegalArgumentException e) {
-//      //400 에러 - 아이디/비밀번호 일치하지 않음
-//      return ResponseEntity.badRequest().body(e.getMessage());
-//    } catch (Exception e) {
-//      // 500 에러
-//      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//              .body("서버에서 로그인을 처리하는데 오류가 발생했습니다.");
-//    }
-//  }
 
   /**
    * 로그아웃 요청 처리.
@@ -185,46 +136,6 @@ public class AuthController {
   }
 
   /**
-   * 비밀번호 재설정 요청 처리.
-   * {@code POST /auth/password} 엔드포인트를 통해 본인인증을 마친 후 새로운 비밀번호로 재설정합니다.
-   * 세션에 저장된 인증 상태를 확인하여 비밀번호 변경을 허용합니다.
-   *
-   * @param customUser 인증된 사용자 정보 (현재 사용되지 않지만, 필요 시 확장 가능)
-   * @param request 비밀번호 재설정 정보를 담고 있는 {@link ResetPassword} DTO (새 비밀번호)
-   * @param session HTTP 세션 객체 (본인인증 상태 확인을 위해 사용)
-   * @return 비밀번호 변경 성공 시 200 OK 응답, 실패 시 400 Bad Request 또는 500 Internal Server Error 응답
-   */
-  @ApiOperation(
-          value = "비밀번호 재설정",
-          notes = "본인인증을 마친 후 비밀번호를 재설정할 수 있게 합니다."
-  )
-  @ApiResponses({
-          @ApiResponse(code = 200, message = "비밀번호를 변경하는데 성공했습니다."),
-          @ApiResponse(code = 400, message = "비밀번호를 변경하는데 실패했습니다."),
-          @ApiResponse(code = 500, message = "서버에서 비밀번호 변경을 처리하는데 오류가 발생했습니다.")
-  })
-  @PostMapping("/password")
-  public ResponseEntity<?> resetPassword(
-          @ApiIgnore
-          @AuthenticationPrincipal CustomUser customUser,
-          @ApiParam(value = "비밀번호 재설정 요청 DTO (새 비밀번호 입력)", required = true)
-          @RequestBody ResetPassword request,
-          HttpSession session) {
-
-    try {
-      authService.resetPassword(request, session);
-      return ResponseEntity.ok().build(); //200
-    } catch (IllegalStateException | IllegalArgumentException e) {
-      //400
-      return ResponseEntity.badRequest().body("비밀번호를 변경하는데 실패했습니다.");
-    } catch (Exception e) {
-      //500
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body("서버에서 비밀번호 변경을 처리하는데 오류가 발생했습니다.");
-    }
-  }
-
-  /**
    * 본인인증 성공 후 데이터 받아오기
    * POST로 본인인증 성공한 데이터 받아서 redis에 저장하고,
    * 인증 상태 세션에 저장
@@ -259,29 +170,52 @@ public class AuthController {
     }
   }
 
-  //비밀번호 재설정 전 본인인증
-  @PostMapping("/verify/password")
+  @PostMapping(value = "/verify/password",
+          consumes = MediaType.APPLICATION_JSON_VALUE,
+          produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> verifyAuthenticityForPassword(
-          @ApiIgnore
-          @AuthenticationPrincipal CustomUser customUser,
           @ApiParam(value = "본인인증 성공한 데이터 DTO", required = true)
           @RequestBody VerifyCodefRequest request,
-          HttpSession session) {
-
+          HttpServletRequest httpReq) {
+    log.info("CT={}, CE={}", httpReq.getContentType(), httpReq.getCharacterEncoding()); // 디버깅용
+    log.info("[/auth/verify/password] IN name={}, phone={}, telecom={}, issueDate={}",
+            request.getName(), request.getPhone(), request.getTelecom(), request.getIssueDate());
     try {
+      // 1) 인증 요청 캐시 → sessionId 발급 (TTL 예: 10분)
       String sessionId = authService.cacheVerification(request);
+      log.info("[/auth/verify/password] cached sessionId={}", sessionId);
 
-      boolean isValidUser = authService.isValidUser(sessionId);
+      // 2) 사용자 존재 확인 + resetToken(있으면 발급)
+      //    (이 로직은 아래 3) 서비스에 구현)
+      AuthResponse.PasswordVerifyResponse resp =
+              authService.verifyPasswordFlow(sessionId);
+      log.info("[/auth/verify/password] OUT isValid={}, hasToken={}",
+              resp.isValid(), resp.getResetToken() != null);
 
-      return ResponseEntity.ok(new AuthResponse.PasswordVerifyResponse(isValidUser));
+      return ResponseEntity.ok(resp);
 
     } catch (IllegalArgumentException e) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사용자가 존재하지 않습니다.");
-    } catch (Exception e) { //500
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+              .body("사용자가 존재하지 않거나 인증 세션이 만료되었습니다.");
+    } catch (Exception e) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
               .body("서버에서 사용자를 확인하는 데 오류가 발생했습니다.");
     }
   }
+
+  @PostMapping("/password/reset")
+  public ResponseEntity<?> resetPasswordByToken(@RequestBody AuthRequest.ResetPasswordTokenRequest req) {
+    try {
+      authService.resetPasswordByToken(req.getToken(), req.getNewPassword());
+      return ResponseEntity.ok().build();
+    } catch (IllegalStateException e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("비밀번호 재설정 실패");
+    }
+  }
+
+
 
   /**
    * 본인인증 CODEF 진위인증 사용 (임시).

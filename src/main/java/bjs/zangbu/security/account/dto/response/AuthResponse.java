@@ -131,6 +131,8 @@ public class AuthResponse {
   @AllArgsConstructor
   @ApiModel(description = "본인인증 저장 후 응답 DTO")
   public static class PasswordVerifyResponse{
-    private boolean isValidUser;
+    private boolean isValid;     // 기존 isValidUser
+    private String sessionId;    // 추가
+    private String resetToken;
   }
 }
