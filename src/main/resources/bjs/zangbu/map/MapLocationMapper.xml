@@ -31,4 +31,20 @@
             AND price &lt;= #{priceMax}
         </if>
     </select>
+
+    <select id="findAllBuildingComplexInfo" resultType="bjs.zangbu.map.dto.BuildingComplexInfo">
+        SELECT
+            b.building_id,
+            b.building_name,
+            cl.address,
+            cl.roadName,
+            cl.sido,
+            cl.sigungu,
+            cl.eupmyeondong
+        FROM
+            building b
+        JOIN
+            complex_list cl ON b.complex_id = cl.complex_id
+    </select>
+
 </mapper>

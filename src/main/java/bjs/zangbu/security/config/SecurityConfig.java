@@ -109,6 +109,9 @@ public class SecurityConfig {
             .requestMatchers(new AntPathRequestMatcher("/favicon.ico")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/static/**")).permitAll()
 
+            // map 엔드포인트 허용
+            .requestMatchers(new AntPathRequestMatcher("/map/**")).permitAll()
+
             // auth 엔트 포인트
             .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
 
