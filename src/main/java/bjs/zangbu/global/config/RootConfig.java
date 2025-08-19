@@ -23,9 +23,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 @Configuration
-@PropertySource(value = "classpath:/application.yml", factory = YamlPropertyConfig.class)
+@PropertySource(value = "classpath:application.yml", factory = YamlPropertyConfig.class)
 @MapperScan(basePackages = {
     "bjs.zangbu.addressChange.mapper",
     "bjs.zangbu.bookmark.mapper",
@@ -43,10 +44,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
     "bjs.zangbu.review.mapper",
 })
 /* 컨트롤러를 제외하고 전역 스캔: 서비스/컴포넌트/클라이언트 등 등록 */
-@ComponentScan(
-    basePackages = "bjs.zangbu",
-    excludeFilters = @ComponentScan.Filter(org.springframework.stereotype.Controller.class)
-)
+@ComponentScan(basePackages = "bjs.zangbu", excludeFilters = @ComponentScan.Filter(org.springframework.stereotype.Controller.class))
 public class RootConfig {
 
   @Value("${jdbc.driver}")
@@ -78,9 +76,11 @@ public class RootConfig {
     sqlSessionFactory.setConfigLocation(
         applicationContext.getResource("classpath:/mybatis-config.xml"));
     sqlSessionFactory.setDataSource(dataSource());
+    sqlSessionFactory.setMapperLocations(
+        new PathMatchingResourcePatternResolver().getResources("classpath:bjs/zangbu/**/*.xml"));
 
     // PageHelper 플러그인 등록
-    sqlSessionFactory.setPlugins(new Interceptor[]{pageInterceptor()});
+    sqlSessionFactory.setPlugins(new Interceptor[] { pageInterceptor() });
 
     return sqlSessionFactory.getObject();
   }
@@ -111,10 +111,12 @@ public class RootConfig {
   }
 
   /* ---------- Mongo ---------- */
-  @Value("${mongo.uri}")  String mongoUri;                         // ex) mongodb://localhost:27017
-  @Value("${mongo.db}")   String mongoDb;                          // ex) zangBu
+  @Value("${mongo.uri}")
+  String mongoUri; // ex) mongodb://localhost:27017
+  @Value("${mongo.db}")
+  String mongoDb; // ex) zangBu
   @Value("${mongo.collections.report:report_documents}")
-  String reportCollectionName;                                     // ex) report_documents
+  String reportCollectionName; // ex) report_documents
 
   private MongoClient mongoClientRef; // 종료 시 close
 
@@ -138,6 +140,7 @@ public class RootConfig {
 
   @PreDestroy
   public void close() {
-    if (mongoClientRef != null) mongoClientRef.close();
+    if (mongoClientRef != null)
+      mongoClientRef.close();
   }
 }
