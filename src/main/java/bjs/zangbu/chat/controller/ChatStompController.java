@@ -36,7 +36,7 @@ public class ChatStompController {  //WebSocket 메시지 수신 컨트롤러
     @MessageMapping("/chat.send/{roomId}")
     public void handleSendMessage(
             //@MessageMapping 경로의 {roomId} 부분
-            //@DestinationVariable은 @PathVariable의 WebSocket(STOMP) 버전 
+            //@DestinationVariable은 @PathVariable의 WebSocket(STOMP) 버전
             @DestinationVariable String roomId,
             //클라이언트가 보낸 채팅 메시지(JSON 형식) -> @Payload로 역직렬화됨.
             //@Payload는 메시지 본문 추출
@@ -74,7 +74,4 @@ public class ChatStompController {  //WebSocket 메시지 수신 컨트롤러
         // 채팅방 구독자(/topic/chat.room.{roomId}를 구독하고 있는 모든 클라이언트)에게 메시지 브로드캐스트(response를 실시간 전송)
         messagingTemplate.convertAndSend("/topic/chat." + roomId, response);
     }
-
-
-
 }
