@@ -20,6 +20,9 @@ public class PaymentController {
     @PostMapping("/confirm")
     public ResponseEntity<?> confirm(@RequestBody Map<String, Object> body, HttpServletRequest req) {
         String memberId = /* 인증 컨텍스트에서 추출 or 테스트용 하드코딩 */ (String) req.getAttribute("memberId");
+        if (memberId == null) {
+            memberId = "1"; // test용 임시 하드코딩
+        }
         paymentService.confirmPayment(memberId, body);
         return ResponseEntity.ok(Map.of("success", true));
     }
@@ -34,7 +37,8 @@ public class PaymentController {
     public ResponseEntity<?> consume(@RequestBody Map<String, Object> body, HttpServletRequest req) {
         String memberId = (String) req.getAttribute("memberId");
         boolean ok = paymentService.consumePerCase(memberId);
-        if (!ok) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message","잔여 건수가 없습니다."));
+        if (!ok)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "잔여 건수가 없습니다."));
         return ResponseEntity.ok(Map.of("success", true));
     }
 }
