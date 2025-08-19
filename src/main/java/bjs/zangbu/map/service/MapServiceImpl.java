@@ -73,16 +73,22 @@ public class MapServiceImpl implements MapService {
     // /map 필터 기능
     @Override
     public List<MapListResponse> locateWithFilter(MapFilterRequest req) {
-        List<MapLocation> vos = locationMapper.findLocationsByFilters(
+        List<BuildingComplexInfo> buildings = locationMapper.findLocationsByFilters(
                 req.getSaleTypes(),
                 req.getPropertyTypes(),
                 req.getPriceMin(),
                 req.getPriceMax());
-        // 이 부분은 더 이상 MapLocation을 사용하지 않으므로 수정이 필요하지만,
-        // 현재 주요 작업 범위가 아니므로 주석 처리하거나 수정을 보류합니다.
-        // return vos.stream()
-        // .map(MapListResponse::fromVo)
-        // .toList();
-        return null; // TODO: 필터링 로직 리팩토링 필요
+
+        return buildings.stream()
+                .map(building -> {
+                    String fullAddress = Stream.of(
+                            building.getSido(),
+                            building.getSigungu(),
+                            building.getAddress())
+                            .filter(s -> s != null && !s.isBlank())
+                            .collect(Collectors.joining(" "));
+                    return new MapListResponse(building.getBuildingId(), building.getBuildingName(), fullAddress);
+                })
+                .toList();
     }
 }
