@@ -24,25 +24,25 @@
         roadName
         )
         VALUES (
-        #{resType},
-        #{complexName},
-        #{complexNo},
-        #{sido},
-        #{sigungu},
-        #{siCode},
-        #{eupmyeondong},
-        #{transactionId},
-        #{address},
-        #{zonecode},
-        #{buildingName},
-        #{bname},
-        #{dong},
-        #{ho},
-        #{roadName}
+        #{complexList.resType},
+        #{complexList.complexName},
+        #{complexList.complexNo},
+        #{complexList.sido},
+        #{complexList.sigungu},
+        #{complexList.siCode},
+        #{complexList.eupmyeondong},
+        #{complexList.transactionId},
+        #{complexList.address},
+        #{complexList.zonecode},
+        #{complexList.buildingName},
+        #{complexList.bname},
+        #{complexList.dong},
+        #{complexList.ho},
+        #{complexList.roadName}
         )
         <selectKey
                 resultType="Long"
-                keyProperty="complexId"
+                keyProperty="complexList.complexId"
                 keyColumn="complex_id"
                 order="AFTER"
         >
