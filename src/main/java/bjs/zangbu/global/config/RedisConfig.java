@@ -19,10 +19,6 @@ public class RedisConfig {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
         config.setHostName("localhost");
         config.setPort(6379);
-//        config.setDatabase(15);
-//        config.setPassword(RedisPassword.of("1234"));
-        // 필요시 패스워드 설정
-        // config.setPassword(RedisPassword.of("yourpassword"));
         return new JedisConnectionFactory(config);
     }
 
