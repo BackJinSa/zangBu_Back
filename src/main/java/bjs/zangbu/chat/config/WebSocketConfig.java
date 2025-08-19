@@ -2,7 +2,6 @@ package bjs.zangbu.chat.config;
 
 import bjs.zangbu.security.util.JwtProcessor;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -14,7 +13,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.messaging.support.MessageHeaderAccessor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -23,14 +21,13 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Collections;
 
-@Log4j2
 @Profile("!test")
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-  private final JwtProcessor jwtProcessor;
+    private final JwtProcessor jwtProcessor;
 
     //application.yml에서 불러옴
     @Value("${rabbitmq.stomp.username}")
@@ -60,6 +57,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         //클라이언트가 WebSocket에 연결할 수 있는 엔드포인트(주소)를 등록
         registry.addEndpoint("/chat") //접속 엔드포인트, ws://localhost:8080/chat
+//                .addInterceptors(new JwtHandshakeInterceptor(jwtProcessor))  //TODO: 인터셉터 등록 -> configureClientInboundChannel로 수정 : 테스트후 삭제하기
                 .setAllowedOrigins("*"); // 모든 도메인에서 WebSocket 연결을 허용(CORS 허용), 배포할 때는 특정 도메인만 허용
     }
 
@@ -69,69 +67,66 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         reg.interceptors(new ChannelInterceptor() {
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
-                StompHeaderAccessor acc = StompHeaderAccessor.wrap(message);
+                // wrap() 대신 getAccessor()가 더 안전
+                StompHeaderAccessor acc = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+                if (acc == null) return message;
+
                 StompCommand cmd = acc.getCommand();
                 if (cmd == null) return message;
 
                 switch (cmd) {
                     case CONNECT: {
-                        log.info("[WS][CONNECT] native headers={}", acc.toNativeHeaderMap());
+                        System.out.println("[WS][CONNECT] native headers = " + acc.toNativeHeaderMap());
 
                         String auth = acc.getFirstNativeHeader("Authorization");
                         if (auth == null) auth = acc.getFirstNativeHeader("authorization");
 
-                        if (auth == null || !auth.startsWith("Bearer ")) {
-                            throw new IllegalArgumentException("Invalid or missing JWT");
+                        if (auth != null && auth.startsWith("Bearer ")) {
+                            String token = auth.substring(7);
+                            System.out.println("[WS][CONNECT] token prefix = " + token.substring(0, Math.min(16, token.length())));
+                            if (jwtProcessor.validateToken(token)) {
+                                // 네 구현에 맞게: email이 userId로 쓰인다면 그대로 사용
+                                String userId = jwtProcessor.getEmail(token);
+
+                                // ★ Principal 주입
+                                UsernamePasswordAuthenticationToken authentication =
+                                        new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+                                acc.setUser(authentication);
+
+                                // ★ 수정된 헤더로 메시지 재생성 (중요)
+                                acc.setLeaveMutable(true);
+                                Message<?> newMsg = MessageBuilder.createMessage(message.getPayload(), acc.getMessageHeaders());
+                                System.out.println("[WS][CONNECT] authenticated user = " + userId);
+                                return newMsg;
+                            } else {
+                                System.out.println("[WS][CONNECT] validateToken = false");
+                            }
+                        } else {
+                            System.out.println("[WS][CONNECT] Authorization header missing or bad format: " + auth);
                         }
-
-                        String token = auth.substring(7);
-                        log.info("[WS][CONNECT] token prefix={}", token.substring(0, Math.min(16, token.length())));
-
-                        // ❗검증 실패 원인 보이도록 try/catch 권장
-                        if (!jwtProcessor.validateToken(token)) {
-                            log.warn("[WS][CONNECT] validateToken=false");
-                            throw new IllegalArgumentException("Invalid or missing JWT");
-                        }
-
-                        // Principal 주입 (email → 그대로 / 필요시 memberId로 변환)
-                        String userId = jwtProcessor.getEmail(token); // 또는 getClaim(token, "member_id")
-                        UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(userId, null, java.util.Collections.emptyList());
-                        acc.setUser(authentication);
-
-                        // 수정된 헤더로 메시지 재생성
-                        return MessageBuilder.createMessage(message.getPayload(), acc.getMessageHeaders());
+                        throw new IllegalArgumentException("Invalid or missing JWT");
                     }
-
                     case SEND: {
-                        if (acc.getUser() == null) {
-                            throw new org.springframework.security.access.AccessDeniedException("Unauthenticated SEND");
-                        }
-                        log.info("[WS][SEND] user={}, dest={}", principalName(acc), acc.getDestination());
+                        // 디버그: SEND 프레임에 Principal 붙었는지 확인
+                        System.out.println("[WS][SEND] user = " + (acc.getUser() != null ? acc.getUser().getName() : "null")
+                                + ", dest = " + acc.getDestination());
                         return message;
                     }
-
                     case SUBSCRIBE: {
-                        log.info("[WS][SUBSCRIBE] user={}, dest={}", principalName(acc), acc.getDestination());
+                        // 디버그: 구독 시점 사용자
+                        System.out.println("[WS][SUBSCRIBE] user = " + (acc.getUser() != null ? acc.getUser().getName() : "null")
+                                + ", dest = " + acc.getDestination());
                         return message;
                     }
-
                     case DISCONNECT: {
-                        log.info("[WS][DISCONNECT] user={}", principalName(acc));
+                        System.out.println("[WS][DISCONNECT] user = " + (acc.getUser() != null ? acc.getUser().getName() : "null"));
                         return message;
                     }
-
                     default:
                         return message;
                 }
             }
-
-            private String principalName(StompHeaderAccessor acc) {
-                java.security.Principal p = acc.getUser();
-                return (p != null ? p.getName() : "null");
-            }
         });
     }
-
 
 }
