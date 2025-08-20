@@ -14,6 +14,7 @@ import bjs.zangbu.review.mapper.ReviewMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Service;
+import bjs.zangbu.building.mapper.BuildingMapper;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -23,12 +24,14 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewMapper reviewMapper;
     private final NotificationService notificationService;
     private final ReviewAddressValidationService addressValidationService;
+    private final BuildingMapper buildingMapper;
 
     public ReviewServiceImpl(ReviewMapper reviewMapper, NotificationService notificationService,
-            ReviewAddressValidationService addressValidationService) {
+            ReviewAddressValidationService addressValidationService, BuildingMapper buildingMapper) {
         this.reviewMapper = reviewMapper;
         this.notificationService = notificationService;
         this.addressValidationService = addressValidationService;
+        this.buildingMapper = buildingMapper;
     }
 
     // 날짜 형식 설정
@@ -52,8 +55,10 @@ public class ReviewServiceImpl implements ReviewService {
         // 최신 리뷰 평점 조회
         Integer latestRank = reviewMapper.selectLatestReviewRank(buildingId);
 
+        String buildingName = buildingMapper.selectBuildingNameById(buildingId);
+
         // 최종 결과 조립
-        return new ReviewListResult(total, list, hasNext, latestRank);
+        return new ReviewListResult(total, list, hasNext, latestRank, buildingName);
     }
 
     // 리뷰 상세보기
