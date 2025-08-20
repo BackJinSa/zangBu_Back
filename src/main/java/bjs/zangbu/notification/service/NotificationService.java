@@ -39,4 +39,7 @@ public interface NotificationService {
                                      String title,
                                      String message,
                                      int currentPrice);
+
+    // ======================== 채팅 알림 전송 ==============================
+    void sendChatNotification(String memberId, String roomId, String message);
 }
