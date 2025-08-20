@@ -183,14 +183,14 @@ public class CodefController {
          */
         @ApiOperation(value = "일련번호 처리", notes = "건물명으로 단지 일련번호(complexNo)를 조회하고 반환합니다.", response = Map.class)
         @ApiResponses({
-                        @ApiResponse(code = 200, message = "단지 일련번호 조회에 성공했습니다."),
-                        @ApiResponse(code = 404, message = "일치하는 단지를 찾을 수 없습니다."),
-                        @ApiResponse(code = 500, message = "서버 오류")
+                @ApiResponse(code = 200, message = "단지 일련번호 조회에 성공했습니다."),
+                @ApiResponse(code = 404, message = "일치하는 단지를 찾을 수 없습니다."),
+                @ApiResponse(code = 500, message = "서버 오류")
         })
         @PostMapping("/complex")
         public ResponseEntity<?> complexNo(
-                        @ApiParam(value = "건물명 조회를 위한 요청 DTO", required = true) @RequestBody AddressRequest request)
-                        throws JsonProcessingException, InterruptedException, UnsupportedEncodingException {
+                @ApiParam(value = "건물명 조회를 위한 요청 DTO", required = true) @RequestBody AddressRequest request)
+                throws JsonProcessingException, InterruptedException, UnsupportedEncodingException {
                 String resTypeJson = codefService.justListInquiry(request);
                 List<Map<String, Object>> dataList = CodefConverter.parseDataToDto(resTypeJson, List.class);
 
@@ -203,22 +203,33 @@ public class CodefController {
                 String targetComplexName = request.getBuildingName();
                 System.out.println(dataList);
                 String matchingComplexNo = dataList.stream()
-                                .filter(infoMap -> {
-                                        Object complexNameObj = infoMap.get("resComplexName");
-                                        if (complexNameObj instanceof String) {
-                                                return ((String) complexNameObj).contains(targetComplexName);
+                        .filter(infoMap -> {
+                                Object complexNameObj = infoMap.get("resComplexName");
+                                if (complexNameObj instanceof String) {
+                                        String apiName = (String) complexNameObj;
+                                        String userName = targetComplexName;
+
+                                        // --- ✨ 여기가 수정된 부분입니다 ---
+                                        // 비교 전, 불필요한 정보(괄호, 건물 타입, 공백)를 제거합니다.
+                                        String cleanedApiName = apiName.replaceAll("\\s+|\\(.*\\)|아파트|오피스텔|빌라|주상복합", "");
+                                        String cleanedUserName = userName.replaceAll("\\s+|\\(.*\\)|아파트|오피스텔|빌라|주상복합", "");
+
+                                        // 정제된 이름이 비어있지 않은지 확인 후 양방향으로 비교합니다.
+                                        if (cleanedApiName.isEmpty() || cleanedUserName.isEmpty()) {
+                                                return false;
                                         }
-                                        return false;
-                                })
-                                .findFirst()
-                                .map(infoMap -> (String) infoMap.get("commComplexNo"))
-                                .orElse("일치하는 complexNo를 찾을 수 없습니다.");
+                                        return cleanedApiName.contains(cleanedUserName) || cleanedUserName.contains(cleanedApiName);
+                                }
+                                return false;
+                        })
+                        .findFirst()
+                        .map(infoMap -> (String) infoMap.get("commComplexNo"))
+                        .orElse("일치하는 complexNo를 찾을 수 없습니다.");
 
                 Map<String, String> response = new HashMap<>();
                 response.put("complexNo", matchingComplexNo);
                 return ResponseEntity.ok(response);
         }
-
         @GetMapping("/complex/detail/{buildingId}")
         public ResponseEntity<String> getComplexDetailByBuildingId(@PathVariable Long buildingId)
                         throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {

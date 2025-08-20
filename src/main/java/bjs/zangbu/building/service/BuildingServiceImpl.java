@@ -54,7 +54,7 @@ public class BuildingServiceImpl implements BuildingService {
      * 필터링 조건에 따른 특정 매물의 상세 정보를 조회합니다.
      * CODEF API 응답과 DB 정보를 결합하여 최종 응답을 생성합니다.
      *
-     * @param request 매물 ID를 포함하는 {@link ViewDetailRequest} DTO
+     * @param request  매물 ID를 포함하는 {@link ViewDetailRequest} DTO
      * @param memberId 현재 로그인한 회원 ID
      * @return CODEF API 응답과 DB 정보를 결합한 매물 상세 정보 DTO
      */
@@ -97,7 +97,8 @@ public class BuildingServiceImpl implements BuildingService {
      */
     @Override
     @Transactional
-    public void SaleRegistration(SaleRegistrationRequest request, String memberId) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+    public void SaleRegistration(SaleRegistrationRequest request, String memberId)
+            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         String codefResponse1 = codefService.realEstateRegistrationAddressSearch(request);
         System.out.println(codefResponse1);
         // CODEF 응답 JSON에서 'data' 필드를 Map으로 파싱
@@ -112,7 +113,7 @@ public class BuildingServiceImpl implements BuildingService {
         System.out.println(dataMap2);
         String resMatchYN = (String) dataMap2.get("resMatchYN");
         System.out.println(resMatchYN);
-        if(!resMatchYN.equals("1")) {
+        if (!resMatchYN.equals("1")) {
             return;
         }
         // complex 저장
@@ -125,7 +126,7 @@ public class BuildingServiceImpl implements BuildingService {
         Long buildingId = buildingMapper.selectLastInsertId();
 
         // 3) DTO에서 MultipartFile 리스트 추출 → 각 파일을 업로드하고 URL 리스트 생성
-// 3) DTO에서 MultipartFile 리스트 추출 → 각 파일을 업로드하고 URL 리스트 생성
+        // 3) DTO에서 MultipartFile 리스트 추출 → 각 파일을 업로드하고 URL 리스트 생성
         List<MultipartFile> imageFiles = request.getImage().getImages().stream()
                 .map(ImageDetails::getImageFile) // 각 ImageDetails 객체에서 MultipartFile 추출
                 .toList();
@@ -145,8 +146,7 @@ public class BuildingServiceImpl implements BuildingService {
 
                         // 새로운 파일명을 사용하여 업로드
                         return multiPartUploaderService.multipartUpload(
-                                BUCKET_NAME, "image/" + newFilename, multipartFile
-                        );
+                                BUCKET_NAME, "image/" + newFilename, multipartFile);
                     } catch (Exception e) {
                         throw new RuntimeException("이미지 업로드에 실패했습니다.", e);
                     }
@@ -195,8 +195,7 @@ public class BuildingServiceImpl implements BuildingService {
                         f.getBuildingName(),
                         f.getPrice(),
                         f.getRankAverage(),
-                        bookmarkedBuildingIds.contains(f.getBuildingId())
-                ))
+                        bookmarkedBuildingIds.contains(f.getBuildingId())))
                 .toList();
 
         PageInfo<FilteredResponse.Filtered> pageInfo = new PageInfo<>(updatedList);
@@ -227,7 +226,8 @@ public class BuildingServiceImpl implements BuildingService {
      * @throws InterruptedException         API 호출 지연 예외
      */
     @Override
-    public ViewDetailResponse BuildingDetail(Long buildingId, String memberId) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+    public ViewDetailResponse BuildingDetail(Long buildingId, String memberId)
+            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         buildingFilter.validateBuildingExists(buildingId);
         Building building = buildingMapper.getBuildingById(buildingId);
         List<String> imageUrl = imageListService.getBuildingImageUrll(buildingId);
@@ -239,7 +239,8 @@ public class BuildingServiceImpl implements BuildingService {
     }
 
     @Override
-    public ViewDetailResponse BuildingDetailWithoutMemberId(Long buildingId) throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
+    public ViewDetailResponse BuildingDetailWithoutMemberId(Long buildingId)
+            throws UnsupportedEncodingException, JsonProcessingException, InterruptedException {
         buildingFilter.validateBuildingExists(buildingId);
         Building building = buildingMapper.getBuildingById(buildingId);
         System.out.println(building);

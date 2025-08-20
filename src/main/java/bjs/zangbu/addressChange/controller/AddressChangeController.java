@@ -2,12 +2,16 @@ package bjs.zangbu.addressChange.controller;
 
 
 import bjs.zangbu.addressChange.dto.response.ResRegisterCertResponse;
+import bjs.zangbu.addressChange.mapper.AddressChangeMapper;
 import bjs.zangbu.addressChange.service.AddressChangeService;
 import java.util.List;
+
+import bjs.zangbu.security.account.vo.CustomUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,26 +25,31 @@ import org.springframework.web.bind.annotation.RestController;
 public class AddressChangeController {
 
   private final AddressChangeService addressChangeService;
+  private final AddressChangeMapper addressChangeMapper;
 
   /**
    * 초본을 조회하고 전입 이력을 저장한 뒤, 저장된 항목들을 반환한다. 호출 예) POST
    * /api/address-changes/import?memberId=USER-UUID
    */
   @PostMapping("/import")
-  public ResponseEntity<List<ResRegisterCertResponse>> importFromResidentAbstract(
-      @RequestParam("memberId") String memberId) {
+  public ResponseEntity<?> importFromResidentAbstract(
+          @AuthenticationPrincipal CustomUser customUser) {
+
+    String memberId = customUser.getMember().getMemberId();
 
     // 간단 유효성 검증
     if (memberId == null || memberId.isBlank()) {
       return ResponseEntity.badRequest().build();
     }
-
+    if(addressChangeMapper.existsByMemberId(memberId)>0){
+      return ResponseEntity.ok("이미 값이 존재함");
+    }
     try {
       List<ResRegisterCertResponse> items =
           addressChangeService.generateAddressChange(memberId);
 
       // 비즈니스 정책에 따라, 결과가 비어도 200 OK로 리스트 반환
-      return ResponseEntity.ok(items);
+      return ResponseEntity.ok("초본 api -> 데이터 베이스에 저장 성공");
 
     } catch (Exception e) {
       log.error("importFromResidentAbstract failed. memberId={}, err={}",
