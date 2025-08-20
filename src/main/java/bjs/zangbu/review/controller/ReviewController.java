@@ -13,12 +13,17 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import bjs.zangbu.review.dto.response.ReviewListResponse;
+import bjs.zangbu.member.mapper.MemberMapper;
+import bjs.zangbu.security.account.vo.Member;
+import bjs.zangbu.security.util.JwtProcessor;
 
 @RestController
 @RequestMapping("/review")
 @RequiredArgsConstructor
 public class ReviewController {
     private final ReviewService reviewService;
+    private final JwtProcessor jwtProcessor;
+    private final MemberMapper memberMapper;
 
     // GET /review/{buildingId}?page={page}&size={size}
     @GetMapping("/{buildingId}")
@@ -63,10 +68,13 @@ public class ReviewController {
             @RequestHeader(value = "Authorization", required = false) String bearerToken) {
 
         try {
-            // 추후 토큰부 개발 시 수정
-            // String memberId = TokenUtil.getMemberId(bearerToken);
-            // String nickname = TokenUtil.getNickname(bearerToken);
-            ReviewCreateResponse resp = reviewService.createReview(req, "임시 아이디(memberId)", "임시 닉네임(nickname)");
+            String token = bearerToken.substring(7);
+            String email = jwtProcessor.getEmail(token);
+            Member member = memberMapper.findByEmail(email);
+            String memberId = member.getMemberId();
+            String nickname = member.getNickname();
+
+            ReviewCreateResponse resp = reviewService.createReview(req, memberId, nickname);
 
             return ResponseEntity.status(201).body(resp);
         } catch (AddressValidationException e) {
@@ -86,9 +94,10 @@ public class ReviewController {
     public ResponseEntity<?> validateAddress(@PathVariable Long buildingId,
             @RequestHeader(value = "Authorization", required = false) String bearerToken) {
         try {
-            // 추후 토큰부 개발 시 수정
-            // String memberId = TokenUtil.getMemberId(bearerToken);
-            String memberId = "임시 아이디(memberId)";
+            String token = bearerToken.substring(7);
+            String email = jwtProcessor.getEmail(token);
+            Member member = memberMapper.findByEmail(email);
+            String memberId = member.getMemberId();
 
             boolean isValid = reviewService.validateAddressForReview(memberId, buildingId);
 
