@@ -190,6 +190,7 @@
         SELECT
             b.building_id AS buildingId,
             b.price,
+            b.deposit,
             b.building_name AS buildingName,
             b.size,
             MIN(il.image_url) AS imageUrl,
@@ -213,6 +214,7 @@
         SELECT
             b.building_id AS buildingId,
             b.price,
+            b.deposit,
             b.building_name AS buildingName,
             b.size,
             MIN(il.image_url) AS imageUrl,
@@ -236,6 +238,7 @@
         SELECT
             b.building_id AS buildingId,
             b.price,
+            b.deposit,
             b.building_name AS buildingName,
             b.size,
             MIN(il.image_url) AS imageUrl,
@@ -248,6 +251,12 @@
         GROUP BY b.building_id, b.price, b.building_name, b.size
         ORDER BY b.created_at DESC
             LIMIT 3
+    </select>
+
+    <select id="selectBuildingNameById" parameterType="long" resultType="string">
+        SELECT building_name
+        FROM building
+        WHERE building_id = #{buildingId}
     </select>
 
     <!--

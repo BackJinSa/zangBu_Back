@@ -115,7 +115,7 @@ public class SecurityConfig {
             .requestMatchers(new AntPathRequestMatcher("/map/**")).permitAll()
 
             // auth 엔트 포인트
-//            .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
+            // .requestMatchers(new AntPathRequestMatcher("/auth/**")).permitAll()
             // 보안 API 경로 설정
             .requestMatchers(new AntPathRequestMatcher("/security/all")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/security/admin")).hasRole("ADMIN")
@@ -137,6 +137,10 @@ public class SecurityConfig {
 
             // 테스트용: /deal/**허용
             .requestMatchers(new AntPathRequestMatcher("/deal/**")).permitAll()
+
+            // 멤버십 엔드포인트는 인증된 사용자만 접근 가능
+            .requestMatchers(new AntPathRequestMatcher("/membership/**")).authenticated()
+            .requestMatchers(new AntPathRequestMatcher("/address-changes/**")).authenticated()
 
             .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()

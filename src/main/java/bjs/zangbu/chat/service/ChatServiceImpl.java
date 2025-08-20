@@ -203,6 +203,7 @@ public class ChatServiceImpl implements ChatService{
         String consumerNickname = memberMapper.getNicknameByMemberId(consumerId);
         String sellerNickname = memberMapper.getNicknameByMemberId(building.getMemberId());
         log.info("ChatServiceImpl - createChatRoom: 구매자닉네임: " + consumerNickname + ", 판매자: " + sellerNickname);
+        log.info("ChatServiceImpl - createChatRoom: 구매자아이디: " + consumerId + ", 판매자아이디: " + building.getMemberId());
 
         if(consumerId.equals(building.getMemberId())) {
             throw new IllegalArgumentException("본인 소유의 건물입니다.");
