@@ -20,11 +20,11 @@ import bjs.zangbu.review.dto.response.ReviewListResponse;
 public class ReviewController {
     private final ReviewService reviewService;
 
-    // GET /review/list/{buildingId}?page={page}&size={size}
-    @GetMapping("/list/{buildingId}")
+    // GET /review/{buildingId}?page={page}&size={size}
+    @GetMapping("/{buildingId}")
     public ResponseEntity<?> list(
             @PathVariable Long buildingId,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         try {
             ReviewListResult result = reviewService.listReviews(buildingId, page, size);
@@ -35,8 +35,8 @@ public class ReviewController {
         }
     }
 
-    // GET /review/{reviewId}
-    @GetMapping("/{reviewId}")
+    // GET /review/detail/{reviewId}
+    @GetMapping("/detail/{reviewId}")
     public ResponseEntity<?> detail(
             @PathVariable Long reviewId) {
         try {

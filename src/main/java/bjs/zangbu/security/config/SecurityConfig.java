@@ -139,6 +139,9 @@ public class SecurityConfig {
             // 멤버십 엔드포인트는 인증된 사용자만 접근 가능
             .requestMatchers(new AntPathRequestMatcher("/membership/**")).authenticated()
 
+            // 리뷰 엔드포인트 허용
+            .requestMatchers(new AntPathRequestMatcher("/review/**")).permitAll()
+
             .requestMatchers(new AntPathRequestMatcher("/auth/signup")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/login")).permitAll()
             .requestMatchers(new AntPathRequestMatcher("/auth/reissue")).permitAll()
