@@ -29,7 +29,7 @@ public class JwtProcessor {
     }
 
     // Access Token 생성
-    public String generateAccessToken(String email, String role) {
+    public String generateAccessToken(String email,String role) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)

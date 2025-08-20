@@ -21,6 +21,13 @@ public class AuthenticationErrorFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain)
       throws ServletException, IOException {
+    // WebSocket 업그레이드는 에러 필터에서 건드리지 않고 그대로 통과 - 웹소켓 연결 자꾸 끊겨서 추가
+    String upgrade = request.getHeader("Upgrade");
+    if (upgrade != null && "websocket".equalsIgnoreCase(upgrade)) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     try {
       filterChain.doFilter(request, response);
     } catch (ExpiredJwtException e) {
